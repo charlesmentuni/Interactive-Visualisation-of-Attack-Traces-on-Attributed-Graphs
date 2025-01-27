@@ -8,7 +8,7 @@ function App() {
   return (
     
     <div>
-        <canvas id='paper-canvas' resize width='800' height='600'/>
+        <canvas id='paper-canvas' resize style={{width: '100%', height:'100%'}}/>
         <Sketch/>
     </div>
   );
