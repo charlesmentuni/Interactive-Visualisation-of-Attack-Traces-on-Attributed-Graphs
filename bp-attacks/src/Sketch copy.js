@@ -6,11 +6,33 @@ import { useEffect, useState } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
-
+import gateway from "./symbols/gateway.png";
 
 
 export default function Sketch() {
-   
+    const event_types = [
+        "endEvent",
+        "messageEndEvent",
+        "startEvent",
+        "timerStartEvent",
+        "messageStartEvent",
+        "catchEvent",
+        "throwEvent",
+        "boundaryEvent",
+        "intermediateCatchEvent",
+        "intermediateThrowEvent"
+    ]
+
+    const gateway_types = [
+        "eventBasedGateway",
+        "complexGateway",
+        "parallelGateway",
+        "exclusiveGateway",
+        "inclusiveGateway"
+    ]
+    
+    
+
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
     const [open, setOpen] = useState(false);
@@ -50,25 +72,31 @@ export default function Sketch() {
 
    const createRect = () => {
 
+   
 
-        const start = 100;
         const width = 150;
         const height = 100;
-        const gap = 100;
 
         const rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
         rectOg.strokeColor = 'black';
+        rectOg.fillColor = 'grey';
         rectOg.visible = false;
+
+
 
         var rect = rectOg.clone();
         rect.visible = true;
 
+        
         var label = new PointText();
-        label.content = json.nodes[0].uuid;
+        label.content = json.nodes[0].name;
         label.scale(0.4);
         label.position = new Point(100+width/2,100+height/2);
 
-        var group = new Group(rect, label);
+        var task = new Group(rect, label);
+        task.position = new Point(100,100);
+        
+        
 
         // Creates a dictionary of nodes with their uuid as the key
         var node_dict = {};
@@ -84,51 +112,36 @@ export default function Sketch() {
         })
 
         
-        /* json.nodes.forEach((node, index) => {
-
-            node_dict[node.uuid].group = group;
-
-                group.onMouseDown = function(event){
-                    toggleInfoCard(node);
-                };
-                group.children[0].fillColor = 'grey';
-                group.children[1].content = node.uuid;
-                group.position.x = (index%5)*(width+gap)+start;
-                group.position.y = (Math.floor(index/5))*(height+gap)+start;
-                group = group.clone();
-
-        }); */
-        
         var graph = graphLayout();
         graph.nodes().forEach((node) => { 
+            var type = task.clone();
 
-            node_dict[node.id()].group = group;
+            type.children[1].content = node_dict[node.id()].name;
+
+
+            if (event_types.includes(node_dict[node.id()].type )){
+                type = new Raster('event-img');
+                type.scale(0.1);
+            }
             
-            group.onMouseDown = function(event){
+            if (gateway_types.includes(node_dict[node.id()].type)){
+                console.log('gateway');
+                type = new Raster('gateway-img');
+                
+            }
 
+            // When pressed on should show node information on the InfoCard
+            type.onMouseDown = function(event){
                 toggleInfoCard(node_dict[node.id()]);
-                //console.log(node_dict[node.id()]);
             };
 
-            group.children[0].fillColor = 'grey';
-            group.children[1].content = node.id();
-            if (node_dict[node.id()].type === 'startvent'){
-                group.children[0] = new Raster('event-img');
-                group.children[0].scale(0.1);
+            node_dict[node.id()].group = type;
+            
+            type.position.x = node.position().x*spacing;
+            type.position.y = node.position().y*spacing;
+            console.log(type)
 
-            }
-            group.position.x = node.position().x*spacing;
-            group.position.y = node.position().y*spacing;
-            group = group.clone();
         });
-
-        // Create a raster item using the image tag with id='mona'
-        //var raster = new Raster('event-img');
-        
-        // Move the raster to the center of the view
-        
-        // Scale the raster by 50%
-        
 
         createEdges(node_dict);
    }
@@ -137,16 +150,16 @@ export default function Sketch() {
         json.edges.forEach((edge) => {
 
             var new_edge = new Path();
-            new_edge.add(node_dict[edge.sourceRef].group.children[0].position);
-            new_edge.add(node_dict[edge.targetRef].group.children[0].position);
-            var end_pos = node_dict[edge.targetRef].group.children[0].position;
+            new_edge.add(node_dict[edge.sourceRef].group.position);
+            new_edge.add(node_dict[edge.targetRef].group.position);
+            var end_pos = node_dict[edge.targetRef].group.position;
             
             end_pos.x += 10;
             end_pos.y += 10;
             
             new_edge.add(end_pos);
-            new_edge.strokeColor = 'black';
-            new_edge.strokeWidth = 10;
+            new_edge.strokeColor = 'blue';
+            new_edge.strokeWidth = 5;
         });
     
 
@@ -273,6 +286,8 @@ export default function Sketch() {
 
 
         <img id='event-img' src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/1200px-Circle_-_black_simple.svg.png' style={{display:"none"}} />
+        <img id='gateway-img' src={gateway} style={{display:"none"}} />
+        
 
         {/* <Card sx={{position:'absolute', top: '0', right: '0', margin: '2%', width: '20%', maxHeight:'50%', overflow: 'auto'}}> 
             <CardHeader 
