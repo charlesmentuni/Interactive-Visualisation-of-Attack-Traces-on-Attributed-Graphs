@@ -150,8 +150,13 @@ export default function Sketch() {
         json.edges.forEach((edge) => {
 
             var new_edge = new Path();
+
             new_edge.add(node_dict[edge.sourceRef].group.position);
+            var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
+            new_edge.add(point);
             new_edge.add(node_dict[edge.targetRef].group.position);
+
+
             var end_pos = node_dict[edge.targetRef].group.position;
             
             end_pos.x += 10;
