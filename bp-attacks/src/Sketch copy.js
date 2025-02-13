@@ -1,6 +1,6 @@
 import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster} from 'paper';
 import paper from 'paper';
-import ReadBP from './ReadBP.js';
+import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
 import { useEffect, useState } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
@@ -209,7 +209,7 @@ export default function Sketch() {
         setNodeCard(node);
     }
 
-    
+    function runFault(){}
    
    
    function draw(event) {
