@@ -7,9 +7,10 @@ import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGrou
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
 import gateway from "./symbols/gateway.png";
-
+import inputOutput from "./symbols/inputOutput.png";
 
 export default function Sketch() {
+    
     const event_types = [
         "endEvent",
         "messageEndEvent",
@@ -30,6 +31,7 @@ export default function Sketch() {
         "exclusiveGateway",
         "inclusiveGateway"
     ]
+    
     
     
 
@@ -128,6 +130,9 @@ export default function Sketch() {
                 console.log('gateway');
                 type = new Raster('gateway-img');
                 
+            }
+            if (node_dict[node.id()].type === "InputOutputBinding"){
+                type = new Raster('inputOutput');
             }
 
             // When pressed on should show node information on the InfoCard
@@ -292,34 +297,9 @@ export default function Sketch() {
 
         <img id='event-img' src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/1200px-Circle_-_black_simple.svg.png' style={{display:"none"}} />
         <img id='gateway-img' src={gateway} style={{display:"none"}} />
-        
+        <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
 
-        {/* <Card sx={{position:'absolute', top: '0', right: '0', margin: '2%', width: '20%', maxHeight:'50%', overflow: 'auto'}}> 
-            <CardHeader 
-                    title={nodeCard ? nodeCard.uuid : "Unknown Node"}
-                    action={ 
-                        <IconButton 
-                            onClick={() => setOpen(!open)} 
-                            aria-label="expand"
-                            size="small"
-                        > 
-                            {open ? <KeyboardArrowUp/> 
-                                : <KeyboardArrowDown />}
-                        </IconButton> 
-                    } 
-            />
-            <Collapse in={open} >
-                <CardContent>
-                    {nodeCard ? Object.keys(nodeCard).map((key) => {
-                        if (nodeCard[key] === ''){
-                            return null;
-                        }
-                        return <p>{key}: {nodeCard[key].toString()}</p>
-                    }) : null}
-                </CardContent>
-            </Collapse>
-        </Card> */}
-
+    
         <ButtonGroup variant="contained" aria-label="Basic button group" 
             sx={{position:'absolute', 
                 bottom: '0', 
