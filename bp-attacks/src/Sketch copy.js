@@ -8,6 +8,10 @@ import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, C
 import cytoscape from "cytoscape";
 import gateway from "./symbols/gateway.png";
 import inputOutput from "./symbols/inputOutput.png";
+import CodeBlock from './CodeBlock.js';
+import RightSideBar from './RightSideBar.js';
+import LeftSideBar from './LeftSideBar.js';
+import PlayControls from './PlayControls.js';
 
 export default function Sketch() {
     
@@ -79,35 +83,40 @@ export default function Sketch() {
         const width = 150;
         const height = 100;
 
-        const rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
+        var rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
         rectOg.strokeColor = 'black';
         rectOg.fillColor = 'grey';
-        rectOg.visible = false;
-
+        rectOg.visible =false;
+        
 
 
         var rect = rectOg.clone();
-        rect.visible = true;
-
+        rect.visible =true;
         
         var label = new PointText();
-        label.content = json.nodes[0].name;
+        label.content = "BAD Node";
         label.scale(0.4);
         label.position = new Point(100+width/2,100+height/2);
+        label.visible = true;
 
         var task = new Group(rect, label);
-        task.position = new Point(100,100);
+        task.position = new Point(200,200);
+        task.visible = false;
         
         
 
         // Creates a dictionary of nodes with their uuid as the key
         var node_dict = {};
         json.nodes.forEach((node, index) => {
+
                 node_dict[node.uuid] = {};
+
                 Object.keys(node).forEach((key) => {
+                    console.log(key);
                     if (key !== 'uuid'){
                         node_dict[node.uuid][key] = node[key];
                     }
+
                 });
 
             
@@ -115,9 +124,11 @@ export default function Sketch() {
 
         
         var graph = graphLayout();
+        console.log(graph.nodes());
         graph.nodes().forEach((node) => { 
             var type = task.clone();
-
+            
+            
             type.children[1].content = node_dict[node.id()].name;
 
 
@@ -127,7 +138,6 @@ export default function Sketch() {
             }
             
             if (gateway_types.includes(node_dict[node.id()].type)){
-                console.log('gateway');
                 type = new Raster('gateway-img');
                 
             }
@@ -136,19 +146,33 @@ export default function Sketch() {
             }
 
             // When pressed on should show node information on the InfoCard
+            // Checks whether the mouse is dragged so that traversing won't change the info card.
+            var mouseDrag = false;
             type.onMouseDown = function(event){
-                toggleInfoCard(node_dict[node.id()]);
+                mouseDrag = false;
+            };
+
+            type.onMouseDrag = function(event){
+                mouseDrag = true;
+            };
+
+            type.onMouseUp = function(event){
+                if (!mouseDrag){
+                    toggleInfoCard(node_dict[node.id()]);
+                }
             };
 
             node_dict[node.id()].group = type;
             
             type.position.x = node.position().x*spacing;
             type.position.y = node.position().y*spacing;
-            console.log(type)
-
+            type.visible = true;
+           
         });
 
         createEdges(node_dict);
+        paper.view.draw()
+
    }
    const createEdges = (node_dict) => {
         // create edges
@@ -162,12 +186,6 @@ export default function Sketch() {
             new_edge.add(node_dict[edge.targetRef].group.position);
 
 
-            var end_pos = node_dict[edge.targetRef].group.position;
-            
-            end_pos.x += 10;
-            end_pos.y += 10;
-            
-            new_edge.add(end_pos);
             new_edge.strokeColor = 'blue';
             new_edge.strokeWidth = 5;
         });
@@ -176,6 +194,7 @@ export default function Sketch() {
    }
    const convertToGraph = () => {
         var graph = {elements: []};
+        
         json.nodes.forEach((node) => {
             graph.elements.push({data: {id: node.uuid}});
         });
@@ -201,9 +220,7 @@ export default function Sketch() {
         return cy;
     }
 
-    useEffect(() => {
-        graphLayout();
-    }, []);
+
 
     const toggleInfoCard = (node) => {
         setNodeCard(node);
@@ -216,101 +233,18 @@ export default function Sketch() {
        // animation loop
    }
 
-   return (<> 
+   return (
+        <> 
 
-        <Box sx={{ position: "absolute", left: 0, top: 0, maxHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "flex-start", paddingTop:2}}>
-            <Button 
-                onClick={() => {setOpenLeft(!openLeft)}} 
-                variant="contained" 
-                color='primary'
-                sx={{ 
-                mb: 1, 
-                borderTopLeftRadius: 0, 
-                borderBottomLeftRadius: 0, 
-                borderTopRightRadius: 8, 
-                borderBottomRightRadius: 8,
-                backgroundColor:'rgb(64, 64, 64)'
-                }}
-            >
-                {openLeft ? <ChevronLeftRounded/> : <ChevronRightRounded/>}
-            </Button>
-            <Collapse in={openLeft} orientation="horizontal">
-                <Card sx={{ width: 240, 
-                    boxShadow: 3, 
-                    borderTopLeftRadius: 0, 
-                    borderBottomLeftRadius: 0, 
-                    borderTopRightRadius: 8, 
-                    borderBottomRightRadius: 8,
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)' }}>
-                <CardContent sx={{color: 'white'}}>
-                    <Typography variant="h6">Menu</Typography>
-                    <Typography variant="body2">Item 1</Typography>
-                    <Typography variant="body2">Item 2</Typography>
-                    <Typography variant="body2">Item 3</Typography>
-                </CardContent>
-                </Card>
-            </Collapse>
-        </Box>
-
-
-
-        <Box sx={{ position: "absolute", right: 0, top: 0, maxHeight: "50vh",display: "flex", flexDirection: "column", alignItems: "flex-end", paddingTop:2}}>
-            <Button 
-                onClick={() => {setOpenRight(!openRight)}} 
-                variant="contained" 
-                
-                sx={{ 
-                mb: 1, 
-                borderTopLeftRadius: 8, 
-                borderBottomLeftRadius: 8, 
-                borderTopRightRadius: 0, 
-                borderBottomRightRadius: 0,
-                backgroundColor:'rgb(64, 64, 64)'
-                
-                }}
-            >
-                {openRight ? <ChevronRightRounded/> : <ChevronLeftRounded/>}
-            </Button>
-            <Collapse in={openRight} orientation="horizontal">
-                <Card sx={{ width: '30vw', 
-                    boxShadow: 3, 
-                    borderTopLeftRadius: 8, 
-                    borderBottomLeftRadius: 8, 
-                    borderTopRightRadius: 0, 
-                    borderBottomRightRadius: 0,
-                    maxHeight: "50vh", 
-                    overflow:"auto",
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)'}}>
-                <CardContent sx={{color: 'white', fontFamily: 'monospace'}}>
-                    <Typography variant="h6">Selected Node Info</Typography>
-                    {nodeCard ? Object.keys(nodeCard).map((key) => {
-                        if (nodeCard[key] === ''){
-                            return null;
-                        }
-                        return <p>{key}: {nodeCard[key].toString()}</p>
-                    }) : null}
-                </CardContent>
-                </Card>
-            </Collapse>
-        </Box>
-
+        <LeftSideBar openLeft={openLeft} />
+        <RightSideBar nodeCard={nodeCard} />
 
         <img id='event-img' src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/1200px-Circle_-_black_simple.svg.png' style={{display:"none"}} />
         <img id='gateway-img' src={gateway} style={{display:"none"}} />
         <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
 
     
-        <ButtonGroup variant="contained" aria-label="Basic button group" 
-            sx={{position:'absolute', 
-                bottom: '0', 
-                right: '0', 
-                margin: '2%', 
-                width: '10%',
-                backgroundColor: 'rgb(64, 64, 64)'}} >
-            <Button><SkipPrevious/></Button>
-            <Button> <PlayArrow/> </Button>
-            <Button><SkipNext/></Button>
-        </ButtonGroup>
+        <PlayControls/>
         
         </>
    );
