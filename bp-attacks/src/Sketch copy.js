@@ -6,8 +6,14 @@ import { useEffect, useState } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
+
 import gateway from "./symbols/gateway.png";
 import inputOutput from "./symbols/inputOutput.png";
+import inputOutputFault from "./symbols/inputOutputFault.png";
+import gatewayFault from "./symbols/gatewayFault.png";
+import eventFault from "./symbols/eventFault.png";
+import eventSymbol from "./symbols/event.png";
+
 import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
 import LeftSideBar from './LeftSideBar.js';
@@ -44,7 +50,14 @@ export default function Sketch() {
     const [open, setOpen] = useState(false);
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
-    const spacing = 8;
+    const spacing = 10;
+
+    window.onresize = function(event) {
+
+        document.getElementById('paper-canvas').style.height = window.innerHeight;
+        document.getElementById('paper-canvas').style.height = window.innerHeight;
+    }
+        
 
    window.onload = function() {
 
@@ -52,7 +65,7 @@ export default function Sketch() {
 
        
 
-        createRect();
+        drawGraph();
         
         var tool = new Tool();
         
@@ -76,7 +89,7 @@ export default function Sketch() {
 
 
 
-   const createRect = () => {
+   const drawGraph = () => {
 
    
 
@@ -112,7 +125,6 @@ export default function Sketch() {
                 node_dict[node.uuid] = {};
 
                 Object.keys(node).forEach((key) => {
-                    console.log(key);
                     if (key !== 'uuid'){
                         node_dict[node.uuid][key] = node[key];
                     }
@@ -124,23 +136,21 @@ export default function Sketch() {
 
         
         var graph = graphLayout();
-        console.log(graph.nodes());
         graph.nodes().forEach((node) => { 
             var type = task.clone();
-            
             
             type.children[1].content = node_dict[node.id()].name;
 
 
             if (event_types.includes(node_dict[node.id()].type )){
                 type = new Raster('event-img');
-                type.scale(0.1);
             }
             
             if (gateway_types.includes(node_dict[node.id()].type)){
                 type = new Raster('gateway-img');
                 
             }
+
             if (node_dict[node.id()].type === "InputOutputBinding"){
                 type = new Raster('inputOutput');
             }
@@ -171,11 +181,14 @@ export default function Sketch() {
         });
 
         createEdges(node_dict);
-        paper.view.draw()
+
+        runFault("fault", node_dict);
+
 
    }
    const createEdges = (node_dict) => {
         // create edges
+        var edge_dict = {};
         json.edges.forEach((edge) => {
 
             var new_edge = new Path();
@@ -188,7 +201,9 @@ export default function Sketch() {
 
             new_edge.strokeColor = 'blue';
             new_edge.strokeWidth = 5;
+            edge_dict[edge.id] = new_edge;
         });
+        console.log(edge_dict);
     
 
    }
@@ -216,17 +231,39 @@ export default function Sketch() {
         });
             
         layout.run();
-
+        
         return cy;
     }
 
-
+    const runFault =  function(fault, node_dict) {
+        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
+            if (node_dict[node]){
+                if (node_dict.type === "InputOutputBinding"){
+                    node_dict[node].group.source = inputOutputFault;
+                    return;
+                } 
+                if (gateway_types.includes(node_dict[node].type)){
+                    node_dict[node].group.source = gatewayFault;
+                    return;
+                }
+                if (event_types.includes(node_dict[node].type)){
+                    node_dict[node].group.source = eventFault;
+                    return;
+                }
+            
+                node_dict[node].group.children[0].fillColor = 'red';
+            }
+        });
+        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
+    }
 
     const toggleInfoCard = (node) => {
         setNodeCard(node);
     }
 
-    function runFault(){}
+    
+
+
    
    
    function draw(event) {
@@ -239,9 +276,12 @@ export default function Sketch() {
         <LeftSideBar openLeft={openLeft} />
         <RightSideBar nodeCard={nodeCard} />
 
-        <img id='event-img' src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/1200px-Circle_-_black_simple.svg.png' style={{display:"none"}} />
+        <img id='event-img' src={eventSymbol} style={{display:"none"}} />
         <img id='gateway-img' src={gateway} style={{display:"none"}} />
+        <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />
         <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
+        <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
+
 
     
         <PlayControls/>
