@@ -2,7 +2,7 @@ import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
@@ -50,10 +50,13 @@ export default function Sketch() {
     const [open, setOpen] = useState(false);
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
+    //const [faultPath, setFaultPath] = useState([]);
+    const faultPathRef = useRef([]);
     const spacing = 10;
+    const stageRef = useRef(0);
 
     window.onresize = function(event) {
-
+ 
         document.getElementById('paper-canvas').style.height = window.innerHeight;
         document.getElementById('paper-canvas').style.height = window.innerHeight;
     }
@@ -107,7 +110,7 @@ export default function Sketch() {
         rect.visible =true;
         
         var label = new PointText();
-        label.content = "BAD Node";
+        label.content = "";
         label.scale(0.4);
         label.position = new Point(100+width/2,100+height/2);
         label.visible = true;
@@ -180,7 +183,7 @@ export default function Sketch() {
            
         });
         paper.view.center = graph.nodes()[0].position();
-        console.log(paper.view.center);
+        //console.log(paper.view.center);
         const edge_dict = createEdges(node_dict);
 
         runFault("fault", node_dict, edge_dict);
@@ -238,29 +241,54 @@ export default function Sketch() {
     }
 
     const runFault =  function(fault, node_dict, edge_dict) {
+
+        // Loops through the execution path and changes the color of the nodes and edges
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
             if (node_dict[node]){
-                if (node_dict.type === "InputOutputBinding"){
-                    node_dict[node].group.source = inputOutputFault;
-                    return;
-                } 
-                if (gateway_types.includes(node_dict[node].type)){
-                    node_dict[node].group.source = gatewayFault;
-                    return;
-                }
-                if (event_types.includes(node_dict[node].type)){
-                    node_dict[node].group.source = eventFault;
-                    return;
-                }
-            
-                node_dict[node].group.children[0].fillColor = 'red';
+                faultPathRef.current.push(node_dict[node]);
             }
             if (edge_dict[node]){
-                edge_dict[node].strokeColor = 'red';
-                edge_dict[node].strokeWidth = 10;
+                faultPathRef.current.push(edge_dict[node]);
             }
         });
+
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
+        
+        paper.view.onFrame = (event) => {
+            
+            var stage = stageRef.current;
+            var faultPath = faultPathRef.current;
+            if (event.time >= stageRef.current){
+                if (faultPath[stageRef.current+1]){
+                    stageRef.current += 1;
+                }
+                if (faultPath[stage].group){
+                    
+                    if (faultPath[stage].type === "InputOutputBinding"){
+                        faultPath[stage].group.source = inputOutputFault;
+                        return;
+                    } 
+                    if (gateway_types.includes(faultPath[stage].type)){
+                        faultPath[stage].group.source = gatewayFault;
+                        return;
+                    }
+                    if (event_types.includes(faultPath[stage].type)){
+                        faultPath[stage].group.source = eventFault;
+                        return;
+                    }
+                    faultPath[stage].group.children[0].fillColor = 'red';
+                
+                }
+                if (faultPath[stage].visible){ 
+                    faultPath[stage].strokeColor ='red';
+                    faultPath[stage].strokeWidth = 10;
+                    }
+                
+                 
+            
+                }
+            //edge_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].strokeColor = 'blue';
+        };
     }
 
     const toggleInfoCard = (node) => {
@@ -269,7 +297,7 @@ export default function Sketch() {
 
     
 
-
+    
    
    
    function draw(event) {
