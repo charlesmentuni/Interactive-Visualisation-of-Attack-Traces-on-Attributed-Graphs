@@ -3,6 +3,13 @@ import { PlayArrow, SkipNext, SkipPrevious } from '@mui/icons-material';
 
 
 export default function PlayControls() {
+
+    const runFault = (fault) =>{
+        // Should take in fault in the form given by json file
+        
+    }
+
+
     return (<ButtonGroup variant="contained" aria-label="Basic button group" 
         sx={{position:'absolute', 
             bottom: '0', 

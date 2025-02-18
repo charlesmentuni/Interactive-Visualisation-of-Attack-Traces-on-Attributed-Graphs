@@ -179,10 +179,11 @@ export default function Sketch() {
             type.visible = true;
            
         });
+        paper.view.center = graph.nodes()[0].position();
+        console.log(paper.view.center);
+        const edge_dict = createEdges(node_dict);
 
-        createEdges(node_dict);
-
-        runFault("fault", node_dict);
+        runFault("fault", node_dict, edge_dict);
 
 
    }
@@ -200,10 +201,11 @@ export default function Sketch() {
 
 
             new_edge.strokeColor = 'blue';
-            new_edge.strokeWidth = 5;
+            new_edge.strokeWidth = 4;
             edge_dict[edge.id] = new_edge;
+
         });
-        console.log(edge_dict);
+        return edge_dict;
     
 
    }
@@ -235,7 +237,7 @@ export default function Sketch() {
         return cy;
     }
 
-    const runFault =  function(fault, node_dict) {
+    const runFault =  function(fault, node_dict, edge_dict) {
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
             if (node_dict[node]){
                 if (node_dict.type === "InputOutputBinding"){
@@ -252,6 +254,10 @@ export default function Sketch() {
                 }
             
                 node_dict[node].group.children[0].fillColor = 'red';
+            }
+            if (edge_dict[node]){
+                edge_dict[node].strokeColor = 'red';
+                edge_dict[node].strokeWidth = 10;
             }
         });
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
