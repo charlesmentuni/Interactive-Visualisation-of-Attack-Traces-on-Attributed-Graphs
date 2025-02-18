@@ -54,6 +54,14 @@ export default function Sketch() {
     const faultPathRef = useRef([]);
     const spacing = 10;
     const stageRef = useRef(0);
+    const playing = useRef(false);
+    const elapsedTime = useRef(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const onPlay = () => {
+        playing.current = !playing.current;
+        setIsPlaying(!isPlaying);
+    }
 
     window.onresize = function(event) {
  
@@ -187,6 +195,7 @@ export default function Sketch() {
         const edge_dict = createEdges(node_dict);
 
         runFault("fault", node_dict, edge_dict);
+        paper.view.pause();
 
 
    }
@@ -255,39 +264,43 @@ export default function Sketch() {
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
         
         paper.view.onFrame = (event) => {
-            
-            var stage = stageRef.current;
-            var faultPath = faultPathRef.current;
-            if (event.time >= stageRef.current){
-                if (faultPath[stageRef.current+1]){
-                    stageRef.current += 1;
-                }
-                if (faultPath[stage].group){
+
+            if (playing.current){
+                
+                var stage = stageRef.current;
+                var faultPath = faultPathRef.current;
+
+                if (elapsedTime.current >= 1){
+                    elapsedTime.current = 0;
+                    if (faultPath[stageRef.current+1]){
+                        stageRef.current += 1;
+                    }
+                    if (faultPath[stage].group){
+                        
+                        if (faultPath[stage].type === "InputOutputBinding"){
+                            faultPath[stage].group.source = inputOutputFault;
+                            return;
+                        } 
+                        if (gateway_types.includes(faultPath[stage].type)){
+                            faultPath[stage].group.source = gatewayFault;
+                            return;
+                        }
+                        if (event_types.includes(faultPath[stage].type)){
+                            faultPath[stage].group.source = eventFault;
+                            return;
+                        }
+                        faultPath[stage].group.children[0].fillColor = 'red';
                     
-                    if (faultPath[stage].type === "InputOutputBinding"){
-                        faultPath[stage].group.source = inputOutputFault;
-                        return;
-                    } 
-                    if (gateway_types.includes(faultPath[stage].type)){
-                        faultPath[stage].group.source = gatewayFault;
-                        return;
                     }
-                    if (event_types.includes(faultPath[stage].type)){
-                        faultPath[stage].group.source = eventFault;
-                        return;
+                    if (faultPath[stage].visible){ 
+                        faultPath[stage].strokeColor ='red';
+                        faultPath[stage].strokeWidth = 10;
                     }
-                    faultPath[stage].group.children[0].fillColor = 'red';
-                
+
                 }
-                if (faultPath[stage].visible){ 
-                    faultPath[stage].strokeColor ='red';
-                    faultPath[stage].strokeWidth = 10;
-                    }
-                
-                 
             
-                }
-            //edge_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].strokeColor = 'blue';
+            elapsedTime.current += event.delta;
+           }
         };
     }
 
@@ -296,7 +309,18 @@ export default function Sketch() {
     }
 
     
-
+    useEffect(() =>{
+        console.log("something happended")
+        if (playing.current && paper.view){
+            console.log("Playing");
+            paper.view.play();
+            return;
+        }
+        if (paper.view){
+            paper.view.pause();
+        }
+        
+    }, [isPlaying, paper.view]);
     
    
    
@@ -318,7 +342,7 @@ export default function Sketch() {
 
 
     
-        <PlayControls/>
+        <PlayControls onPlay={onPlay}/>
         
         </>
    );
