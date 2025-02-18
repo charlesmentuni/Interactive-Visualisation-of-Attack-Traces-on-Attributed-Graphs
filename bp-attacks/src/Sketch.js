@@ -2,37 +2,91 @@ import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
 
+import gateway from "./symbols/gateway.png";
+import inputOutput from "./symbols/inputOutput.png";
+import inputOutputFault from "./symbols/inputOutputFault.png";
+import gatewayFault from "./symbols/gatewayFault.png";
+import eventFault from "./symbols/eventFault.png";
+import eventSymbol from "./symbols/event.png";
 
+import CodeBlock from './CodeBlock.js';
+import RightSideBar from './RightSideBar.js';
+import LeftSideBar from './LeftSideBar.js';
+import PlayControls from './PlayControls.js';
 
 export default function Sketch() {
-   
+    
+    const event_types = [
+        "endEvent",
+        "messageEndEvent",
+        "startEvent",
+        "timerStartEvent",
+        "messageStartEvent",
+        "catchEvent",
+        "throwEvent",
+        "boundaryEvent",
+        "intermediateCatchEvent",
+        "intermediateThrowEvent"
+    ]
+
+    const gateway_types = [
+        "eventBasedGateway",
+        "complexGateway",
+        "parallelGateway",
+        "exclusiveGateway",
+        "inclusiveGateway"
+    ]
+    
+    
+    
+
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
     const [open, setOpen] = useState(false);
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
-    const spacing = 8;
+    //const [faultPath, setFaultPath] = useState([]);
+    const faultPathRef = useRef([]);
+    const spacing = 10;
+    const stageRef = useRef(0);
+    const playing = useRef(false);
+    const elapsedTime = useRef(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const onPlay = () => {
+        playing.current = !playing.current;
+        setIsPlaying(!isPlaying);
+    }
+
+    // This is an attempt to resize the window to fit the canvas, but it doesn't work
+    window.onresize = function(event) {
+ 
+        document.getElementById('paper-canvas').style.height = window.innerHeight;
+        document.getElementById('paper-canvas').style.height = window.innerHeight;
+    }
+        
 
    window.onload = function() {
 
         paper.setup('paper-canvas');
 
-       
 
-        createRect();
+        drawGraph();
         
         var tool = new Tool();
         
+        // These are functions for users to observe the canvas
+        // DRAGGING
         tool.onMouseDrag = function(event){
             var delta = event.downPoint.subtract(event.point)
             paper.view.scrollBy(delta)
       }
-
+        //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'w'){
                 paper.view.zoom *= 1.2;
@@ -44,115 +98,137 @@ export default function Sketch() {
             }
         }
 
+       
    }
 
 
 
-   const createRect = () => {
+   const drawGraph = () => {
 
+   
 
-        const start = 100;
         const width = 150;
         const height = 100;
-        const gap = 100;
 
-        const rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
+        var rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
         rectOg.strokeColor = 'black';
-        rectOg.visible = false;
+        rectOg.fillColor = 'grey';
+        rectOg.visible =false;
+        
+
 
         var rect = rectOg.clone();
-        rect.visible = true;
-
+        rect.visible =true;
+        
         var label = new PointText();
-        label.content = json.nodes[0].uuid;
+        label.content = "";
         label.scale(0.4);
         label.position = new Point(100+width/2,100+height/2);
+        label.visible = true;
 
-        var group = new Group(rect, label);
+        var task = new Group(rect, label);
+        task.position = new Point(200,200);
+        task.visible = false;
+        
+        
 
         // Creates a dictionary of nodes with their uuid as the key
         var node_dict = {};
         json.nodes.forEach((node, index) => {
+
                 node_dict[node.uuid] = {};
+
                 Object.keys(node).forEach((key) => {
                     if (key !== 'uuid'){
                         node_dict[node.uuid][key] = node[key];
                     }
+
                 });
 
             
         })
 
         
-        /* json.nodes.forEach((node, index) => {
-
-            node_dict[node.uuid].group = group;
-
-                group.onMouseDown = function(event){
-                    toggleInfoCard(node);
-                };
-                group.children[0].fillColor = 'grey';
-                group.children[1].content = node.uuid;
-                group.position.x = (index%5)*(width+gap)+start;
-                group.position.y = (Math.floor(index/5))*(height+gap)+start;
-                group = group.clone();
-
-        }); */
-        
         var graph = graphLayout();
         graph.nodes().forEach((node) => { 
-
-            node_dict[node.id()].group = group;
+            var type = task.clone();
             
-            group.onMouseDown = function(event){
+            type.children[1].content = node_dict[node.id()].name;
 
-                toggleInfoCard(node_dict[node.id()]);
-                //console.log(node_dict[node.id()]);
+
+            if (event_types.includes(node_dict[node.id()].type )){
+                type = new Raster('event-img');
+            }
+            
+            if (gateway_types.includes(node_dict[node.id()].type)){
+                type = new Raster('gateway-img');
+                
+            }
+
+            if (node_dict[node.id()].type === "InputOutputBinding"){
+                type = new Raster('inputOutput');
+            }
+
+            // When pressed on should show node information on the InfoCard
+            // Checks whether the mouse is dragged so that traversing won't change the info card.
+            var mouseDrag = false;
+            type.onMouseDown = function(event){
+                mouseDrag = false;
             };
 
-            group.children[0].fillColor = 'grey';
-            group.children[1].content = node.id();
-            if (node_dict[node.id()].type === 'startvent'){
-                group.children[0] = new Raster('event-img');
-                group.children[0].scale(0.1);
+            type.onMouseDrag = function(event){
+                mouseDrag = true;
+            };
 
-            }
-            group.position.x = node.position().x*spacing;
-            group.position.y = node.position().y*spacing;
-            group = group.clone();
+            type.onMouseUp = function(event){
+                if (!mouseDrag){
+                    toggleInfoCard(node_dict[node.id()]);
+                }
+            };
+
+            node_dict[node.id()].group = type;
+            
+            type.position.x = node.position().x*spacing;
+            type.position.y = node.position().y*spacing;
+            type.visible = true;
+           
         });
-
-        // Create a raster item using the image tag with id='mona'
-        //var raster = new Raster('event-img');
-        
-        // Move the raster to the center of the view
-        
-        // Scale the raster by 50%
+        paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
 
-        createEdges(node_dict);
+        const edge_dict = createEdges(node_dict);
+
+        // This needs to be changed to cover different faults
+        runFault("fault", node_dict, edge_dict);
+        paper.view.pause();
+
+
    }
    const createEdges = (node_dict) => {
         // create edges
+        var edge_dict = {};
         json.edges.forEach((edge) => {
 
             var new_edge = new Path();
-            new_edge.add(node_dict[edge.sourceRef].group.children[0].position);
-            new_edge.add(node_dict[edge.targetRef].group.children[0].position);
-            var end_pos = node_dict[edge.targetRef].group.children[0].position;
-            
-            end_pos.x += 10;
-            end_pos.y += 10;
-            
-            new_edge.add(end_pos);
-            new_edge.strokeColor = 'black';
-            new_edge.strokeWidth = 10;
+
+            new_edge.add(node_dict[edge.sourceRef].group.position);
+            var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
+            new_edge.add(point);
+            new_edge.add(node_dict[edge.targetRef].group.position);
+
+
+            new_edge.strokeColor = 'blue';
+            new_edge.strokeWidth = 4;
+            edge_dict[edge.id] = new_edge;
+
         });
+        return edge_dict;
     
 
    }
    const convertToGraph = () => {
         var graph = {elements: []};
+        
         json.nodes.forEach((node) => {
             graph.elements.push({data: {id: node.uuid}});
         });
@@ -174,18 +250,82 @@ export default function Sketch() {
         });
             
         layout.run();
-
+        
         return cy;
     }
 
-    useEffect(() => {
-        graphLayout();
-    }, []);
+    const runFault =  function(fault, node_dict, edge_dict) {
+
+        // Loops through the execution path and changes the color of the nodes and edges
+        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
+            if (node_dict[node]){
+                faultPathRef.current.push(node_dict[node]);
+            }
+            if (edge_dict[node]){
+                faultPathRef.current.push(edge_dict[node]);
+            }
+        });
+
+        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
+        
+        paper.view.onFrame = (event) => {
+
+            if (playing.current){
+                
+                var stage = stageRef.current;
+                var faultPath = faultPathRef.current;
+
+                if (elapsedTime.current >= 1){
+                    elapsedTime.current = 0;
+                    if (faultPath[stageRef.current+1]){
+                        stageRef.current += 1;
+                    }
+                    // maybe put this in a separate function
+                    // because then you can call it from previous and next buttons
+                    if (faultPath[stage].group){
+                    
+                        if (faultPath[stage].type === "InputOutputBinding"){
+                            faultPath[stage].group.source = inputOutputFault;
+                            return;
+                        } 
+                        if (gateway_types.includes(faultPath[stage].type)){
+                            faultPath[stage].group.source = gatewayFault;
+                            return;
+                        }
+                        if (event_types.includes(faultPath[stage].type)){
+                            faultPath[stage].group.source = eventFault;
+                            return;
+                        }
+                        faultPath[stage].group.children[0].fillColor = 'red';
+                    
+                    }
+                    if (faultPath[stage].visible){ 
+                        faultPath[stage].strokeColor ='red';
+                        faultPath[stage].strokeWidth = 10;
+                    }
+
+                }
+            
+            elapsedTime.current += event.delta;
+           }
+        };
+    }
 
     const toggleInfoCard = (node) => {
         setNodeCard(node);
     }
 
+    
+    useEffect(() =>{
+        if (playing.current && paper.view){
+            paper.view.play();
+            return;
+        }
+        if (paper.view){
+            paper.view.pause();
+        }
+        
+    }, [isPlaying, paper.view]);
     
    
    
@@ -193,124 +333,21 @@ export default function Sketch() {
        // animation loop
    }
 
-   return (<> 
+   return (
+        <> 
 
-        <Box sx={{ position: "absolute", left: 0, top: 0, maxHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "flex-start", paddingTop:2}}>
-            <Button 
-                onClick={() => {setOpenLeft(!openLeft)}} 
-                variant="contained" 
-                color='primary'
-                sx={{ 
-                mb: 1, 
-                borderTopLeftRadius: 0, 
-                borderBottomLeftRadius: 0, 
-                borderTopRightRadius: 8, 
-                borderBottomRightRadius: 8,
-                backgroundColor:'rgb(64, 64, 64)'
-                }}
-            >
-                {openLeft ? <ChevronLeftRounded/> : <ChevronRightRounded/>}
-            </Button>
-            <Collapse in={openLeft} orientation="horizontal">
-                <Card sx={{ width: 240, 
-                    boxShadow: 3, 
-                    borderTopLeftRadius: 0, 
-                    borderBottomLeftRadius: 0, 
-                    borderTopRightRadius: 8, 
-                    borderBottomRightRadius: 8,
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)' }}>
-                <CardContent sx={{color: 'white'}}>
-                    <Typography variant="h6">Menu</Typography>
-                    <Typography variant="body2">Item 1</Typography>
-                    <Typography variant="body2">Item 2</Typography>
-                    <Typography variant="body2">Item 3</Typography>
-                </CardContent>
-                </Card>
-            </Collapse>
-        </Box>
+        <LeftSideBar openLeft={openLeft} />
+        <RightSideBar nodeCard={nodeCard} />
+
+        <img id='event-img' src={eventSymbol} style={{display:"none"}} />
+        <img id='gateway-img' src={gateway} style={{display:"none"}} />
+        <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />
+        <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
+        <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
 
 
-
-        <Box sx={{ position: "absolute", right: 0, top: 0, maxHeight: "50vh",display: "flex", flexDirection: "column", alignItems: "flex-end", paddingTop:2}}>
-            <Button 
-                onClick={() => {setOpenRight(!openRight)}} 
-                variant="contained" 
-                
-                sx={{ 
-                mb: 1, 
-                borderTopLeftRadius: 8, 
-                borderBottomLeftRadius: 8, 
-                borderTopRightRadius: 0, 
-                borderBottomRightRadius: 0,
-                backgroundColor:'rgb(64, 64, 64)'
-                
-                }}
-            >
-                {openRight ? <ChevronRightRounded/> : <ChevronLeftRounded/>}
-            </Button>
-            <Collapse in={openRight} orientation="horizontal">
-                <Card sx={{ width: '30vw', 
-                    boxShadow: 3, 
-                    borderTopLeftRadius: 8, 
-                    borderBottomLeftRadius: 8, 
-                    borderTopRightRadius: 0, 
-                    borderBottomRightRadius: 0,
-                    maxHeight: "50vh", 
-                    overflow:"auto",
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)'}}>
-                <CardContent sx={{color: 'white', fontFamily: 'monospace'}}>
-                    <Typography variant="h6">Selected Node Info</Typography>
-                    {nodeCard ? Object.keys(nodeCard).map((key) => {
-                        if (nodeCard[key] === ''){
-                            return null;
-                        }
-                        return <p>{key}: {nodeCard[key].toString()}</p>
-                    }) : null}
-                </CardContent>
-                </Card>
-            </Collapse>
-        </Box>
-
-
-        <img id='event-img' src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/1200px-Circle_-_black_simple.svg.png' style={{display:"none"}} />
-
-        {/* <Card sx={{position:'absolute', top: '0', right: '0', margin: '2%', width: '20%', maxHeight:'50%', overflow: 'auto'}}> 
-            <CardHeader 
-                    title={nodeCard ? nodeCard.uuid : "Unknown Node"}
-                    action={ 
-                        <IconButton 
-                            onClick={() => setOpen(!open)} 
-                            aria-label="expand"
-                            size="small"
-                        > 
-                            {open ? <KeyboardArrowUp/> 
-                                : <KeyboardArrowDown />}
-                        </IconButton> 
-                    } 
-            />
-            <Collapse in={open} >
-                <CardContent>
-                    {nodeCard ? Object.keys(nodeCard).map((key) => {
-                        if (nodeCard[key] === ''){
-                            return null;
-                        }
-                        return <p>{key}: {nodeCard[key].toString()}</p>
-                    }) : null}
-                </CardContent>
-            </Collapse>
-        </Card> */}
-
-        <ButtonGroup variant="contained" aria-label="Basic button group" 
-            sx={{position:'absolute', 
-                bottom: '0', 
-                right: '0', 
-                margin: '2%', 
-                width: '10%',
-                backgroundColor: 'rgb(64, 64, 64)'}} >
-            <Button><SkipPrevious/></Button>
-            <Button> <PlayArrow/> </Button>
-            <Button><SkipNext/></Button>
-        </ButtonGroup>
+    
+        <PlayControls onPlay={onPlay}/>
         
         </>
    );

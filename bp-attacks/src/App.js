@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import Sketch from './Sketch copy';
+import Sketch from './Sketch';
 import paper from 'paper';
 import ShowCodeBlock from './CodeBlock';
 
