@@ -63,6 +63,7 @@ export default function Sketch() {
         setIsPlaying(!isPlaying);
     }
 
+    // This is an attempt to resize the window to fit the canvas, but it doesn't work
     window.onresize = function(event) {
  
         document.getElementById('paper-canvas').style.height = window.innerHeight;
@@ -74,17 +75,18 @@ export default function Sketch() {
 
         paper.setup('paper-canvas');
 
-       
 
         drawGraph();
         
         var tool = new Tool();
         
+        // These are functions for users to observe the canvas
+        // DRAGGING
         tool.onMouseDrag = function(event){
             var delta = event.downPoint.subtract(event.point)
             paper.view.scrollBy(delta)
       }
-
+        //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'w'){
                 paper.view.zoom *= 1.2;
@@ -96,6 +98,7 @@ export default function Sketch() {
             }
         }
 
+       
    }
 
 
@@ -190,10 +193,12 @@ export default function Sketch() {
             type.visible = true;
            
         });
-        paper.view.center = graph.nodes()[0].position();
-        //console.log(paper.view.center);
+        paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
+        
+
         const edge_dict = createEdges(node_dict);
 
+        // This needs to be changed to cover different faults
         runFault("fault", node_dict, edge_dict);
         paper.view.pause();
 
@@ -275,8 +280,10 @@ export default function Sketch() {
                     if (faultPath[stageRef.current+1]){
                         stageRef.current += 1;
                     }
+                    // maybe put this in a separate function
+                    // because then you can call it from previous and next buttons
                     if (faultPath[stage].group){
-                        
+                    
                         if (faultPath[stage].type === "InputOutputBinding"){
                             faultPath[stage].group.source = inputOutputFault;
                             return;
@@ -310,9 +317,7 @@ export default function Sketch() {
 
     
     useEffect(() =>{
-        console.log("something happended")
         if (playing.current && paper.view){
-            console.log("Playing");
             paper.view.play();
             return;
         }
