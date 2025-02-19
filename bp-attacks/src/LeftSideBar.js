@@ -32,10 +32,10 @@ export default function LeftSideBar() {
                 borderBottomRightRadius: 8,
                 backgroundColor: 'rgba(0, 0, 0, 0.75)' }}>
             <CardContent sx={{color: 'white'}}>
-                <Typography variant="h6">Menu</Typography>
-                <Typography variant="body2">Item 1</Typography>
-                <Typography variant="body2">Item 2</Typography>
-                <Typography variant="body2">Item 3</Typography>
+                <Typography variant="h6">Import Attributed Graph</Typography>
+                <Typography variant="body2">Speed: 1x</Typography>
+                <Typography variant="body2">Style</Typography>
+                <Typography variant="body2">Unlock All</Typography>
             </CardContent>
             </Card>
         </Collapse>

@@ -161,7 +161,7 @@ export default function Sketch() {
             // This is used to wrap the text inside the node
         
             var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
-            console.log(label);
+            
             const numChars = 20;
             if (label){
                 
@@ -217,8 +217,8 @@ export default function Sketch() {
         
         paper.project.activeLayer.insertAbove(new Layer());
         //edgeLayer.activate();
-        console.log(paper.project.layers);
-        console.log(paper.project.activeLayer);
+    
+        paper.view.draw(); 
         const edge_dict = createEdges(node_dict);
 
         // This needs to be changed to cover different faults
