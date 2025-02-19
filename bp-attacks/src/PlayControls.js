@@ -9,6 +9,8 @@ export default function PlayControls({onPlay}) {
         
     }
     const [playing, setPlaying] = useState(false);
+    const [prevDisabled, setPrevDisabled] = useState(false);
+    const [nextDisabled, setNextDisabled] = useState(false);
 
     return (<ButtonGroup variant="contained" aria-label="Basic button group" 
         sx={{position:'absolute', 
@@ -17,12 +19,14 @@ export default function PlayControls({onPlay}) {
             margin: '2%', 
             width: '10%',
             backgroundColor: 'rgb(64, 64, 64)'}} >
-        <Button><SkipPrevious/></Button>
+        <Button disabled={prevDisabled}><SkipPrevious/></Button>
         <Button onClick={() => {
             onPlay();
             setPlaying(!playing);
+            setNextDisabled(!nextDisabled);
+            setPrevDisabled(!prevDisabled);
             }}> 
             {playing ? <PauseSharp/> : <PlayArrow/>}</Button>
-        <Button><SkipNext/></Button>
+        <Button disabled={nextDisabled}><SkipNext/></Button>
     </ButtonGroup>);
 }

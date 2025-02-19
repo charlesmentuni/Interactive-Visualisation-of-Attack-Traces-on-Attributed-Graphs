@@ -1,4 +1,4 @@
-import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster} from 'paper';
+import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
@@ -6,6 +6,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
+import klay from "cytoscape-klay";
+
 
 import gateway from "./symbols/gateway.png";
 import inputOutput from "./symbols/inputOutput.png";
@@ -43,6 +45,7 @@ export default function Sketch() {
     ]
     
     
+
     
 
     // Contains dictionary of node information that has just been clicked on
@@ -75,7 +78,8 @@ export default function Sketch() {
 
         paper.setup('paper-canvas');
 
-
+        const nodeLayer  = paper.project.activeLayer;
+        nodeLayer.activate();
         drawGraph();
         
         var tool = new Tool();
@@ -104,13 +108,13 @@ export default function Sketch() {
 
 
    const drawGraph = () => {
-
+        console.log(paper.project.layers);
    
 
         const width = 150;
         const height = 100;
 
-        var rectOg = new Path.Rectangle(new Point(100,100), new Size(width, height));
+        var rectOg = new Path.Rectangle(new Point(0,0), new Size(width, height));
         rectOg.strokeColor = 'black';
         rectOg.fillColor = 'grey';
         rectOg.visible =false;
@@ -122,8 +126,9 @@ export default function Sketch() {
         
         var label = new PointText();
         label.content = "";
-        label.scale(0.4);
-        label.position = new Point(100+width/2,100+height/2);
+        label.scale(1);
+        label.position = new Point(0,height/2);
+        label.fontFamily = 'Roboto Mono';
         label.visible = true;
 
         var task = new Group(rect, label);
@@ -153,8 +158,22 @@ export default function Sketch() {
         graph.nodes().forEach((node) => { 
             var type = task.clone();
             
-            type.children[1].content = node_dict[node.id()].name;
+            // This is used to wrap the text inside the node
+        
+            var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
+            console.log(label);
+            const numChars = 20;
+            if (label){
+                
+                if (label.length > numChars){
+                    label = label.slice(0, numChars-3) + "...";
+                }
+                else{
+                    label = " ".repeat(Math.floor((numChars - label.length)/2)) + label;
+                }
 
+                type.children[1].content = label;
+            }
 
             if (event_types.includes(node_dict[node.id()].type )){
                 type = new Raster('event-img');
@@ -190,12 +209,16 @@ export default function Sketch() {
             
             type.position.x = node.position().x*spacing;
             type.position.y = node.position().y*spacing;
+
             type.visible = true;
            
         });
         paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
-
+        paper.project.activeLayer.insertAbove(new Layer());
+        //edgeLayer.activate();
+        console.log(paper.project.layers);
+        console.log(paper.project.activeLayer);
         const edge_dict = createEdges(node_dict);
 
         // This needs to be changed to cover different faults
@@ -227,6 +250,7 @@ export default function Sketch() {
 
    }
    const convertToGraph = () => {
+        // Turns the json file into something the cytoscape.js can interpret
         var graph = {elements: []};
         
         json.nodes.forEach((node) => {
@@ -243,9 +267,9 @@ export default function Sketch() {
         // May potentially be used for the edges as well.
         // The fact that it is so close to BPMN should mean that could layout graph in own way
         const cy = cytoscape(convertToGraph());
-
+        cytoscape.use(klay);
         const layout = cy.layout({
-            name: "cose", // Use 'breadthfirst', 'grid', 'circle', etc.
+            name: "klay", // Use 'breadthfirst', 'grid', 'circle', etc.
             animate: false
         });
             
@@ -327,7 +351,10 @@ export default function Sketch() {
         
     }, [isPlaying, paper.view]);
     
-   
+    document.fonts.ready.then(function () {
+        paper.view.draw(); 
+    });
+    
    
    function draw(event) {
        // animation loop
@@ -339,6 +366,7 @@ export default function Sketch() {
         <LeftSideBar openLeft={openLeft} />
         <RightSideBar nodeCard={nodeCard} />
 
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
         <img id='event-img' src={eventSymbol} style={{display:"none"}} />
         <img id='gateway-img' src={gateway} style={{display:"none"}} />
         <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />

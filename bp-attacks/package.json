@@ -9,6 +9,8 @@
     "@mui/material": "^6.4.1",
     "cra-template": "1.2.0",
     "cytoscape": "^3.31.0",
+    "cytoscape-elk": "^2.3.0",
+    "cytoscape-klay": "^3.1.4",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.0.0",
     "react-code-blocks": "^0.1.6",
