@@ -5,7 +5,7 @@ import SelectFault from './SelectFault';
 
 
 
-export default function PlayControls({onPlay, fault}) {
+export default function PlayControls({onPlay}) {
 
     
    
@@ -49,7 +49,7 @@ export default function PlayControls({onPlay, fault}) {
                 color : '#fefefe'}} >
             <Button disabled={prevDisabled}><SkipPrevious/></Button>
             <Button onClick={() => {
-                onPlay();
+                onPlay(fault1);
                 setPlaying(!playing);
                 setNextDisabled(!nextDisabled);
                 setPrevDisabled(!prevDisabled);

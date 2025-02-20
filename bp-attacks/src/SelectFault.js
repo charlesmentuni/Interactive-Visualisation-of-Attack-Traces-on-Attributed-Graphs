@@ -1,6 +1,24 @@
 import {Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem} from '@mui/material';
 import {useEffect, useState} from 'react';
 import json from './wf102.json';
+import {createTheme, ThemeProvider} from '@mui/material/styles';
+import { lime, purple } from '@mui/material/colors'; 
+import {CloseIcon} from '@mui/icons-material'
+
+const theme = createTheme({
+    palette: {
+      primary: lime,
+      secondary: purple,
+      greySelect: {
+      main: "#BDBDBD",
+      light: "#F5F5F5",
+      dark: "#424242",
+      border: "#BDBDBD",
+      hover: "#9E9E9E",
+      disabled: "#E0E0E0",},
+      text: '#FEFEFE'
+    },
+  });
 
 export default function SelectFault({onSelection}) {
     const [fault, setFault] = useState("No Fault Selected");
@@ -27,12 +45,14 @@ export default function SelectFault({onSelection}) {
     }
 
     return (<>
-        <Card sx={{position: 'absolute', bottom: '50%', right: '30%', width: '40%', backgroundColor: 'rgb(0,0,0,0.75)', color: '#fefefe'}}>
+        <ThemeProvider theme={theme}>
+        <Card sx={{position: 'absolute', bottom: '6%', right: '15%', width: '40%', backgroundColor: 'rgb(64,64,64)', color: '#fefefe'}}>
             <CardContent>
                 <Typography variant="h6">Select Fault</Typography>
                 <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Fault</InputLabel>
                 <Select
+                    color="greySelect"
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={fault}
@@ -47,6 +67,7 @@ export default function SelectFault({onSelection}) {
                 </FormControl>
             </CardContent>
         </Card>
+        </ThemeProvider>
 
     </>);
 

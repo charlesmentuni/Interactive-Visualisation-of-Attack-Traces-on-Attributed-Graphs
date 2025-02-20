@@ -59,6 +59,10 @@ export default function Sketch() {
     const stageRef = useRef(0);
     const playing = useRef(false);
     const elapsedTime = useRef(0);
+    const [nd, setNd] = useState({});
+    const [ed, setEd] = useState({});
+    const [fault, setFault] = useState("");
+
     const [isPlaying, setIsPlaying] = useState(false);
 
     const onPlay = () => {
@@ -108,7 +112,6 @@ export default function Sketch() {
 
 
    const drawGraph = () => {
-        console.log(paper.project.layers);
    
 
         const width = 150;
@@ -279,7 +282,7 @@ export default function Sketch() {
     }
 
     const runFault =  function(fault, node_dict, edge_dict) {
-
+    
         // Loops through the execution path and changes the color of the nodes and edges
         node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
             if (node_dict[node]){
@@ -339,7 +342,7 @@ export default function Sketch() {
         setNodeCard(node);
     }
 
-    
+
     useEffect(() =>{
         if (playing.current && paper.view){
             paper.view.play();
@@ -375,7 +378,7 @@ export default function Sketch() {
 
 
     
-        <PlayControls onPlay={onPlay}/>
+        <PlayControls onPlay={onPlay} />
         
         </>
    );
