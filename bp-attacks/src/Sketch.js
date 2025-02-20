@@ -59,9 +59,8 @@ export default function Sketch() {
     const stageRef = useRef(0);
     const playing = useRef(false);
     const elapsedTime = useRef(0);
-    const [nd, setNd] = useState({});
-    const [ed, setEd] = useState({});
-    const [fault, setFault] = useState("");
+    const nd = useRef({});
+    const ed = useRef({});
 
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -216,6 +215,7 @@ export default function Sketch() {
             type.visible = true;
            
         });
+        nd.current = node_dict;
         paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
         paper.project.activeLayer.insertAbove(new Layer());
@@ -223,9 +223,8 @@ export default function Sketch() {
     
         paper.view.draw(); 
         const edge_dict = createEdges(node_dict);
-
+        ed.current = edge_dict;
         // This needs to be changed to cover different faults
-        runFault("fault", node_dict, edge_dict);
         paper.view.pause();
 
 
@@ -281,10 +280,13 @@ export default function Sketch() {
         return cy;
     }
 
-    const runFault =  function(fault, node_dict, edge_dict) {
-    
+    const runFault =  function(fault) {
+        const node_dict = nd.current;
+        const edge_dict = ed.current;
+
+
         // Loops through the execution path and changes the color of the nodes and edges
-        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].execution_path.forEach((node) => {
+        node_dict[fault].execution_path.forEach((node) => {
             if (node_dict[node]){
                 faultPathRef.current.push(node_dict[node]);
             }
@@ -293,7 +295,7 @@ export default function Sketch() {
             }
         });
 
-        node_dict["657ab6ef-8091-41cd-992c-771cf87dc308"].group.children[0].fillColor = 'green';
+        node_dict[fault].group.children[0].fillColor = 'green';
         
         paper.view.onFrame = (event) => {
 
@@ -359,9 +361,6 @@ export default function Sketch() {
     });
     
    
-   function draw(event) {
-       // animation loop
-   }
 
    return (
         <> 
@@ -378,7 +377,7 @@ export default function Sketch() {
 
 
     
-        <PlayControls onPlay={onPlay} />
+        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}}/>
         
         </>
    );

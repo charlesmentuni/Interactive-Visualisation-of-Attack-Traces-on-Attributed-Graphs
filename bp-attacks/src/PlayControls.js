@@ -5,20 +5,24 @@ import SelectFault from './SelectFault';
 
 
 
-export default function PlayControls({onPlay}) {
+export default function PlayControls({onPlay, onChange}) {
 
     
    
     const [playing, setPlaying] = useState(false);
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
-    const [fault1, setFault1] = useState("No Fault Selected");
+    const [fault1, setFault1] = useState(null);
 
     const getFault = (fault) => {
         setFault1(fault);
     }
     useEffect(() => {
-        console.log(fault1);
+        console.log(fault1)
+        if (fault1){
+            onChange(fault1);
+        }
+        
     }, [fault1]);
     return (
         <>
@@ -33,7 +37,7 @@ export default function PlayControls({onPlay}) {
             backgroundColor: 'rgb(64, 64, 64)', 
             color: '#fefefe'}}>
             <CardContent>
-                {fault1}
+                {fault1 ? fault1 : "No Fault Selected"}
             </CardContent>
 
         </Card>

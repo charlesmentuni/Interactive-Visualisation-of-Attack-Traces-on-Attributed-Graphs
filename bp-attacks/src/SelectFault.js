@@ -21,7 +21,7 @@ const theme = createTheme({
   });
 
 export default function SelectFault({onSelection}) {
-    const [fault, setFault] = useState("No Fault Selected");
+    const [fault, setFault] = useState(null);
     const [fault_dict, setFault_dict] = useState({});
     useEffect(() => {
         // Get all faults from json file
@@ -36,8 +36,9 @@ export default function SelectFault({onSelection}) {
     , []);
     
     useEffect(() => {
-        console.log(fault);
-        handleSelection();
+        if (fault) {
+            handleSelection();
+        }
     }, [fault]);
 
     const handleSelection = () => {
