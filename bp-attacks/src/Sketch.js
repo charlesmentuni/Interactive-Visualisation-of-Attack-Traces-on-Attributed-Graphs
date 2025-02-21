@@ -109,6 +109,8 @@ export default function Sketch() {
             }
         }
 
+        
+
        
    }
 
@@ -225,13 +227,25 @@ export default function Sketch() {
         nd.current = node_dict;
         paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
+        
+
+        // The new active layer will be the edge layer
         paper.project.activeLayer.insertAbove(new Layer());
-        //edgeLayer.activate();
+        
+        // The next two layers will be used for fault edges and nodes
+        
+        
     
         paper.view.draw(); 
         const edge_dict = createEdges(node_dict);
         ed.current = edge_dict;
-        // This needs to be changed to cover different faults
+
+        // Add layers for fault edges and nodes
+        paper.project.addLayer(new Layer());
+        paper.project.addLayer(new Layer());
+        
+
+
         paper.view.pause();
 
 
@@ -299,8 +313,9 @@ export default function Sketch() {
     const runFault =  function(fault) {
         const node_dict = nd.current;
         const edge_dict = ed.current;
-
-
+        stageRef.current = 0;
+        faultPathRef.current = [];
+        
         // Loops through the execution path and changes the color of the nodes and edges
         node_dict[fault].execution_path.forEach((node) => {
             if (node_dict[node]){
@@ -311,7 +326,17 @@ export default function Sketch() {
             }
         });
 
-        node_dict[fault].group.children[0].fillColor = 'green';
+        
+        const nodeLayer = paper.project.layers[3];
+        const edgeLayer = paper.project.layers[2];
+        nodeLayer.removeChildren();
+        edgeLayer.removeChildren();
+
+        
+        
+        var faultNode = node_dict[fault].group.clone();
+        nodeLayer.addChild(faultNode);
+        faultNode.children[0].fillColor = 'green';
         
         paper.view.onFrame = (event) => {
 
@@ -325,28 +350,40 @@ export default function Sketch() {
                     if (faultPath[stageRef.current+1]){
                         stageRef.current += 1;
                     }
+                    else{
+                        playing.current = false;
+                        setIsPlaying(false);
+                    }
+
                     // maybe put this in a separate function
                     // because then you can call it from previous and next buttons
                     if (faultPath[stage].group){
-                    
+                        var fp = faultPath[stage].group.clone();
+                        nodeLayer.addChild(fp);
+                        
                         if (faultPath[stage].type === "InputOutputBinding"){
-                            faultPath[stage].group.source = inputOutputFault;
+                            fp.source = inputOutputFault;
                             return;
                         } 
                         if (gateway_types.includes(faultPath[stage].type)){
-                            faultPath[stage].group.source = gatewayFault;
+                            fp.source = gatewayFault;
                             return;
                         }
                         if (event_types.includes(faultPath[stage].type)){
-                            faultPath[stage].group.source = eventFault;
+                            fp.source = eventFault;
                             return;
                         }
-                        faultPath[stage].group.children[0].fillColor = 'red';
+                        
+                        fp.children[0].fillColor = 'red';
+                        
                     
                     }
+                    // Checks if it is an edge as a group only exists for the nodes
                     if (faultPath[stage].visible){ 
-                        faultPath[stage].strokeColor ='red';
-                        faultPath[stage].strokeWidth = 10;
+                        var fp = faultPath[stage].clone();
+                        edgeLayer.addChild(fp);
+                        fp.strokeColor ='red';
+                        fp.strokeWidth = 10;
                     }
 
                 }
@@ -393,7 +430,7 @@ export default function Sketch() {
 
 
     
-        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}}/>
+        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} playing={isPlaying}/>
         
         </>
    );
