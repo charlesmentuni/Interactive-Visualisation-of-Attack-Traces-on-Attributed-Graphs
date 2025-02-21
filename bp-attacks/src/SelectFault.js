@@ -47,7 +47,7 @@ export default function SelectFault({onSelection}) {
 
     return (<>
         <ThemeProvider theme={theme}>
-        <Card sx={{position: 'absolute', bottom: '6%', right: '15%', width: '40%', backgroundColor: 'rgb(64,64,64)', color: '#fefefe'}}>
+        <Card sx={{position: 'absolute', bottom: '1%', right: '20%', width: '40%', backgroundColor: 'rgb(64,64,64)', color: '#fefefe'}}>
             <CardContent>
                 <Typography variant="h6">Select Fault</Typography>
                 <FormControl fullWidth>

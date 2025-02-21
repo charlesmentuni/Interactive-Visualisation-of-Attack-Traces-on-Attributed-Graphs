@@ -336,6 +336,21 @@ export default function Sketch() {
         
         var faultNode = node_dict[fault].group.clone();
         nodeLayer.addChild(faultNode);
+        
+        var mouseDrag = false;
+        faultNode.onMouseDown = function(event){
+            mouseDrag = false;
+        };
+
+        faultNode.onMouseDrag = function(event){
+            mouseDrag = true;
+        };
+
+        faultNode.onMouseUp = function(event){
+            if (!mouseDrag){
+                toggleInfoCard(node_dict[fault]);
+            }
+        };
         faultNode.children[0].fillColor = 'green';
         
         paper.view.onFrame = (event) => {
@@ -360,6 +375,21 @@ export default function Sketch() {
                     if (faultPath[stage].group){
                         var fp = faultPath[stage].group.clone();
                         nodeLayer.addChild(fp);
+
+                        var mouseDrag = false;
+                        fp.onMouseDown = function(event){
+                            mouseDrag = false;
+                        };
+
+                        fp.onMouseDrag = function(event){
+                            mouseDrag = true;
+                        };
+
+                        fp.onMouseUp = function(event){
+                            if (!mouseDrag){
+                                toggleInfoCard(faultPath[stage]);
+                            }
+                        };
                         
                         if (faultPath[stage].type === "InputOutputBinding"){
                             fp.source = inputOutputFault;
@@ -373,6 +403,7 @@ export default function Sketch() {
                             fp.source = eventFault;
                             return;
                         }
+
                         
                         fp.children[0].fillColor = 'red';
                         
