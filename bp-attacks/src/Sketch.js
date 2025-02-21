@@ -15,6 +15,7 @@ import inputOutputFault from "./symbols/inputOutputFault.png";
 import gatewayFault from "./symbols/gatewayFault.png";
 import eventFault from "./symbols/eventFault.png";
 import eventSymbol from "./symbols/event.png";
+import openIcon from "./symbols/openIcon.png";
 
 import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
@@ -65,7 +66,7 @@ export default function Sketch() {
     const elapsedTime = useRef(0);
     const nd = useRef({});
     const ed = useRef({});
-
+    const iod = useRef({});
     const [isPlaying, setIsPlaying] = useState(false);
 
     const onPlay = () => {
@@ -87,8 +88,27 @@ export default function Sketch() {
 
         const nodeLayer  = paper.project.activeLayer;
         nodeLayer.activate();
+
+        
+        createND();
+        getIONodes();
         drawGraph();
         
+        // Add layers for fault edges and nodes
+        paper.project.addLayer(new Layer());
+        paper.project.addLayer(new Layer());
+        
+        // Add Layer for input output bindings
+        paper.project.addLayer(new Layer());
+        var background = new Path.Rectangle(paper.view.bounds.topLeft, paper.view.size);
+        background.fillColor = 'black';
+        background.opacity = 0.75;
+        background.visible = false;
+
+        paper.project.layers[4].addChild(background);
+
+        paper.project.addLayer(new Layer());
+
         var tool = new Tool();
         
         // These are functions for users to observe the canvas
@@ -96,16 +116,22 @@ export default function Sketch() {
         tool.onMouseDrag = function(event){
             var delta = event.downPoint.subtract(event.point)
             paper.view.scrollBy(delta)
+            paper.project.layers[4].children[0].position = paper.view.center;
       }
         //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'w'){
                 paper.view.zoom *= 1.2;
+                paper.project.layers[4].children[0].bounds.height *= 1/1.2;
+                paper.project.layers[4].children[0].bounds.width *= 1/1.2;
+                paper.project.layers[4].children[0].position = paper.view.center;
             }
 
             if (event.key === 's'){
                 paper.view.zoom *= 0.8;
-                
+                paper.project.layers[4].children[0].bounds.height *= 1/0.8;
+                paper.project.layers[4].children[0].bounds.width *= 1/0.8;
+                paper.project.layers[4].children[0].position = paper.view.center;
             }
         }
 
@@ -114,7 +140,29 @@ export default function Sketch() {
        
    }
 
+   const createND = () => {
+    // Creates a dictionary of nodes with their uuid as the key
+    var node_dict = {};
+    var io_dict = {};
+    json.nodes.forEach((node, index) => {
+        if (node.type === "InputOutputBinding"){
+            io_dict[node.uuid] = node;
+            return;
+        }
+            node_dict[node.uuid] = {};
 
+            Object.keys(node).forEach((key) => {
+                if (key !== 'uuid'){
+                    node_dict[node.uuid][key] = node[key];
+                }
+
+            });
+
+        
+    });
+    iod.current = io_dict;
+    nd.current = node_dict;
+   }
 
    const drawGraph = () => {
    
@@ -139,38 +187,25 @@ export default function Sketch() {
         label.fontFamily = 'Roboto Mono';
         label.visible = true;
 
-        var task = new Group(rect, label);
+        var openIOBindings = new Raster('openIcon');
+        openIOBindings.scale(0.3);
+        openIOBindings.position = new Point(width-20, height-20);
+        openIOBindings.visible = false;
+
+        var task = new Group(rect, label, openIOBindings);
         task.position = new Point(200,200);
         task.visible = false;
         
         
 
-        // Creates a dictionary of nodes with their uuid as the key
-        var node_dict = {};
-        json.nodes.forEach((node, index) => {
-            if (node.type === "InputOutputBinding"){
-                    
-                return;
-            }
-                node_dict[node.uuid] = {};
-
-                Object.keys(node).forEach((key) => {
-                    if (key !== 'uuid'){
-                        node_dict[node.uuid][key] = node[key];
-                    }
-
-                });
-
-            
-        })
+        var node_dict = nd.current;
 
         
         var graph = graphLayout();
         graph.nodes().forEach((node) => { 
             var type = task.clone();
             
-            // This is used to wrap the text inside the node
-        
+            // This is used to wrap the text inside the node  
             var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
             
             const numChars = 20;
@@ -215,6 +250,15 @@ export default function Sketch() {
                     toggleInfoCard(node_dict[node.id()]);
                 }
             };
+            
+            // Checks if there are io bindings and allows it to be opened
+            if (node_dict[node.id()].inputOutputBinding){
+                type.children[2].visible = true;
+                type.children[2].onMouseUp = function(event){
+                    if (!mouseDrag){
+                        displayIOBindings(node_dict[node.id()]);}
+                };
+            }
 
             node_dict[node.id()].group = type;
             
@@ -240,11 +284,7 @@ export default function Sketch() {
         const edge_dict = createEdges(node_dict);
         ed.current = edge_dict;
 
-        // Add layers for fault edges and nodes
-        paper.project.addLayer(new Layer());
-        paper.project.addLayer(new Layer());
         
-
 
         paper.view.pause();
 
@@ -428,6 +468,50 @@ export default function Sketch() {
         setNodeCard(node);
     }
 
+    const getIONodes = () => {
+        json.edges.forEach((edge) => {
+            // if target ref is in input output dictionary then add to an array the sourceRef record in the node dictionary
+            if (iod.current[edge.targetRef]){
+                if (!nd.current[edge.sourceRef].inputOutputBinding){
+                    nd.current[edge.sourceRef].inputOutputBinding = {};
+                }
+                nd.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = iod.current[edge.targetRef];
+            }
+        });
+    }
+
+    const displayIOBindings = (node) => {
+        paper.project.layers[5].removeChildren();
+        paper.project.layers[4].children[0].visible = true;
+        node.group.children[2].onMouseUp = function(event){
+            paper.project.layers[1].addChild(node.group);
+            node.group.children[2].onMouseUp = function(event){
+                displayIOBindings(node);
+            };
+            paper.project.layers[5].removeChildren();
+            paper.project.layers[4].children[0].visible = false;
+        };
+        paper.project.layers[5].addChild(node.group);
+
+        var spacing = 300;
+        Object.keys(node.inputOutputBinding).forEach((io, index) => {
+            var ioImage = new Raster('inputOutput');
+            var angle = index/Object.keys(node.inputOutputBinding).length*Math.PI*2;
+            ioImage.position = new Point(node.group.position.x+Math.sin(angle)*spacing, node.group.position.y+Math.cos(angle)*spacing);
+
+            var edge = new Path();
+            edge.add(node.group.position);
+            edge.add(ioImage.position);
+            edge.strokeColor = 'blue';
+            edge.strokeWidth = 4;
+
+            paper.project.layers[5].addChild(edge);
+            paper.project.layers[5].addChild(ioImage);
+
+        });
+        
+
+    }
 
     useEffect(() =>{
         if (playing.current && paper.view){
@@ -458,7 +542,7 @@ export default function Sketch() {
         <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />
         <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
         <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
-
+        <img id='openIcon' src={openIcon}  style={{display:"none"}} />
 
     
         <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} playing={isPlaying}/>

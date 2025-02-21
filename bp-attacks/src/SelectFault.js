@@ -3,13 +3,11 @@ import {useEffect, useState} from 'react';
 import json from './wf102.json';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import { lime, purple } from '@mui/material/colors'; 
-import {CloseIcon} from '@mui/icons-material'
 
 const theme = createTheme({
     palette: {
-      primary: lime,
-      secondary: purple,
-      greySelect: {
+      
+      primary: {
       main: "#BDBDBD",
       light: "#F5F5F5",
       dark: "#424242",
