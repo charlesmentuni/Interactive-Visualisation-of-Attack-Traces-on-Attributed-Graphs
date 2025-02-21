@@ -16,6 +16,7 @@ import gatewayFault from "./symbols/gatewayFault.png";
 import eventFault from "./symbols/eventFault.png";
 import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
+import closeIcon from "./symbols/closeIcon.png";
 
 import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
@@ -481,9 +482,13 @@ export default function Sketch() {
     }
 
     const displayIOBindings = (node) => {
-        paper.project.layers[5].removeChildren();
+
+        node.group.children[2].source = closeIcon;
+
         paper.project.layers[4].children[0].visible = true;
+
         node.group.children[2].onMouseUp = function(event){
+            node.group.children[2].source = openIcon;
             paper.project.layers[1].addChild(node.group);
             node.group.children[2].onMouseUp = function(event){
                 displayIOBindings(node);
@@ -491,6 +496,7 @@ export default function Sketch() {
             paper.project.layers[5].removeChildren();
             paper.project.layers[4].children[0].visible = false;
         };
+
         paper.project.layers[5].addChild(node.group);
 
         var spacing = 300;
@@ -498,6 +504,15 @@ export default function Sketch() {
             var ioImage = new Raster('inputOutput');
             var angle = index/Object.keys(node.inputOutputBinding).length*Math.PI*2;
             ioImage.position = new Point(node.group.position.x+Math.sin(angle)*spacing, node.group.position.y+Math.cos(angle)*spacing);
+
+            var mouseDrag = false;
+            ioImage.onMouseDown = function(event){mouseDrag = false;};
+            ioImage.onMouseDrag = function(event){mouseDrag = true;};
+            ioImage.onMouseUp = function(event){
+                if (!mouseDrag){
+                    toggleInfoCard(node.inputOutputBinding[io]);
+                }
+            };
 
             var edge = new Path();
             edge.add(node.group.position);
@@ -540,9 +555,10 @@ export default function Sketch() {
         <img id='event-img' src={eventSymbol} style={{display:"none"}} />
         <img id='gateway-img' src={gateway} style={{display:"none"}} />
         <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />
-        <img id='inputOutput' src={inputOutput} style={{display:"none"}} />
+        <img id='inputOutput' src={inputOutputFault} style={{display:"none"}} />
         <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
         <img id='openIcon' src={openIcon}  style={{display:"none"}} />
+        <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
 
     
         <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} playing={isPlaying}/>
