@@ -45,7 +45,11 @@ export default function Sketch() {
     ]
     
     
-
+    const io_binding_edge_types = ["inputParameter",
+        "outputParameter",
+        "assignment",  
+        "dataSource"
+        ];
     
 
     // Contains dictionary of node information that has just been clicked on
@@ -142,7 +146,10 @@ export default function Sketch() {
         // Creates a dictionary of nodes with their uuid as the key
         var node_dict = {};
         json.nodes.forEach((node, index) => {
-
+            if (node.type === "InputOutputBinding"){
+                    
+                return;
+            }
                 node_dict[node.uuid] = {};
 
                 Object.keys(node).forEach((key) => {
@@ -233,7 +240,10 @@ export default function Sketch() {
         // create edges
         var edge_dict = {};
         json.edges.forEach((edge) => {
-
+            if (io_binding_edge_types.includes(edge.type)){
+                return;
+            }
+            
             var new_edge = new Path();
 
             new_edge.add(node_dict[edge.sourceRef].group.position);
@@ -256,9 +266,15 @@ export default function Sketch() {
         var graph = {elements: []};
         
         json.nodes.forEach((node) => {
+            if (node.type === "InputOutputBinding"){
+                return;
+            }
             graph.elements.push({data: {id: node.uuid}});
         });
         json.edges.forEach((edge) => {
+            if (io_binding_edge_types.includes(edge.type)){
+                return;
+            }
             graph.elements.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
         });
         return graph;
