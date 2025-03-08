@@ -32,7 +32,8 @@ export default function LeftSideBar() {
                 borderBottomRightRadius: 8,
                 backgroundColor: 'rgba(0, 0, 0, 0.75)' }}>
             <CardContent sx={{color: 'white'}}>
-                <Typography variant="h6">Import Attributed Graph</Typography>
+                <input type='file'></input>
+                <Typography variant="h6"> </Typography>
                 <Typography variant="body2">Speed: 1x</Typography>
                 <Typography variant="body2">Style</Typography>
                 <Typography variant="body2">Unlock All</Typography>

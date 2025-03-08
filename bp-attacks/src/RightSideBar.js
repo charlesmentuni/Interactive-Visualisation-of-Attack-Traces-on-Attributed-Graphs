@@ -36,7 +36,7 @@ export default function RightSideBar({nodeCard}) {
                 overflow:"auto",
                 backgroundColor: 'rgba(0, 0, 0, 0.75)'}}>
 
-            <CardContent sx={{color: 'white', fontFamily: 'monospace'}} >
+            <CardContent sx={{color: 'white', fontFamily: 'monospace'}}>
                 <Typography variant="h6">Selected Node Info</Typography>
                 {nodeCard ? Object.keys(nodeCard).map((key) => {
                     if (nodeCard[key] === '' || key === "group"){
