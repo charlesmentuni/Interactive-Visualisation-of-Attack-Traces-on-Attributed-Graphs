@@ -105,20 +105,29 @@ export default function Sketch() {
         getIONodes();
         drawGraph();
         
+        // Add layer for annotations
+        paper.project.addLayer(new Layer());
+        paper.project.layers[2].name = "annotationLayer";
+        
+
         // Add layers for fault edges and nodes
         paper.project.addLayer(new Layer());
         paper.project.addLayer(new Layer());
-        
+        paper.project.layers[3].name = "faultEdgeLayer";
+        paper.project.layers[4].name = "faultNodeLayer";
+
         // Add Layer for input output bindings
         paper.project.addLayer(new Layer());
+        paper.project.layers[5].name = "ioBindingCoverLayer";
         var background = new Path.Rectangle(paper.view.bounds.topLeft, paper.view.size);
         background.fillColor = 'black';
         background.opacity = 0.75;
         background.visible = false;
 
-        paper.project.layers[4].addChild(background);
+        paper.project.layers[5].addChild(background);
 
         paper.project.addLayer(new Layer());
+        paper.project.layers[6].name = "ioBindingLayer";
 
         var tool = new Tool();
         
@@ -127,22 +136,22 @@ export default function Sketch() {
         tool.onMouseDrag = function(event){
             var delta = event.downPoint.subtract(event.point)
             paper.view.scrollBy(delta)
-            paper.project.layers[4].children[0].position = paper.view.center;
+            paper.project.layers[5].children[0].position = paper.view.center;
       }
         //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'w'){
                 paper.view.zoom *= 1.2;
-                paper.project.layers[4].children[0].bounds.height *= 1/1.2;
-                paper.project.layers[4].children[0].bounds.width *= 1/1.2;
-                paper.project.layers[4].children[0].position = paper.view.center;
+                paper.project.layers[5].children[0].bounds.height *= 1/1.2;
+                paper.project.layers[5].children[0].bounds.width *= 1/1.2;
+                paper.project.layers[5].children[0].position = paper.view.center;
             }
 
             if (event.key === 's'){
                 paper.view.zoom *= 0.8;
-                paper.project.layers[4].children[0].bounds.height *= 1/0.8;
-                paper.project.layers[4].children[0].bounds.width *= 1/0.8;
-                paper.project.layers[4].children[0].position = paper.view.center;
+                paper.project.layers[5].children[0].bounds.height *= 1/0.8;
+                paper.project.layers[5].children[0].bounds.width *= 1/0.8;
+                paper.project.layers[5].children[0].position = paper.view.center;
             }
         }
 
@@ -176,7 +185,8 @@ export default function Sketch() {
    }
 
    const drawGraph = () => {
-   
+
+        paper.project.activeLayer.name = "nodeLayer";
 
         const width = 150;
         const height = 100;
@@ -186,7 +196,7 @@ export default function Sketch() {
         rectOg.fillColor = '#b2bec3';
         rectOg.visible =false;
         
-
+        
 
         var rect = rectOg.clone();
         rect.visible =true;
@@ -273,17 +283,32 @@ export default function Sketch() {
             
             // Hover over and display the full name
             type.onMouseEnter = function(event){
-               
-                setSelectedNodeLabel({
-                    "name": node_dict[node.id()].name,
-                    "position" : {
-                        "x": 0.5 + (node.position().x*10 - paper.view.center.x) / paper.view.size.width,
-                        "y": 0.5 + (node.position().y*10 - paper.view.center.y) / paper.view.size.height}
-                    });
+                
+                paper.project.layers[2].removeChildren();
+
+                var annotationRect = new Path.Rectangle(type.bounds.topLeft, type.bounds.size);
+                annotationRect.fillColor = 'white';
+                annotationRect.strokeColor = 'black';
+                annotationRect.strokeCap = 'round';
+
+                
+                var label = new PointText();
+                label.content = node_dict[node.id()].name;
+                label.scale(1);
+                label.fontFamily = 'Roboto Mono';
+
+                annotationRect.bounds.width = label.bounds.width + 20;
+                annotationRect.bounds.height = label.bounds.height + 20;
+                annotationRect.position.y -= annotationRect.bounds.size.height;
+                label.position = annotationRect.position;
+                var group = new Group(annotationRect, label);
+                group.position.x = type.position.x;
+                paper.project.layers[2].addChild(group);
+
+                
+                
             };
-            type.onMouseLeave = function(event){
-                setSelectedNodeLabel(null);
-            }
+
     
 
             // Checks if there are io bindings and allows it to be opened
@@ -307,7 +332,7 @@ export default function Sketch() {
         paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
         
-
+        console.log(paper.project.layers);
         // The new active layer will be the edge layer
         paper.project.activeLayer.insertAbove(new Layer());
         
@@ -327,6 +352,7 @@ export default function Sketch() {
    }
    const createEdges = (node_dict) => {
         // create edges
+        paper.project.activeLayer.name = "edgeLayer";
         var edge_dict = {};
         json.edges.forEach((edge) => {
 
@@ -404,8 +430,9 @@ export default function Sketch() {
         });
 
         
-        const nodeLayer = paper.project.layers[3];
-        const edgeLayer = paper.project.layers[2];
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
+
         nodeLayer.removeChildren();
         edgeLayer.removeChildren();
 
@@ -521,7 +548,7 @@ export default function Sketch() {
 
         node.group.children[2].source = closeIcon;
 
-        paper.project.layers[4].children[0].visible = true;
+        paper.project.layers[5].children[0].visible = true;
 
         node.group.children[2].onMouseUp = function(event){
             node.group.children[2].source = openIcon;
@@ -529,11 +556,11 @@ export default function Sketch() {
             node.group.children[2].onMouseUp = function(event){
                 displayIOBindings(node);
             };
-            paper.project.layers[5].removeChildren();
-            paper.project.layers[4].children[0].visible = false;
+            paper.project.layers[6].removeChildren();
+            paper.project.layers[5].children[0].visible = false;
         };
 
-        paper.project.layers[5].addChild(node.group);
+        paper.project.layers[6].addChild(node.group);
 
         var spacing = 300;
         Object.keys(node.inputOutputBinding).forEach((io, index) => {
@@ -556,8 +583,8 @@ export default function Sketch() {
             edge.strokeColor = '#0984e3';
             edge.strokeWidth = 4;
 
-            paper.project.layers[5].addChild(edge);
-            paper.project.layers[5].addChild(ioImage);
+            paper.project.layers[6].addChild(edge);
+            paper.project.layers[6].addChild(ioImage);
 
         });
         
@@ -586,7 +613,7 @@ export default function Sketch() {
 
         <LeftSideBar openLeft={openLeft} />
         <RightSideBar nodeCard={nodeCard} />
-        <NodeLabel node={selectedNodeLabel} />
+        
 
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
         <img id='event-img' src={eventSymbol} style={{display:"none"}} />
