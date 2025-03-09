@@ -23,6 +23,7 @@ import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
 import LeftSideBar from './LeftSideBar.js';
 import PlayControls from './PlayControls.js';
+import NodeLabel from './NodeLabel.js';
 
 export default function Sketch() {
     
@@ -32,6 +33,7 @@ export default function Sketch() {
 </svg>`;
 
     const userTaskSVG = `<?xml version="1.0" encoding="UTF-8"?> <svg width="369.39mm" height="496.32mm" version="1.1" viewBox="0 0 205.22 275.73" xmlns="http://www.w3.org/2000/svg"> <g transform="translate(-2.2236 -20.838)"> <path d="m104.98 24.467a73.362 74.344 0 0 0-73.362 74.344 73.362 74.344 0 0 0 24.733 55.59 100.06 191.25 0 0 0-50.2 138.49c204.61 2e-3 198.33 0.0405 197.67 0.0425a100.06 191.25 0 0 0-50.145-138.6 73.362 74.344 0 0 0 24.662-55.517 73.362 74.344 0 0 0-73.362-74.344z" fill="#a29bfe" stroke="#000" stroke-width="7.2576"/> </g> </svg>`;
+
     const event_types = [
         "endEvent",
         "messageEndEvent",
@@ -76,6 +78,7 @@ export default function Sketch() {
     const ed = useRef({});
     const iod = useRef({});
     const [isPlaying, setIsPlaying] = useState(false);
+    const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
 
     const onPlay = () => {
         playing.current = !playing.current;
@@ -252,7 +255,15 @@ export default function Sketch() {
 
             type.onMouseDrag = function(event){
                 mouseDrag = true;
+                setSelectedNodeLabel({
+                    "name": node_dict[node.id()].name,
+                    "position" : {
+                        "x": 0.5 + (node.position().x*10 - paper.view.center.x) / paper.view.size.width,
+                        "y": 0.5 + (node.position().y*10 - paper.view.center.y) / paper.view.size.height}
+                    });
+            
             };
+
 
             type.onMouseUp = function(event){
                 if (!mouseDrag){
@@ -260,6 +271,21 @@ export default function Sketch() {
                 }
             };
             
+            // Hover over and display the full name
+            type.onMouseEnter = function(event){
+               
+                setSelectedNodeLabel({
+                    "name": node_dict[node.id()].name,
+                    "position" : {
+                        "x": 0.5 + (node.position().x*10 - paper.view.center.x) / paper.view.size.width,
+                        "y": 0.5 + (node.position().y*10 - paper.view.center.y) / paper.view.size.height}
+                    });
+            };
+            type.onMouseLeave = function(event){
+                setSelectedNodeLabel(null);
+            }
+    
+
             // Checks if there are io bindings and allows it to be opened
             if (node_dict[node.id()].inputOutputBinding){
                 type.children[2].visible = true;
@@ -303,6 +329,7 @@ export default function Sketch() {
         // create edges
         var edge_dict = {};
         json.edges.forEach((edge) => {
+
             if (io_binding_edge_types.includes(edge.type)){
                 return;
             }
@@ -332,6 +359,7 @@ export default function Sketch() {
             if (node.type === "InputOutputBinding"){
                 return;
             }
+            
             graph.elements.push({data: {id: node.uuid}});
         });
         json.edges.forEach((edge) => {
@@ -558,6 +586,7 @@ export default function Sketch() {
 
         <LeftSideBar openLeft={openLeft} />
         <RightSideBar nodeCard={nodeCard} />
+        <NodeLabel node={selectedNodeLabel} />
 
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
         <img id='event-img' src={eventSymbol} style={{display:"none"}} />
