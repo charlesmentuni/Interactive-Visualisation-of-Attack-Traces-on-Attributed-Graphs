@@ -1,7 +1,8 @@
 import {Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem} from '@mui/material';
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useContext} from 'react';
 import json from './wf102.json';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
+import { FaultContext } from './Sketch';
 import { lime, purple } from '@mui/material/colors'; 
 
 const theme = createTheme({
@@ -18,30 +19,10 @@ const theme = createTheme({
     },
   });
 
-export default function SelectFault({onSelection}) {
-    const [fault, setFault] = useState(null);
-    const [fault_dict, setFault_dict] = useState({});
-    useEffect(() => {
-        // Get all faults from json file
-        var fault_dict_temp = {}
-        json.nodes.forEach((node) => {
-            if (node.type === "blFault"){
-                fault_dict_temp[node.uuid] = node;            
-            }
-        });
-        setFault_dict(fault_dict_temp);
-    }
-    , []);
-    
-    useEffect(() => {
-        if (fault) {
-            handleSelection();
-        }
-    }, [fault]);
+export default function SelectFault() {
+    const {fault, setFault, fault_dict} = useContext(FaultContext);
 
-    const handleSelection = () => {
-        onSelection(fault);
-    }
+   
 
     return (<>
         <ThemeProvider theme={theme}>

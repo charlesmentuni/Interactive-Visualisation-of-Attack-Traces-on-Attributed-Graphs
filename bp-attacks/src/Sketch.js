@@ -2,7 +2,7 @@ import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
-import { useEffect, useState, useRef, useContext } from 'react';
+import { useEffect, useState, useRef, useContext, createContext } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 
@@ -27,10 +27,12 @@ import LeftSideBar from './LeftSideBar.js';
 import PlayControls from './PlayControls.js';
 import NodeLabel from './NodeLabel.js';
 
+export const FaultContext = createContext();
+
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict} = useContext(GraphContext);
 
 
 
@@ -45,6 +47,7 @@ export default function Sketch() {
     const playing = useRef(false);
     const elapsedTime = useRef(0);
     const mouseDrag = useRef(false);
+    const [fault, setFault] = useState("");
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
@@ -56,12 +59,12 @@ export default function Sketch() {
 
    window.onload = function() {
 
+        
         paper.setup('paper-canvas');
 
         const nodeLayer  = paper.project.activeLayer;
         nodeLayer.activate();
 
-        
         drawGraph();
         
         // Add layer for annotations
@@ -241,7 +244,7 @@ export default function Sketch() {
         var temp_edge_dict = {};
         json.edges.forEach((edge) => {
 
-            if (io_binding_edge_types.includes(edge.type)){
+            if (io_binding_edge_types.includes(edge.type) || edge.type === 'faultFlow'){
                 return;
             }
             
@@ -322,14 +325,13 @@ export default function Sketch() {
             };
     }
 
-    const runFault =  function(fault) {
-
+    const runFault =  function() {
 
         stageRef.current = 0;
         faultPathRef.current = [];
         
         // Loops through the execution path and changes the color of the nodes and edges
-        node_dict[fault].execution_path.forEach((node) => {
+        fault_dict[fault].execution_path.forEach((node) => {
             if (node_dict[node]){
                 faultPathRef.current.push(node_dict[node]);
             }
@@ -346,13 +348,6 @@ export default function Sketch() {
         edgeLayer.removeChildren();
 
         
-        // This is for higlighting the bl fault node
-        var faultNode = node_dict[fault].group.clone();
-        nodeLayer.addChild(faultNode);
-        
-
-        addMouseNodeInteraction(faultNode, node_dict[fault], faultNode.position)
-        faultNode.children[0].fillColor = '#00b894';
         
         // This is for highlighting the path.
         paper.view.onFrame = (event) => {
@@ -503,6 +498,8 @@ export default function Sketch() {
 
     }
 
+    useEffect(()=>{if (fault){runFault()}}, [fault]);
+
     useEffect(() =>{
         if (playing.current && paper.view){
             paper.view.play();
@@ -537,7 +534,9 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='exclusiveGateway' src={gatewaySVG} style={{display:"none"}} />
     
-        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
+         <FaultContext.Provider value={{fault, setFault, fault_dict}}>
+            <PlayControls onPlay={onPlay} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
+        </FaultContext.Provider> 
         
         </>
    );

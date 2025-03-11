@@ -1,25 +1,18 @@
 import { Button, ButtonGroup, Card, CardContent, Select , Box} from '@mui/material';
 import { PlayArrow, SkipNext, SkipPrevious, PauseSharp } from '@mui/icons-material';
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import SelectFault from './SelectFault';
-
+import {FaultContext} from './Sketch'
 
 
 export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}) {
 
+    const {fault, setFault} = useContext(FaultContext);
+
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
-    const [fault1, setFault1] = useState(null);
 
-    const getFault = (fault) => {
-        setFault1(fault);
-    }
-    useEffect(() => {
-        if (fault1){
-            onChange(fault1);
-        }
-        
-    }, [fault1]);
+
 
     useEffect(() => {
 
@@ -36,7 +29,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     }, [playing]);
     return (
         <>
-        <SelectFault onSelection={(fault) => {getFault(fault)}}/>
+        <SelectFault />
         
 
         <Card sx={{
@@ -49,7 +42,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     color: '#fefefe'
 }}>
     <CardContent>
-        {fault1 ? fault1 : "No Fault Selected"}
+        {fault ? fault : "No Fault Selected"}
     </CardContent>
 </Card>
 
@@ -84,7 +77,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
         color: '#fefefe'
     }}
     onClick={() => {
-        onPlay(fault1);
+        onPlay();
         setNextDisabled(!nextDisabled);
         setPrevDisabled(!prevDisabled);
     }}

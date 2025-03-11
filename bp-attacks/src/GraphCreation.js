@@ -12,6 +12,7 @@ export function GraphCreation() {
     const [node_dict, setNode_dict] = useState({});
     const [edge_dict, setEdge_dict] = useState({});
     const [graph_layout, setGraph_layout] = useState({});
+    const [fault_dict, setFault_dict] = useState({});
 
     const [io_dict, setIo_dict] = useState({});
 
@@ -22,6 +23,7 @@ export function GraphCreation() {
         var temp_io_dict = {};
 
         json.nodes.forEach((node, index) => {
+            if (node.type === "blFault"){return;}
 
             if (node.type === "InputOutputBinding"){
                 temp_io_dict[node.uuid] = node;
@@ -59,6 +61,17 @@ export function GraphCreation() {
         });
     }
 
+    const getFaultNodes = () =>{
+
+        var fault_dict_temp = {}
+        json.nodes.forEach((node) => {
+            if (node.type === "blFault"){
+                fault_dict_temp[node.uuid] = node;            
+            }
+        });
+        setFault_dict(fault_dict_temp);
+    }
+
     const graphLayout = () => {
         // Sets up graph layout using Cytoscape to output the coordinates of the nodes
         // May potentially be used for the edges as well.
@@ -80,13 +93,15 @@ export function GraphCreation() {
         var graph = {elements: []};
         
         json.nodes.forEach((node) => {
-            if (node.type === "InputOutputBinding"){
+            if (node.type === "InputOutputBinding" || node.type === "blFault"){
                 return;
             }
             
             graph.elements.push({data: {id: node.uuid}});
         });
         json.edges.forEach((edge) => {
+            if (edge.type === "faultFlow"){return;}
+
             if (io_binding_edge_types.includes(edge.type)){
                 return;
             }
@@ -98,6 +113,7 @@ export function GraphCreation() {
     useEffect(() => {
         createND();
         graphLayout();
+        getFaultNodes();
     }, [])
 
     useEffect(() => {
@@ -105,7 +121,7 @@ export function GraphCreation() {
     }, [io_dict, node_dict]);
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict}}>
             <Sketch />
         </GraphContext.Provider>
     )
