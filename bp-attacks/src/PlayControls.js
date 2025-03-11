@@ -5,7 +5,7 @@ import SelectFault from './SelectFault';
 
 
 
-export default function PlayControls({onPlay, onChange, playing, onNext}) {
+export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}) {
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -66,6 +66,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext}) {
         color: '#fefefe'
     }}
     disabled={prevDisabled}
+    onClick={onPrev}
 >
     <SkipPrevious/>
 </Button>

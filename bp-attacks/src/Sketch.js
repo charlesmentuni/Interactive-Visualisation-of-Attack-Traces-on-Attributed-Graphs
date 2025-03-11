@@ -372,6 +372,29 @@ export default function Sketch() {
         };
     }
 
+    const prevFault = function() {
+        
+        var faultPath = faultPathRef.current;
+        if (faultPath[stageRef.current-1]){
+            stageRef.current-=1;
+        }
+
+        var stage = stageRef.current;
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
+
+        // This assumes that is starts with a node
+        if (stage % 2 === 0){
+            nodeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
+        }
+        if (stage % 2 === 1 ){
+            edgeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
+        }
+
+
+
+    }
+
     const nextFault = function() {
 
 
@@ -388,6 +411,8 @@ export default function Sketch() {
         }
         const nodeLayer = paper.project.layers[4];
         const edgeLayer = paper.project.layers[3];
+
+        
 
        
 
@@ -512,7 +537,7 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='exclusiveGateway' src={gatewaySVG} style={{display:"none"}} />
     
-        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} onNext={nextFault} playing={isPlaying}/>
+        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
         
         </>
    );
