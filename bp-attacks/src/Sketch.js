@@ -2,11 +2,13 @@ import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
 import json from './wf102.json';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
+import GraphContext from './GraphCreation.js';
+
 
 import gateway from "./symbols/gateway.png";
 import inputOutput from "./symbols/inputOutput.png";
@@ -29,7 +31,7 @@ import NodeLabel from './NodeLabel.js';
 export default function Sketch() {
     
    
-
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, io_dict, setIo_dict} = useContext(GraphContext);
 
     const event_types = [
         "endEvent",
@@ -65,7 +67,6 @@ export default function Sketch() {
     const [open, setOpen] = useState(false);
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
-    //const [faultPath, setFaultPath] = useState([]);
     const faultPathRef = useRef([]);
     const spacing = 10;
     const stageRef = useRef(0);
@@ -98,8 +99,6 @@ export default function Sketch() {
         nodeLayer.activate();
 
         
-        createND();
-        getIONodes();
         drawGraph();
         
         // Add layer for annotations
@@ -157,29 +156,6 @@ export default function Sketch() {
        
    }
 
-   const createND = () => {
-    // Creates a dictionary of nodes with their uuid as the key
-    var node_dict = {};
-    var io_dict = {};
-    json.nodes.forEach((node, index) => {
-        if (node.type === "InputOutputBinding"){
-            io_dict[node.uuid] = node;
-            return;
-        }
-            node_dict[node.uuid] = {};
-
-            Object.keys(node).forEach((key) => {
-                if (key !== 'uuid'){
-                    node_dict[node.uuid][key] = node[key];
-                }
-
-            });
-
-        
-    });
-    iod.current = io_dict;
-    nd.current = node_dict;
-   }
 
    const drawGraph = () => {
 
@@ -192,7 +168,6 @@ export default function Sketch() {
         rectOg.strokeColor = 'black';
         rectOg.fillColor = '#b2bec3';
         rectOg.visible =false;
-        
         
 
         var rect = rectOg.clone();
@@ -216,7 +191,6 @@ export default function Sketch() {
         
         
 
-        var node_dict = nd.current;
 
         
         var graph = graphLayout();
@@ -325,11 +299,13 @@ export default function Sketch() {
             type.visible = true;
            
         });
-        nd.current = node_dict;
+
+
+        setNode_dict(node_dict);
+
         paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
         
         
-        console.log(paper.project.layers);
         // The new active layer will be the edge layer
         paper.project.activeLayer.insertAbove(new Layer());
         
@@ -411,7 +387,6 @@ export default function Sketch() {
     }
 
     const runFault =  function(fault) {
-        const node_dict = nd.current;
         const edge_dict = ed.current;
         stageRef.current = 0;
         faultPathRef.current = [];
@@ -529,17 +504,7 @@ export default function Sketch() {
         setNodeCard(node);
     }
 
-    const getIONodes = () => {
-        json.edges.forEach((edge) => {
-            // if target ref is in input output dictionary then add to an array the sourceRef record in the node dictionary
-            if (iod.current[edge.targetRef]){
-                if (!nd.current[edge.sourceRef].inputOutputBinding){
-                    nd.current[edge.sourceRef].inputOutputBinding = {};
-                }
-                nd.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = iod.current[edge.targetRef];
-            }
-        });
-    }
+
 
     const displayIOBindings = (node) => {
 
