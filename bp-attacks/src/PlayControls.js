@@ -5,7 +5,7 @@ import SelectFault from './SelectFault';
 
 
 
-export default function PlayControls({onPlay, onChange, playing}) {
+export default function PlayControls({onPlay, onChange, playing, onNext}) {
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -22,18 +22,13 @@ export default function PlayControls({onPlay, onChange, playing}) {
     }, [fault1]);
 
     useEffect(() => {
-        
 
         if (playing){
             setPrevDisabled(true);
             setNextDisabled(true);
         }
         else{
-            /* // Disable buttons if there is no previous/next stage
-            const hasPrevStage = /* logic to determine if there is a previous stage;
-            const hasNextStage = /* logic to determine if there is a next stage ;
-            setPrevDisabled(!hasPrevStage);
-            setNextDisabled(!hasNextStage); */
+            
             setPrevDisabled(false);
             setNextDisabled(false);
         }
@@ -109,6 +104,7 @@ export default function PlayControls({onPlay, onChange, playing}) {
         color: '#fefefe'
     }}
     disabled={nextDisabled}
+    onClick={onNext}
 >
     <SkipNext/>
 </Button>

@@ -5,8 +5,7 @@ import json from './wf102.json';
 import { useEffect, useState, useRef, useContext } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
-import cytoscape from "cytoscape";
-import klay from "cytoscape-klay";
+
 import GraphContext from './GraphCreation.js';
 
 
@@ -53,15 +52,7 @@ export default function Sketch() {
     const onPlay = () => {
         playing.current = !playing.current;
         setIsPlaying(!isPlaying);
-    }
-
-    // This is an attempt to resize the window to fit the canvas, but it doesn't work
-    window.onresize = function(event) {
- 
-        document.getElementById('paper-canvas').style.height = window.innerHeight;
-        document.getElementById('paper-canvas').style.height = window.innerHeight;
-    }
-        
+    }      
 
    window.onload = function() {
 
@@ -132,7 +123,6 @@ export default function Sketch() {
 
        
    }
-
 
     const drawGraph = () => {
 
@@ -272,6 +262,7 @@ export default function Sketch() {
 
 
     }
+
     const addMouseNodeInteraction = (type, node, position) => {
         // When pressed on should show node information on the InfoCard
         // Checks whether the mouse is dragged so that traversing won't change the info card.
@@ -293,7 +284,7 @@ export default function Sketch() {
 
             type.onMouseUp = function(event){
                 if (!mouseDrag.current){
-                    toggleInfoCard(node);
+                    setNodeCard(node);
                 }
             };
 
@@ -330,10 +321,6 @@ export default function Sketch() {
                 
             };
     }
-
-    
-
-   
 
     const runFault =  function(fault) {
 
@@ -377,48 +364,7 @@ export default function Sketch() {
 
                 if (elapsedTime.current >= 1){
                     elapsedTime.current = 0;
-                    if (faultPath[stageRef.current+1]){
-                        stageRef.current += 1;
-                    }
-                    else{
-                        playing.current = false;
-                        setIsPlaying(false);
-                    }
-
-                    // maybe put this in a separate function
-                    // because then you can call it from previous and next buttons
-                    if (faultPath[stage].group){
-                        var fp = faultPath[stage].group.clone();
-                        nodeLayer.addChild(fp);
-
-                        addMouseNodeInteraction(fp, faultPath[stage], fp.position);
-                        
-                        if (faultPath[stage].type === "InputOutputBinding"){
-                            fp.source = inputOutputFault;
-                            return;
-                        } 
-                        if (gateway_types.includes(faultPath[stage].type)){
-                            fp.children[1].fillColor = '#d63031';
-                            return;
-                        } 
-                        if (event_types.includes(faultPath[stage].type)){
-                            fp.source = eventFault;
-                            return;
-                        }
-
-                        
-                        fp.children[0].fillColor = '#d63031';
-                        
-                    
-                    }
-                    // Checks if it is an edge as a group only exists for the nodes
-                    if (faultPath[stage].visible){ 
-                        var fp = faultPath[stage].clone();
-                        edgeLayer.addChild(fp);
-                        fp.strokeColor ='#d63031';
-                        fp.strokeWidth = 10;
-                    }
-
+                    nextFault();
                 }
             
             elapsedTime.current += event.delta;
@@ -426,8 +372,55 @@ export default function Sketch() {
         };
     }
 
-    const toggleInfoCard = (node) => {
-        setNodeCard(node);
+    const nextFault = function() {
+
+
+        var faultPath = faultPathRef.current;
+        var stage = stageRef.current;
+
+        if (faultPath[stageRef.current]){
+            stageRef.current+=1;
+        }
+        else{
+            playing.current = false;
+            setIsPlaying(false);
+            return;
+        }
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
+
+       
+
+        if (faultPath[stage].group){
+            var fp = faultPath[stage].group.clone();
+            nodeLayer.addChild(fp);
+
+            addMouseNodeInteraction(fp, faultPath[stage], fp.position);
+            
+            if (faultPath[stage].type === "InputOutputBinding"){
+                fp.source = inputOutputFault;
+                return;
+            } 
+            if (gateway_types.includes(faultPath[stage].type)){
+                fp.children[1].fillColor = '#d63031';
+                return;
+            } 
+            if (event_types.includes(faultPath[stage].type)){
+                fp.source = eventFault;
+                return;
+            }
+
+            fp.children[0].fillColor = '#d63031';
+            
+        
+        }
+        // Checks if it is an edge as a group only exists for the nodes
+        if (faultPath[stage].visible){ 
+            var fp = faultPath[stage].clone();
+            edgeLayer.addChild(fp);
+            fp.strokeColor ='#d63031';
+            fp.strokeWidth = 10;
+        }
     }
 
 
@@ -467,7 +460,7 @@ export default function Sketch() {
             ioImage.onMouseDrag = function(event){mouseDrag = true;};
             ioImage.onMouseUp = function(event){
                 if (!mouseDrag){
-                    toggleInfoCard(node.inputOutputBinding[io]);
+                    setNodeCard(node.inputOutputBinding[io]);
                 }
             };
 
@@ -519,7 +512,7 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='exclusiveGateway' src={gatewaySVG} style={{display:"none"}} />
     
-        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} playing={isPlaying}/>
+        <PlayControls onPlay={onPlay} onChange={(fault) => {runFault(fault)}} onNext={nextFault} playing={isPlaying}/>
         
         </>
    );
