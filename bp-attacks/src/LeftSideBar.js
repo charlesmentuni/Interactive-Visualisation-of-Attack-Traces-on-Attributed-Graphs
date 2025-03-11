@@ -22,6 +22,7 @@ export default function LeftSideBar() {
             }}
         >
             {openLeft ? <ChevronLeftRounded/> : <ChevronRightRounded/>}
+            
         </Button>
         <Collapse in={openLeft} orientation="horizontal">
             <Card sx={{ width: 240, 
