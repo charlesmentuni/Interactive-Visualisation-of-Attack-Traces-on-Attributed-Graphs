@@ -20,7 +20,7 @@ import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 
 import { gatewaySVG,  userTaskSVG} from './SVGAssets.js';
-
+import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
@@ -31,36 +31,9 @@ import NodeLabel from './NodeLabel.js';
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout} = useContext(GraphContext);
 
-    const event_types = [
-        "endEvent",
-        "messageEndEvent",
-        "startEvent",
-        "timerStartEvent",
-        "messageStartEvent",
-        "catchEvent",
-        "throwEvent",
-        "boundaryEvent",
-        "intermediateCatchEvent",
-        "intermediateThrowEvent"
-    ]
 
-    const gateway_types = [
-        "eventBasedGateway",
-        "complexGateway",
-        "parallelGateway",
-        "exclusiveGateway",
-        "inclusiveGateway"
-    ]
-    
-    
-    const io_binding_edge_types = ["inputParameter",
-        "outputParameter",
-        "assignment",  
-        "dataSource"
-        ];
-    
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -72,7 +45,7 @@ export default function Sketch() {
     const stageRef = useRef(0);
     const playing = useRef(false);
     const elapsedTime = useRef(0);
-
+    const mouseDrag = useRef(false);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
@@ -129,10 +102,15 @@ export default function Sketch() {
         // These are functions for users to observe the canvas
         // DRAGGING
         tool.onMouseDrag = function(event){
+            mouseDrag.current = true;
             var delta = event.downPoint.subtract(event.point)
             paper.view.scrollBy(delta)
             paper.project.layers[5].children[0].position = paper.view.center;
-      }
+        }
+
+        tool.onMouseUp = function(event){
+            mouseDrag.current = false;
+        }
         //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'w'){
@@ -156,7 +134,7 @@ export default function Sketch() {
    }
 
 
-   const drawGraph = () => {
+    const drawGraph = () => {
 
         paper.project.activeLayer.name = "nodeLayer";
 
@@ -192,8 +170,8 @@ export default function Sketch() {
 
 
         
-        var graph = graphLayout();
-        graph.nodes().forEach((node) => { 
+        
+        graph_layout.nodes().forEach((node) => { 
             var type = task.clone();
             
             // This is used to wrap the text inside the node  
@@ -225,67 +203,17 @@ export default function Sketch() {
             if (node_dict[node.id()].type === "InputOutputBinding"){
                 type = new Raster('inputOutput');
             }
-
-            // When pressed on should show node information on the InfoCard
-            // Checks whether the mouse is dragged so that traversing won't change the info card.
-            var mouseDrag = false;
-            type.onMouseDown = function(event){
-                mouseDrag = false;
-            };
-
-            type.onMouseDrag = function(event){
-                mouseDrag = true;
-                setSelectedNodeLabel({
-                    "name": node_dict[node.id()].name,
-                    "position" : {
-                        "x": 0.5 + (node.position().x*10 - paper.view.center.x) / paper.view.size.width,
-                        "y": 0.5 + (node.position().y*10 - paper.view.center.y) / paper.view.size.height}
-                    });
+            addMouseNodeInteraction(type, node_dict[node.id()], node.position())
             
-            };
+           
 
 
-            type.onMouseUp = function(event){
-                if (!mouseDrag){
-                    toggleInfoCard(node_dict[node.id()]);
-                }
-            };
-            
-            // Hover over and display the full name
-            type.onMouseEnter = function(event){
-                
-                paper.project.layers[2].removeChildren();
-
-                var annotationRect = new Path.Rectangle(type.bounds.topLeft, type.bounds.size);
-                annotationRect.fillColor = 'white';
-                annotationRect.strokeColor = 'black';
-                annotationRect.strokeCap = 'round';
-
-                
-                var label = new PointText();
-                label.content = node_dict[node.id()].name;
-                label.scale(1);
-                label.fontFamily = 'Roboto Mono';
-
-                annotationRect.bounds.width = label.bounds.width + 20;
-                annotationRect.bounds.height = label.bounds.height + 20;
-                annotationRect.position.y -= annotationRect.bounds.size.height;
-                label.position = annotationRect.position;
-                var group = new Group(annotationRect, label);
-                group.position.x = type.position.x;
-                paper.project.layers[2].addChild(group);
-
-                
-                
-            };
-
-    
 
             // Checks if there are io bindings and allows it to be opened
             if (node_dict[node.id()].inputOutputBinding){
                 type.children[2].visible = true;
                 type.children[2].onMouseUp = function(event){
-                    if (!mouseDrag){
+                    if (!mouseDrag.current){
                         displayIOBindings(node_dict[node.id()]);}
                 };
             }
@@ -296,33 +224,28 @@ export default function Sketch() {
             type.position.y = node.position().y*spacing;
 
             type.visible = true;
-           
+            
         });
 
 
         setNode_dict(node_dict);
 
-        paper.view.setCenter(graph.nodes()[0].position().x*spacing, graph.nodes()[0].position().y*spacing);
+        paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
         
         
         // The new active layer will be the edge layer
         paper.project.activeLayer.insertAbove(new Layer());
-        
-        // The next two layers will be used for fault edges and nodes
-        
-        
-    
+            
         paper.view.draw(); 
         
         setEdge_dict(createEdges(node_dict));
 
-        
-
         paper.view.pause();
 
 
-   }
-   const createEdges = (node_dict) => {
+    }
+
+    const createEdges = (node_dict) => {
         // create edges
         paper.project.activeLayer.name = "edgeLayer";
         var temp_edge_dict = {};
@@ -346,44 +269,71 @@ export default function Sketch() {
 
         });
         return temp_edge_dict;
+
+
+    }
+    const addMouseNodeInteraction = (type, node, position) => {
+        // When pressed on should show node information on the InfoCard
+        // Checks whether the mouse is dragged so that traversing won't change the info card.
+            
+            type.onMouseDown = function(event){
+                mouseDrag.current = false;
+            };
+
+            type.onMouseDrag = function(event){
+                mouseDrag.current = true;
+                setSelectedNodeLabel({
+                    "name": node.name,
+                    "position" : {
+                        "x": 0.5 + (position.x*10 - paper.view.center.x) / paper.view.size.width,
+                        "y": 0.5 + (position.y*10 - paper.view.center.y) / paper.view.size.height}
+                    });
+            
+            };
+
+            type.onMouseUp = function(event){
+                if (!mouseDrag.current){
+                    toggleInfoCard(node);
+                }
+            };
+
+            if (node.inputOutputBinding){
+                type.children[2].onMouseUp = function(event){
+                    if (!mouseDrag.current){
+                        displayIOBindings(node);}
+                };
+            }
+
+             // Hover over and display the full name
+             type.onMouseEnter = function(event){
+                
+                paper.project.layers[2].removeChildren();
+
+                var annotationRect = new Path.Rectangle(type.bounds.topLeft, type.bounds.size);
+                annotationRect.fillColor = 'white';
+                annotationRect.strokeColor = 'black';
+                annotationRect.strokeCap = 'round';
+
+                
+                var label = new PointText();
+                label.content = node.name;
+                label.scale(1);
+                label.fontFamily = 'Roboto Mono';
+
+                annotationRect.bounds.width = label.bounds.width + 20;
+                annotationRect.bounds.height = label.bounds.height + 20;
+                annotationRect.position.y -= annotationRect.bounds.size.height;
+                label.position = annotationRect.position;
+                var group = new Group(annotationRect, label);
+                group.position.x = type.position.x;
+                paper.project.layers[2].addChild(group);
+                
+            };
+    }
+
     
 
-   }
-   const convertToGraph = () => {
-        // Turns the json file into something the cytoscape.js can interpret
-        var graph = {elements: []};
-        
-        json.nodes.forEach((node) => {
-            if (node.type === "InputOutputBinding"){
-                return;
-            }
-            
-            graph.elements.push({data: {id: node.uuid}});
-        });
-        json.edges.forEach((edge) => {
-            if (io_binding_edge_types.includes(edge.type)){
-                return;
-            }
-            graph.elements.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
-        });
-        return graph;
-   }
-
-    const graphLayout = () => {
-        // Sets up graph layout using Cytoscape to output the coordinates of the nodes
-        // May potentially be used for the edges as well.
-        // The fact that it is so close to BPMN should mean that could layout graph in own way
-        const cy = cytoscape(convertToGraph());
-        cytoscape.use(klay);
-        const layout = cy.layout({
-            name: "klay", // Use 'breadthfirst', 'grid', 'circle', etc.
-            animate: false
-        });
-            
-        layout.run();
-        
-        return cy;
-    }
+   
 
     const runFault =  function(fault) {
 
@@ -409,26 +359,15 @@ export default function Sketch() {
         edgeLayer.removeChildren();
 
         
-        
+        // This is for higlighting the bl fault node
         var faultNode = node_dict[fault].group.clone();
         nodeLayer.addChild(faultNode);
         
-        var mouseDrag = false;
-        faultNode.onMouseDown = function(event){
-            mouseDrag = false;
-        };
 
-        faultNode.onMouseDrag = function(event){
-            mouseDrag = true;
-        };
-
-        faultNode.onMouseUp = function(event){
-            if (!mouseDrag){
-                toggleInfoCard(node_dict[fault]);
-            }
-        };
+        addMouseNodeInteraction(faultNode, node_dict[fault], faultNode.position)
         faultNode.children[0].fillColor = '#00b894';
         
+        // This is for highlighting the path.
         paper.view.onFrame = (event) => {
 
             if (playing.current){
@@ -452,20 +391,7 @@ export default function Sketch() {
                         var fp = faultPath[stage].group.clone();
                         nodeLayer.addChild(fp);
 
-                        var mouseDrag = false;
-                        fp.onMouseDown = function(event){
-                            mouseDrag = false;
-                        };
-
-                        fp.onMouseDrag = function(event){
-                            mouseDrag = true;
-                        };
-
-                        fp.onMouseUp = function(event){
-                            if (!mouseDrag){
-                                toggleInfoCard(faultPath[stage]);
-                            }
-                        };
+                        addMouseNodeInteraction(fp, faultPath[stage], fp.position);
                         
                         if (faultPath[stage].type === "InputOutputBinding"){
                             fp.source = inputOutputFault;
@@ -507,17 +433,23 @@ export default function Sketch() {
 
 
     const displayIOBindings = (node) => {
-
+        // Switches from open button to close
         node.group.children[2].source = closeIcon;
 
+        // Layer 5 is the overlay, so it will grey out other nodes to increase visibility
         paper.project.layers[5].children[0].visible = true;
 
+        // When the close button is pressed, the IO bindings will be removed and the button will become open
         node.group.children[2].onMouseUp = function(event){
             node.group.children[2].source = openIcon;
+
             paper.project.layers[1].addChild(node.group);
+
+            // Functionality for open button
             node.group.children[2].onMouseUp = function(event){
                 displayIOBindings(node);
             };
+
             paper.project.layers[6].removeChildren();
             paper.project.layers[5].children[0].visible = false;
         };
