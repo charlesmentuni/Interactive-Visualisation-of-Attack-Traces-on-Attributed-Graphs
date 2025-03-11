@@ -49,17 +49,17 @@ export function GraphCreation() {
             }
         });
     }
-       useEffect(() => {
-        createND();
-       }, [])
 
-       useEffect(() => {
+    useEffect(() => {
+        createND();
+    }, [])
+
+    useEffect(() => {
         getIONodes();
-       }
-       , [io_dict, node_dict]);
+    }, [io_dict, node_dict]);
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, io_dict, setIo_dict}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict}}>
             <Sketch />
         </GraphContext.Provider>
     )

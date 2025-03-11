@@ -31,7 +31,7 @@ import NodeLabel from './NodeLabel.js';
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, io_dict, setIo_dict} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict} = useContext(GraphContext);
 
     const event_types = [
         "endEvent",
@@ -72,9 +72,8 @@ export default function Sketch() {
     const stageRef = useRef(0);
     const playing = useRef(false);
     const elapsedTime = useRef(0);
-    const nd = useRef({});
-    const ed = useRef({});
-    const iod = useRef({});
+
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
 
@@ -314,8 +313,8 @@ export default function Sketch() {
         
     
         paper.view.draw(); 
-        const edge_dict = createEdges(node_dict);
-        ed.current = edge_dict;
+        
+        setEdge_dict(createEdges(node_dict));
 
         
 
@@ -326,7 +325,7 @@ export default function Sketch() {
    const createEdges = (node_dict) => {
         // create edges
         paper.project.activeLayer.name = "edgeLayer";
-        var edge_dict = {};
+        var temp_edge_dict = {};
         json.edges.forEach((edge) => {
 
             if (io_binding_edge_types.includes(edge.type)){
@@ -343,10 +342,10 @@ export default function Sketch() {
 
             new_edge.strokeColor = '#0984e3';
             new_edge.strokeWidth = 4;
-            edge_dict[edge.id] = new_edge;
+            temp_edge_dict[edge.id] = new_edge;
 
         });
-        return edge_dict;
+        return temp_edge_dict;
     
 
    }
@@ -387,7 +386,8 @@ export default function Sketch() {
     }
 
     const runFault =  function(fault) {
-        const edge_dict = ed.current;
+
+
         stageRef.current = 0;
         faultPathRef.current = [];
         
