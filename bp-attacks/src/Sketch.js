@@ -264,7 +264,7 @@ export default function Sketch() {
         var temp_edge_dict = {};
         json.edges.forEach((edge) => {
 
-            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow"){
+            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
                 return;
             }
 

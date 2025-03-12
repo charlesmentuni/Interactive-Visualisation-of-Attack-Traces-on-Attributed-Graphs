@@ -30,7 +30,9 @@ export function GraphCreation() {
                 return;
             }
 
-           
+            if (node.type === "process"){
+                return;
+            }
 
             temp_node_dict[node.uuid] = {};
 
@@ -96,12 +98,14 @@ export function GraphCreation() {
         var processNode ={};
         json.nodes.forEach((node) => {
             if (node.type === "InputOutputBinding" || node.type === "blFault"){return;}
-            if (node.type === "processFlow"){
+            
+            if (node.type === "process"){
                 processNode = node;
                 return;
             }
             
             graph.elements.push({data: {id: node.uuid}});
+
         });
         json.edges.forEach((edge) => {
             if (edge.type === "faultFlow"){return;}
