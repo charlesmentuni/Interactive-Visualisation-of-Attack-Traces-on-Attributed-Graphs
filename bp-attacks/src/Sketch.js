@@ -57,6 +57,44 @@ export default function Sketch() {
         setIsPlaying(!isPlaying);
     }      
 
+    useEffect(() => {
+        const handleMouseWheel = (event) => {
+            var newZoom = paper.view.zoom; 
+            var oldZoom = paper.view.zoom;
+            
+            if (event.deltaY > 0) {			
+                newZoom = paper.view.zoom * 0.95;
+            } else {
+                newZoom = paper.view.zoom * 1.05;
+            }
+            
+            var beta = oldZoom / newZoom;
+            
+            var mousePosition = new paper.Point(event.offsetX, event.offsetY);
+            
+            //viewToProject: gives the coordinates in the Project space from the Screen Coordinates
+            var viewPosition = paper.view.viewToProject(mousePosition);
+            
+            var mpos = viewPosition;
+            var ctr = paper.view.center;
+            
+            var pc = mpos.subtract(ctr);
+            var offset = mpos.subtract(pc.multiply(beta)).subtract(ctr);	
+            
+            paper.view.zoom = newZoom;
+            paper.view.center = paper.view.center.add(offset);
+            
+            event.preventDefault();
+            paper.view.draw();			
+        };
+
+        const canvas = document.getElementById('paper-canvas');
+        canvas.addEventListener('mousewheel', handleMouseWheel);
+
+        
+    }, []);
+	
+
    window.onload = function() {
 
         
