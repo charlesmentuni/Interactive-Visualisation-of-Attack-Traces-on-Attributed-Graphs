@@ -18,7 +18,7 @@ import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -189,10 +189,26 @@ export default function Sketch() {
                 type.children[1].content = label;
             }
 
-            if (event_types.includes(node_dict[node.id()].type )){
-                type = new Raster('event-img');
+            
+            if (node_dict[node.id()].type === 'startEvent'){
+                type = paper.project.importSVG(startEvent);
+                type.scale(0.5);
+            }
+            if (node_dict[node.id()].type === 'endEvent'){
+                type = paper.project.importSVG(endEvent);
+                type.scale(0.5);
             }
             
+            if (node_dict[node.id()].type === 'intermediateThrowEvent'){
+                type = paper.project.importSVG(throwEvent);
+                type.scale(0.5);
+            }
+
+            if (node_dict[node.id()].type === 'intermediateCatchEvent'){
+                type = paper.project.importSVG(catchEvent);
+                type.scale(0.5);
+            }
+
             if (gateway_types.includes(node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
                 type.scale(0.6)
@@ -248,7 +264,7 @@ export default function Sketch() {
         var temp_edge_dict = {};
         json.edges.forEach((edge) => {
 
-            if (io_binding_edge_types.includes(edge.type) || edge.type === 'faultFlow'){
+            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow"){
                 return;
             }
 

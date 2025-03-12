@@ -30,6 +30,8 @@ export function GraphCreation() {
                 return;
             }
 
+           
+
             temp_node_dict[node.uuid] = {};
 
             Object.keys(node).forEach((key) => {
@@ -91,9 +93,11 @@ export function GraphCreation() {
     const convertToGraph = () => {
         // Turns the json file into something the cytoscape.js can interpret
         var graph = {elements: []};
-        
+        var processNode ={};
         json.nodes.forEach((node) => {
-            if (node.type === "InputOutputBinding" || node.type === "blFault"){
+            if (node.type === "InputOutputBinding" || node.type === "blFault"){return;}
+            if (node.type === "processFlow"){
+                processNode = node;
                 return;
             }
             
@@ -103,6 +107,9 @@ export function GraphCreation() {
             if (edge.type === "faultFlow"){return;}
 
             if (io_binding_edge_types.includes(edge.type)){
+                return;
+            }
+            if (processNode.uuid === edge.sourceRef || processNode.uuid === edge.targetRef){
                 return;
             }
             graph.elements.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
