@@ -18,7 +18,7 @@ import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 
-import { gatewaySVG,  userTaskSVG} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -167,9 +167,15 @@ export default function Sketch() {
         graph_layout.nodes().forEach((node) => { 
             var type = task.clone();
             
+            // variable used to snap the nodes to the grid
+            var tolerance = 10;
             // This is used to wrap the text inside the node  
             var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
             
+            // This snaps the nodes into place, so that the layout is more elegant.
+            node.position().x = Math.round(node.position().x/tolerance)*tolerance;
+            node.position().y = Math.round(node.position().y/tolerance)*tolerance;
+
             const numChars = 20;
             if (label){
                 
@@ -193,9 +199,7 @@ export default function Sketch() {
                 
             }
 
-            if (node_dict[node.id()].type === "InputOutputBinding"){
-                type = new Raster('inputOutput');
-            }
+            
             addMouseNodeInteraction(type, node_dict[node.id()], node.position())
             
            
@@ -247,14 +251,63 @@ export default function Sketch() {
             if (io_binding_edge_types.includes(edge.type) || edge.type === 'faultFlow'){
                 return;
             }
+
+            var arrowHead  = paper.project.importSVG(arrowHeadSVG);
+            arrowHead.scale(0.1);
+
+            var sourcePoint = node_dict[edge.sourceRef].group.position;
+            var targetPoint = node_dict[edge.targetRef].group.position;
+            var arrowHeadDirection = 0;
+
+            if (node_dict[edge.sourceRef].group.position.x > node_dict[edge.targetRef].group.position.x){
+                sourcePoint = node_dict[edge.sourceRef].group.bounds.leftCenter;
+                targetPoint = node_dict[edge.targetRef].group.bounds.rightCenter;
+                arrowHead.bounds.leftCenter = targetPoint;
+                arrowHeadDirection = 270;
+
+            }
+
+            if (node_dict[edge.sourceRef].group.position.x < node_dict[edge.targetRef].group.position.x){
+                sourcePoint = node_dict[edge.sourceRef].group.bounds.rightCenter;
+                targetPoint = node_dict[edge.targetRef].group.bounds.leftCenter;
+                arrowHead.bounds.rightCenter = targetPoint;
+                arrowHeadDirection = 90;
+
+            }
+
+            if (node_dict[edge.sourceRef].group.position.y < node_dict[edge.targetRef].group.position.y){
+                targetPoint = node_dict[edge.targetRef].group.bounds.topCenter;
+                arrowHead.bounds.bottomCenter = targetPoint;
+                arrowHeadDirection = 180;
+
+
+            }
             
+            if (node_dict[edge.sourceRef].group.position.y > node_dict[edge.targetRef].group.position.y){
+                targetPoint = node_dict[edge.targetRef].group.bounds.bottomCenter;
+                arrowHead.bounds.topCenter = targetPoint;
+                arrowHeadDirection = 0;
+
+
+            }
+
+            arrowHead.rotate(arrowHeadDirection);
+
+           
             var new_edge = new Path();
 
-            new_edge.add(node_dict[edge.sourceRef].group.position);
-            var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
-            new_edge.add(point);
-            new_edge.add(node_dict[edge.targetRef].group.position);
+            new_edge.add(sourcePoint);
 
+            // This checks whether to add an elbow corner or if it's just a straight line
+            if (sourcePoint.x !== targetPoint.x && sourcePoint.y !== targetPoint.y){
+                var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
+                new_edge.add(point);
+            }
+            
+            
+            new_edge.add(targetPoint);
+            
+            
 
             new_edge.strokeColor = '#0984e3';
             new_edge.strokeWidth = 4;
@@ -443,8 +496,6 @@ export default function Sketch() {
         }
     }
 
-
-
     const displayIOBindings = (node) => {
         // Switches from open button to close
         node.group.children[2].source = closeIcon;
@@ -467,11 +518,12 @@ export default function Sketch() {
             paper.project.layers[5].children[0].visible = false;
         };
 
-        paper.project.layers[6].addChild(node.group);
+        
 
         var spacing = 300;
         Object.keys(node.inputOutputBinding).forEach((io, index) => {
-            var ioImage = new Raster('inputOutput');
+            var ioImage = paper.project.importSVG(inputOutputBindingSVG);
+            ioImage.scale(1.5);
             var angle = index/Object.keys(node.inputOutputBinding).length*Math.PI*2;
             ioImage.position = new Point(node.group.position.x+Math.sin(angle)*spacing, node.group.position.y+Math.cos(angle)*spacing);
 
@@ -495,7 +547,7 @@ export default function Sketch() {
 
         });
         
-
+        paper.project.layers[6].addChild(node.group);
     }
 
     useEffect(()=>{if (fault){runFault()}}, [fault]);
@@ -532,7 +584,6 @@ export default function Sketch() {
         <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
         <img id='openIcon' src={openIcon}  style={{display:"none"}} />
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
-        <img id='exclusiveGateway' src={gatewaySVG} style={{display:"none"}} />
     
          <FaultContext.Provider value={{fault, setFault, fault_dict}}>
             <PlayControls onPlay={onPlay} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
