@@ -3,6 +3,7 @@ import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, Fas
 import {useContext, useEffect, useState} from 'react';
 import SelectFault from './SelectFault';
 import {FaultContext} from './Sketch'
+import FaultDescription from './FaultDescription';
 
 
 
@@ -30,7 +31,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     }, [playing]);
     return (
         <>
-        
+        <FaultDescription />
 
         <Card sx={{
     position: 'absolute', 
@@ -38,6 +39,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     right: '0', 
     margin: '2%', 
     width: '30%', 
+    height:'13%',
     backgroundColor: 'rgb(64, 64, 64)', 
     color: '#fefefe'
 }}>
