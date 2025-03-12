@@ -96,8 +96,12 @@ export default function Sketch() {
         // These are functions for users to observe the canvas
         // DRAGGING
         tool.onMouseDrag = function(event){
-            mouseDrag.current = true;
+            const sensitivity = 180;
             var delta = event.downPoint.subtract(event.point)
+
+            if (delta.x**2+delta.y**2 > sensitivity){
+                mouseDrag.current = true;
+            }
             paper.view.scrollBy(delta)
             paper.project.layers[5].children[0].position = paper.view.center;
         }
@@ -344,7 +348,7 @@ export default function Sketch() {
             };
 
             type.onMouseDrag = function(event){
-                mouseDrag.current = true;
+                
                 setSelectedNodeLabel({
                     "name": node.name,
                     "position" : {
@@ -495,7 +499,7 @@ export default function Sketch() {
                 return;
             } 
             if (event_types.includes(faultPath[stage].type)){
-                fp.source = eventFault;
+                fp.children[1].fillColor = '#d63031';
                 return;
             }
 
