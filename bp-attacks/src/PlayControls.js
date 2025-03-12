@@ -1,13 +1,14 @@
-import { Button, ButtonGroup, Card, CardContent, Select , Box} from '@mui/material';
-import { PlayArrow, SkipNext, SkipPrevious, PauseSharp } from '@mui/icons-material';
+import { Button, ButtonGroup, Card, CardContent, Select , Box, MenuItem, InputLabel, FormControl} from '@mui/material';
+import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward } from '@mui/icons-material';
 import {useContext, useEffect, useState} from 'react';
 import SelectFault from './SelectFault';
 import {FaultContext} from './Sketch'
 
 
+
 export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}) {
 
-    const {fault, setFault} = useContext(FaultContext);
+    const {fault, setFault, fault_dict} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -29,30 +30,41 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     }, [playing]);
     return (
         <>
-        <SelectFault />
         
 
         <Card sx={{
     position: 'absolute', 
-    bottom: '6%', 
+    bottom: '7%', 
     right: '0', 
     margin: '2%', 
-    width: '16%', 
+    width: '30%', 
     backgroundColor: 'rgb(64, 64, 64)', 
     color: '#fefefe'
 }}>
     <CardContent>
-        {fault ? fault : "No Fault Selected"}
+        <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label" style={{color:'#fefefe'}}>Fault</InputLabel>
+            <Select
+                color="greySelect"
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={fault}
+                label="Fault"
+                onChange={(e) => {setFault(e.target.value); }}
+            >
+                
+                {Object.keys(fault_dict).map((key) => {
+                    return <MenuItem value={key}>{fault_dict[key].uuid}</MenuItem>
+                })}
+            </Select>
+        </FormControl>
     </CardContent>
 </Card>
-
+<div style={{flexDirection: 'row', display: 'flex', position: 'absolute', bottom: '0', right: '0', margin: '2%', width: '30%', height: '6%', justifyContent:'space-between'}}>
 <Button 
     variant="contained"  
-    sx={{
-        position: 'absolute', 
-        bottom: '0', 
-        right: '12%', 
-        margin: '2%', 
+    sx={{ 
+        
         minWidth: '3vh',
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
@@ -67,10 +79,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
 <Button 
     variant="contained"  
     sx={{
-        position: 'absolute', 
-        bottom: '0', 
-        right: '6%', 
-        margin: '2%', 
+        
         minWidth: '3vh',
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
@@ -88,10 +97,8 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
 <Button 
     variant="contained"  
     sx={{
-        position: 'absolute', 
-        bottom: '0', 
-        right: '0', 
-        margin: '2%', 
+    
+        
         minWidth: '3vh',
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
@@ -102,6 +109,43 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
 >
     <SkipNext/>
 </Button>
+
+<Button
+    variant="contained"  
+    sx={{
     
+        
+        minWidth: '3vh',
+        minHeight: '3vh',
+        backgroundColor: 'rgb(64, 64, 64)',
+        color: '#fefefe'
+    }}>
+    <Refresh/>
+</Button>
+<Button
+    variant="contained"  
+    sx={{
+    
+        
+        minWidth: '3vh',
+        minHeight: '3vh',
+        backgroundColor: 'rgb(64, 64, 64)',
+        color: '#fefefe'
+    }}>
+    <FastRewind/>
+</Button>
+<Button
+    variant="contained"  
+    sx={{
+    
+        
+        minWidth: '3vh',
+        minHeight: '3vh',
+        backgroundColor: 'rgb(64, 64, 64)',
+        color: '#fefefe'
+    }}>
+    <FastForward/>
+</Button>
+    </div>
     </>);
 }
