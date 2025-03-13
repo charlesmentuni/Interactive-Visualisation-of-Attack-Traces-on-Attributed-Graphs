@@ -10,11 +10,12 @@ export default function FaultDescription() {
         <>
         <Card sx={{
             position: 'absolute', 
+            opacity: 0.75,
             margin: '2%',
             bottom:0,
             height: '20%',
             width: '64%', 
-            backgroundColor: 'rgb(64,64,64)', 
+            backgroundColor: 'black', 
             color: '#fefefe',
             overflow: 'auto',
             padding:0,

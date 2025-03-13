@@ -19,8 +19,7 @@ export default function RightSideBar({nodeCard}) {
             borderBottomLeftRadius: 8, 
             borderTopRightRadius: 0, 
             borderBottomRightRadius: 0,
-            backgroundColor:'rgb(64, 64, 64)'
-            
+            backgroundColor:'rgb(64, 64, 64)', 
             }}
         >
             {openRight ? <ChevronRightRounded/> : <ChevronLeftRounded/>}

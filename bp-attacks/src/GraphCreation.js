@@ -1,7 +1,7 @@
 import {createContext, useContext, useState, useEffect, use} from 'react';
 import Sketch from './Sketch';
 import json from './wf102.json';
-import { io_binding_edge_types } from './blmodel';
+import { data_source_types, io_binding_edge_types } from './blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
 
@@ -11,6 +11,7 @@ export default GraphContext;
 export function GraphCreation() {
     const [node_dict, setNode_dict] = useState({});
     const [edge_dict, setEdge_dict] = useState({});
+    const [data_source_dict, setData_source_dict] = useState({});
     const [graph_layout, setGraph_layout] = useState({});
     const [fault_dict, setFault_dict] = useState({});
 
@@ -21,6 +22,7 @@ export function GraphCreation() {
         // Creates a dictionary of nodes with their uuid as the key
         var temp_node_dict = {};
         var temp_io_dict = {};
+        var temp_data_source_dict = {};
 
         json.nodes.forEach((node, index) => {
             if (node.type === "blFault"){return;}
@@ -62,6 +64,7 @@ export function GraphCreation() {
                 }
                 temp_node_dict[edge.sourceRef].inputOutputBinding[edge.targetRef] = io_dict[edge.targetRef];
             }
+            
         });
     }
 
@@ -97,7 +100,8 @@ export function GraphCreation() {
         var graph = {elements: []};
         var processNode ={};
         json.nodes.forEach((node) => {
-            if (node.type === "InputOutputBinding" || node.type === "blFault"){return;}
+            if (node.type === "InputOutputBinding" || node.type === "blFault" || node.type === "userForm"){return;}
+
             
             if (node.type === "process"){
                 processNode = node;
@@ -116,6 +120,9 @@ export function GraphCreation() {
             if (processNode.uuid === edge.sourceRef || processNode.uuid === edge.targetRef){
                 return;
             }
+
+            
+
             graph.elements.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
         });
         return graph;

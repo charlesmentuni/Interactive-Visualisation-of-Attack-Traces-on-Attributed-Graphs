@@ -218,6 +218,8 @@ export default function Sketch() {
             node.position().x = Math.round(node.position().x/tolerance)*tolerance;
             node.position().y = Math.round(node.position().y/tolerance)*tolerance;
 
+           
+
             const numChars = 20;
             if (label){
                 
@@ -275,9 +277,20 @@ export default function Sketch() {
 
             node_dict[node.id()].group = type;
             
-            type.position.x = node.position().x*spacing;
-            type.position.y = node.position().y*spacing;
+            
 
+            let x = node.position().x*spacing;
+            let y = Math.round(node.position().y*spacing);
+        
+
+            type.position = new Point(x,y);
+
+            if (node_dict[node.id()].name === "Go to jobRelinquished"){
+                console.log(type.position.y);
+                console.log(y === 500);
+                console.log(type.position.y === 500);
+
+            }
             type.visible = true;
             
         });
@@ -316,8 +329,11 @@ export default function Sketch() {
             var sourcePoint = node_dict[edge.sourceRef].group.position;
             var targetPoint = node_dict[edge.targetRef].group.position;
             var arrowHeadDirection = 0;
+            
+            const sourcePosition = {x : Math.floor(node_dict[edge.sourceRef].group.position.x), y: Math.floor(node_dict[edge.sourceRef].group.position.y)};
+            const targetPosition = {x : Math.floor(node_dict[edge.targetRef].group.position.x), y: Math.floor(node_dict[edge.targetRef].group.position.y)};
 
-            if (node_dict[edge.sourceRef].group.position.x > node_dict[edge.targetRef].group.position.x){
+            if (sourcePosition.x > sourcePosition.x){
                 sourcePoint = node_dict[edge.sourceRef].group.bounds.leftCenter;
                 targetPoint = node_dict[edge.targetRef].group.bounds.rightCenter;
                 arrowHead.bounds.leftCenter = targetPoint;
@@ -325,7 +341,7 @@ export default function Sketch() {
 
             }
 
-            if (node_dict[edge.sourceRef].group.position.x < node_dict[edge.targetRef].group.position.x){
+            if (sourcePosition.x < targetPosition.x ){
                 sourcePoint = node_dict[edge.sourceRef].group.bounds.rightCenter;
                 targetPoint = node_dict[edge.targetRef].group.bounds.leftCenter;
                 arrowHead.bounds.rightCenter = targetPoint;
@@ -333,7 +349,7 @@ export default function Sketch() {
 
             }
 
-            if (node_dict[edge.sourceRef].group.position.y < node_dict[edge.targetRef].group.position.y){
+            if (sourcePosition.y < targetPosition.y){
                 targetPoint = node_dict[edge.targetRef].group.bounds.topCenter;
                 arrowHead.bounds.bottomCenter = targetPoint;
                 arrowHeadDirection = 180;
@@ -341,7 +357,8 @@ export default function Sketch() {
 
             }
             
-            if (node_dict[edge.sourceRef].group.position.y > node_dict[edge.targetRef].group.position.y){
+            if (sourcePosition.y > targetPosition.y){
+                
                 targetPoint = node_dict[edge.targetRef].group.bounds.bottomCenter;
                 arrowHead.bounds.topCenter = targetPoint;
                 arrowHeadDirection = 0;
@@ -563,6 +580,7 @@ export default function Sketch() {
 
         // When the close button is pressed, the IO bindings will be removed and the button will become open
         node.group.children[2].onMouseUp = function(event){
+            if (mouseDrag.current) {return;}
             node.group.children[2].source = openIcon;
 
             paper.project.layers[1].addChild(node.group);
