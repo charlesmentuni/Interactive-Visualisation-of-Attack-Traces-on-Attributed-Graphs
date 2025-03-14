@@ -64,8 +64,14 @@ export default function Sketch() {
             
             if (event.deltaY > 0) {			
                 newZoom = paper.view.zoom * 0.95;
+                paper.project.layers[5].children[0].bounds.height *= 1/0.95;
+                paper.project.layers[5].children[0].bounds.width *= 1/0.95;
+                
             } else {
                 newZoom = paper.view.zoom * 1.05;
+                paper.project.layers[5].children[0].bounds.height *= 1/1.05;
+                paper.project.layers[5].children[0].bounds.width *= 1/1.05;
+                
             }
             
             var beta = oldZoom / newZoom;
@@ -83,6 +89,8 @@ export default function Sketch() {
             
             paper.view.zoom = newZoom;
             paper.view.center = paper.view.center.add(offset);
+            paper.project.layers[5].children[0].position = paper.view.center;
+
             
             event.preventDefault();
             paper.view.draw();			
@@ -587,7 +595,9 @@ export default function Sketch() {
 
             // Functionality for open button
             node.group.children[2].onMouseUp = function(event){
-                displayIOBindings(node);
+                if (!mouseDrag.current){
+                    displayIOBindings(node);
+                }
             };
 
             paper.project.layers[6].removeChildren();

@@ -4,6 +4,7 @@ import json from './wf102.json';
 import { data_source_types, io_binding_edge_types } from './blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
+import elk from "cytoscape-elk";
 
 const GraphContext = createContext();
 export default GraphContext;
@@ -84,14 +85,14 @@ export function GraphCreation() {
         // May potentially be used for the edges as well.
         // The fact that it is so close to BPMN should mean that could layout graph in own way
         const cy = cytoscape(convertToGraph());
-        cytoscape.use(klay);
+        //cytoscape.use(klay);
+        cytoscape.use(elk);
         const layout = cy.layout({
-            name: "klay", // Use 'breadthfirst', 'grid', 'circle', etc.
+            name: "elk", // Use 'breadthfirst', 'grid', 'circle', etc.
             animate: false
         });
             
         layout.run();
-        
         setGraph_layout(cy);
     }
 
@@ -100,7 +101,7 @@ export function GraphCreation() {
         var graph = {elements: []};
         var processNode ={};
         json.nodes.forEach((node) => {
-            if (node.type === "InputOutputBinding" || node.type === "blFault" || node.type === "userForm"){return;}
+            if (node.type === "InputOutputBinding" || node.type === "blFault" || data_source_types.includes(node.type)){return;}
 
             
             if (node.type === "process"){
