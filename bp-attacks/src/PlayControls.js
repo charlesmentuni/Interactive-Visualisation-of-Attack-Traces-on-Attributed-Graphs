@@ -1,12 +1,10 @@
 import { Button, ButtonGroup, Card, CardContent, Select , Box, MenuItem, InputLabel, FormControl} from '@mui/material';
 import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward } from '@mui/icons-material';
 import {useContext, useEffect, useState, useRef} from 'react';
-import SelectFault from './SelectFault';
 import {FaultContext} from './Sketch'
 import FaultDescription from './FaultDescription';
 import paper from 'paper';
 import { gateway_types, event_types } from './blmodel';
-import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 
 
 export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
@@ -26,6 +24,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
     const resetFault = () => {
         paper.project = paper.projects[0];
 
+        playbackSpeed.current = 0;
         stageRef.current = 0;
         paper.project.layers[4].removeChildren();
         paper.project.layers[3].removeChildren();
@@ -46,7 +45,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                 faultPathRef.current.push(edge_dict[node]);
             }
         });
-        console.log(fault_dict);
 
         
         const nodeLayer = paper.project.layers[4];

@@ -74,6 +74,8 @@ export default function Sketch() {
                 paper.project.layers[5].children[0].bounds.width *= 1/1.05;
                 
             }
+
+            
             
             var beta = oldZoom / newZoom;
             
@@ -170,7 +172,14 @@ export default function Sketch() {
                 paper.project.layers[5].children[0].bounds.width *= 1/0.8;
                 paper.project.layers[5].children[0].position = paper.view.center;
             }
+            // RECENTER
+            if (event.key === 'r'){
+                paper.view.zoom = 1;
+                paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
+                
+            }
         }
+
 
         
 
@@ -209,7 +218,6 @@ export default function Sketch() {
         task.position = new Point(200,200);
         task.visible = false;
         
-        console.log(graph_layout.nodes()[0].position().x);
 
         
         
