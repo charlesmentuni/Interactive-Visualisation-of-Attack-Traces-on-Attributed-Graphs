@@ -17,8 +17,9 @@ import eventFault from "./symbols/eventFault.png";
 import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
+import labelPointer from "./symbols/labelPointer.png"
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -464,7 +465,15 @@ export default function Sketch() {
                 
                 paper.project.layers[2].removeChildren();
 
-                var annotationRect = new Path.Rectangle(type.bounds.topLeft, type.bounds.size);
+                var labelHead = new Raster(labelPointer);
+                labelHead.scale(0.2);
+                labelHead.bounds.bottomCenter.x = type.bounds.topCenter.x;
+                labelHead.bounds.bottomCenter.y = type.bounds.topCenter.y-1;
+
+                
+                
+
+                var annotationRect = new Path.Rectangle(new Point(type.bounds.topLeft.x , type.bounds.topLeft.y-labelHead.size.height*0.2), type.bounds.size);
                 annotationRect.fillColor = 'white';
                 annotationRect.strokeColor = 'black';
                 annotationRect.strokeCap = 'round';
@@ -482,6 +491,7 @@ export default function Sketch() {
                 var group = new Group(annotationRect, label);
                 group.position.x = type.position.x;
                 paper.project.layers[2].addChild(group);
+                paper.project.layers[2].addChild(labelHead)
                 
             };
             type.onMouseLeave = function(event) {
@@ -698,7 +708,8 @@ export default function Sketch() {
         <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
         <img id='openIcon' src={openIcon}  style={{display:"none"}} />
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
-    
+        <img id='labelHead' src={labelPointer} style={{display:"none"}} />
+
          <FaultContext.Provider value={{fault, setFault, fault_dict}}>
             <PlayControls onPlay={onPlay} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
         </FaultContext.Provider> 
