@@ -1,37 +1,158 @@
 import { Button, ButtonGroup, Card, CardContent, Select , Box, MenuItem, InputLabel, FormControl} from '@mui/material';
 import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward } from '@mui/icons-material';
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState, useRef} from 'react';
 import SelectFault from './SelectFault';
 import {FaultContext} from './Sketch'
 import FaultDescription from './FaultDescription';
+import paper from 'paper';
+import { gateway_types, event_types } from './blmodel';
+import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 
 
+export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
-export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}) {
-
-    const {fault, setFault, fault_dict} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
+    const [fault, setFault] = useState(null);
+    const stageRef = useRef(0);
+    const faultPathRef = useRef([]);
+    const elapsedTime = useRef(0);
+    const playing = useRef(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const playbackSpeed = useRef(0);
+
+    const resetFault = () => {
+        paper.project = paper.projects[0];
+
+        stageRef.current = 0;
+        paper.project.layers[4].removeChildren();
+        paper.project.layers[3].removeChildren();
+    };
+
+    const runFault =  function() {
+        paper.project = paper.projects[0];
+
+        stageRef.current = 0;
+        faultPathRef.current = [];
+        
+        // Loops through the execution path and changes the color of the nodes and edges
+        fault_dict[fault].execution_path.forEach((node) => {
+            if (node_dict[node]){
+                faultPathRef.current.push(node_dict[node]);
+            }
+            if (edge_dict[node]){
+                faultPathRef.current.push(edge_dict[node]);
+            }
+        });
+        console.log(fault_dict);
+
+        
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
+
+        nodeLayer.removeChildren();
+        edgeLayer.removeChildren();
+
+        
+        
+        // This is for highlighting the path.
+        paper.view.onFrame = (event) => {
+
+            if (playing.current){
+                
+                var stage = stageRef.current;
+                var faultPath = faultPathRef.current;
+
+                let speeds = [1, 1.2, 1.5, 2];
+                if (elapsedTime.current >= 1/speeds[playbackSpeed.current%4]){
+                    elapsedTime.current = 0;
+                    nextFault();
+                }
+            
+            elapsedTime.current += event.delta;
+           }
+        };
+    }
+
+    const prevFault = function() {
+        paper.project = paper.projects[0];
+
+        var faultPath = faultPathRef.current;
+        if (faultPath[stageRef.current-1]){
+            stageRef.current-=1;
+        }
+
+        var stage = stageRef.current;
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
+
+        // This assumes that is starts with a node
+        if (stage % 2 === 0){
+            nodeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
+        }
+        if (stage % 2 === 1 ){
+            edgeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
+        }
+    } 
+
+    const nextFault = function() {
 
 
+        var faultPath = faultPathRef.current;
+        var stage = stageRef.current;
 
-    useEffect(() => {
-
-        if (playing){
-            setPrevDisabled(true);
-            setNextDisabled(true);
+        if (faultPath[stageRef.current]){
+            stageRef.current+=1;
         }
         else{
-            
-            setPrevDisabled(false);
-            setNextDisabled(false);
+            playing.current = false;
+            setIsPlaying(false);
+            playbackSpeed.current = 0;
+            return;
         }
+        const nodeLayer = paper.project.layers[4];
+        const edgeLayer = paper.project.layers[3];
 
-    }, [playing]);
+        
+
+       
+
+        if (faultPath[stage].group){
+            var fp = faultPath[stage].group.clone();
+            nodeLayer.addChild(fp);
+
+            addMouseNodeInteraction(fp, faultPath[stage], fp.position);
+            
+            if (gateway_types.includes(faultPath[stage].type)){
+                fp.children[1].fillColor = '#d63031';
+                return;
+            } 
+            if (event_types.includes(faultPath[stage].type)){
+                fp.children[1].fillColor = '#d63031';
+                return;
+            }
+
+            fp.children[0].fillColor = '#d63031';
+            
+        
+        }
+        // Checks if it is an edge as a group only exists for the nodes
+        if (faultPath[stage].visible){ 
+            var fp = faultPath[stage].clone();
+            edgeLayer.addChild(fp);
+            fp.strokeColor ='#d63031';
+            fp.strokeWidth = 10;
+        }
+    }
+    
+
+    useEffect(()=>{if (fault){ runFault()}}, [fault]);
+
     return (
         <>
-        <FaultDescription />
+        <FaultDescription fault={fault} />
 
         <Card sx={{
     position: 'absolute', 
@@ -42,7 +163,7 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
     height:'13%',
     backgroundColor: 'rgb(64, 64, 64)', 
     color: '#fefefe'
-}}>
+}}> 
     <CardContent>
         <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label" style={{color:'#fefefe'}}>Fault</InputLabel>
@@ -65,15 +186,14 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
 <div style={{flexDirection: 'row', display: 'flex', position: 'absolute', bottom: '0', right: '0', margin: '2%', width: '30%', height: '6%', justifyContent:'space-between'}}>
 <Button 
     variant="contained"  
-    sx={{ 
-        
+    sx={{
         minWidth: '3vh',
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
     }}
-    disabled={prevDisabled}
-    onClick={onPrev}
+    disabled={isPlaying}
+    onClick={prevFault}
 >
     <SkipPrevious/>
 </Button>
@@ -88,12 +208,13 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
         color: '#fefefe'
     }}
     onClick={() => {
-        onPlay();
+        playing.current = !playing.current;
+        setIsPlaying(!isPlaying);
         setNextDisabled(!nextDisabled);
         setPrevDisabled(!prevDisabled);
     }}
 >
-    {playing ? <PauseSharp/> : <PlayArrow/>}
+    {playing.current ? <PauseSharp/> : <PlayArrow/>}
 </Button>
 
 <Button 
@@ -106,10 +227,21 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
     }}
-    disabled={nextDisabled}
-    onClick={onNext}
+    disabled={isPlaying}
+    onClick={nextFault}
 >
     <SkipNext/>
+</Button>
+
+<Button
+    variant="contained"  
+    sx={{
+        minWidth: '3vh',
+        minHeight: '3vh',
+        backgroundColor: 'rgb(64, 64, 64)',
+        color: '#fefefe'
+    }} onClick={resetFault}>
+    <Refresh/>
 </Button>
 
 <Button
@@ -121,31 +253,19 @@ export default function PlayControls({onPlay, onChange, playing, onNext, onPrev}
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
-    }}>
-    <Refresh/>
-</Button>
-<Button
-    variant="contained"  
-    sx={{
-    
-        
-        minWidth: '3vh',
-        minHeight: '3vh',
-        backgroundColor: 'rgb(64, 64, 64)',
-        color: '#fefefe'
-    }}>
+    }} disabled={!isPlaying} onClick={() => {if (playbackSpeed.current > 0){playbackSpeed.current -= 1}}}>
     <FastRewind/>
 </Button>
+
 <Button
     variant="contained"  
     sx={{
-    
-        
         minWidth: '3vh',
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
-    }}>
+    }} disabled={!isPlaying} onClick={() => {playbackSpeed.current += 1}}>
+    
     <FastForward/>
 </Button>
     </div>

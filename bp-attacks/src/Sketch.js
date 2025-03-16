@@ -497,123 +497,7 @@ export default function Sketch() {
             }
     }
 
-    const runFault =  function() {
 
-        stageRef.current = 0;
-        faultPathRef.current = [];
-        
-        // Loops through the execution path and changes the color of the nodes and edges
-        fault_dict[fault].execution_path.forEach((node) => {
-            if (node_dict[node]){
-                faultPathRef.current.push(node_dict[node]);
-            }
-            if (edge_dict[node]){
-                faultPathRef.current.push(edge_dict[node]);
-            }
-        });
-
-        
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
-
-        nodeLayer.removeChildren();
-        edgeLayer.removeChildren();
-
-        
-        
-        // This is for highlighting the path.
-        paper.view.onFrame = (event) => {
-
-            if (playing.current){
-                
-                var stage = stageRef.current;
-                var faultPath = faultPathRef.current;
-
-                if (elapsedTime.current >= 1){
-                    elapsedTime.current = 0;
-                    nextFault();
-                }
-            
-            elapsedTime.current += event.delta;
-           }
-        };
-    }
-
-    const prevFault = function() {
-        
-        var faultPath = faultPathRef.current;
-        if (faultPath[stageRef.current-1]){
-            stageRef.current-=1;
-        }
-
-        var stage = stageRef.current;
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
-
-        // This assumes that is starts with a node
-        if (stage % 2 === 0){
-            nodeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
-        }
-        if (stage % 2 === 1 ){
-            edgeLayer.removeChildren(Math.floor(stage/2), Math.floor(stage/2)+1)
-        }
-
-
-
-    }
-
-    const nextFault = function() {
-
-
-        var faultPath = faultPathRef.current;
-        var stage = stageRef.current;
-
-        if (faultPath[stageRef.current]){
-            stageRef.current+=1;
-        }
-        else{
-            playing.current = false;
-            setIsPlaying(false);
-            return;
-        }
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
-
-        
-
-       
-
-        if (faultPath[stage].group){
-            var fp = faultPath[stage].group.clone();
-            nodeLayer.addChild(fp);
-
-            addMouseNodeInteraction(fp, faultPath[stage], fp.position);
-            
-            if (faultPath[stage].type === "InputOutputBinding"){
-                fp.source = inputOutputFault;
-                return;
-            } 
-            if (gateway_types.includes(faultPath[stage].type)){
-                fp.children[1].fillColor = '#d63031';
-                return;
-            } 
-            if (event_types.includes(faultPath[stage].type)){
-                fp.children[1].fillColor = '#d63031';
-                return;
-            }
-
-            fp.children[0].fillColor = '#d63031';
-            
-        
-        }
-        // Checks if it is an edge as a group only exists for the nodes
-        if (faultPath[stage].visible){ 
-            var fp = faultPath[stage].clone();
-            edgeLayer.addChild(fp);
-            fp.strokeColor ='#d63031';
-            fp.strokeWidth = 10;
-        }
-    }
 
     const displayIOBindings = (node) => {
         // Switches from open button to close
@@ -672,7 +556,6 @@ export default function Sketch() {
         paper.project.layers[6].addChild(node.group);
     }
 
-    useEffect(()=>{if (fault){runFault()}}, [fault]);
 
     useEffect(() =>{
         if (playing.current && paper.view){
@@ -686,7 +569,7 @@ export default function Sketch() {
     }, [isPlaying, paper.view]);
     
     document.fonts.ready.then(function () {
-        //paper.view.draw(); 
+       // paper.view.draw(); 
     });
     
    
@@ -708,8 +591,8 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
-         <FaultContext.Provider value={{fault, setFault, fault_dict}}>
-            <PlayControls onPlay={onPlay} onNext={nextFault} onPrev={prevFault} playing={isPlaying}/>
+         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction}}>
+            <PlayControls onPlay={onPlay} playing={isPlaying}/>
         </FaultContext.Provider> 
         
         </>

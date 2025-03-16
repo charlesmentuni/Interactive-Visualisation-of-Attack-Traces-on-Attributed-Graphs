@@ -3,9 +3,9 @@ import { useContext } from "react";
 import { FaultContext } from "./Sketch";
 
 
-export default function FaultDescription() {
+export default function FaultDescription({fault}) {
 
-    const {fault, setFault, fault_dict} = useContext(FaultContext);
+    const {  fault_dict} = useContext(FaultContext);
     return (
         <>
         <Card
