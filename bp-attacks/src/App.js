@@ -14,9 +14,8 @@ function App() {
   return (
     
     <div>
-        <canvas id='paper-canvas' resize style={{'width' : window.innerWidth, 'height':'100vh'}}  />
-        <UploadFaultFile />
         
+        <UploadFaultFile />
     </div>
   );
 }
