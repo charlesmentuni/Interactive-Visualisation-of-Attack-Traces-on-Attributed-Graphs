@@ -4,6 +4,9 @@ import Sketch from './Sketch';
 import paper from 'paper';
 import ShowCodeBlock from './CodeBlock';
 import { GraphCreation } from './GraphCreation';
+import UploadFaultFile from './UploadFaultFile';
+
+
 
 
 function App() {
@@ -12,7 +15,8 @@ function App() {
     
     <div>
         <canvas id='paper-canvas' resize style={{'width' : window.innerWidth, 'height':'100vh'}}  />
-        <GraphCreation/>
+        <UploadFaultFile />
+        
     </div>
   );
 }

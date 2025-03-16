@@ -1,6 +1,6 @@
 import {createContext, useContext, useState, useEffect, use} from 'react';
 import Sketch from './Sketch';
-import json from './wf102.json';
+//import json from './wf102.json';
 import { data_source_types, io_binding_edge_types } from './blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
@@ -9,7 +9,7 @@ import elk from "cytoscape-elk";
 const GraphContext = createContext();
 export default GraphContext;
 
-export function GraphCreation() {
+export function GraphCreation({json}) {
     const [node_dict, setNode_dict] = useState({});
     const [edge_dict, setEdge_dict] = useState({});
     const [data_source_dict, setData_source_dict] = useState({});
@@ -97,7 +97,7 @@ export function GraphCreation() {
                 setGraph_layout(cy); 
             });
           });
-          
+
         layout.run();
         
     }
@@ -136,17 +136,19 @@ export function GraphCreation() {
     }
 
     useEffect(() => {
+        if (!json){return;}
         createND();
         graphLayout();
         getFaultNodes();
-    }, [])
+    }, [json])
 
     useEffect(() => {
+        if (!json){return}
         getIONodes();
     }, [io_dict, node_dict]);
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json}}>
             <Sketch />
         </GraphContext.Provider>
     )

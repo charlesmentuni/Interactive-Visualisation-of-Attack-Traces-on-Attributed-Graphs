@@ -1,7 +1,7 @@
 import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 import paper from 'paper';
 import ReadBP from './CodeBlock.js';
-import json from './wf102.json';
+//import json from './wf102.json';
 import { useEffect, useState, useRef, useContext, createContext } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
@@ -33,7 +33,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json} = useContext(GraphContext);
 
 
 
@@ -470,8 +470,6 @@ export default function Sketch() {
                 labelHead.bounds.bottomCenter.x = type.bounds.topCenter.x;
                 labelHead.bounds.bottomCenter.y = type.bounds.topCenter.y-1;
 
-                
-                
 
                 var annotationRect = new Path.Rectangle(new Point(type.bounds.topLeft.x , type.bounds.topLeft.y-labelHead.size.height*0.2), type.bounds.size);
                 annotationRect.fillColor = 'white';
