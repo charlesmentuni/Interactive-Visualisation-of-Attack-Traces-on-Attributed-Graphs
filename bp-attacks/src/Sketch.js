@@ -18,7 +18,7 @@ import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -265,33 +265,43 @@ export default function Sketch() {
 
             }
 
+            if (node_dict[node.id()].type === 'scriptTask'){
+                type = paper.project.importSVG(scriptTaskSVG);
+                type.scale(0.4);
+            }
+
+            if (node_dict[node.id()].type === 'serviceTask'){
+                type = paper.project.importSVG(serviceTaskSVG);
+                type.scale(0.4);
+            }
+            
+            if (node_dict[node.id()].type === 'sendTask'){
+                type = paper.project.importSVG(sendTaskSVG);
+                type.scale(0.4);
+            }
+
             if (gateway_types.includes(node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
                 type.scale(0.6)
                 
             }
 
-            
-            
-           
-
-
-
             // Checks if there are io bindings and allows it to be opened
             if (node_dict[node.id()].inputOutputBinding){
                 if (!type.children[2]){
-                var openIOBindings = new Raster('openIcon');
-                openIOBindings.scale(0.3);
-                openIOBindings.position = new Point(type.position.x, type.position.y);
+                    console.log(node_dict[node.id()].type);
+                    var openIOBindings = new Raster('openIcon');
+                    openIOBindings.scale(0.3);
+                    openIOBindings.bounds.bottomRight = new Point(type.bounds.bottomRight.x, type.bounds.bottomRight.y);
+                    
+                    var labelComponent = new PointText();
+                    labelComponent.content = "";
+                    labelComponent.scale(1);
+                    labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
+                    labelComponent.fontFamily = 'Roboto Mono';
+                    labelComponent.visible = true;
                 
-                var labelComponent = new PointText();
-                labelComponent.content = "";
-                labelComponent.scale(1);
-                labelComponent.position = new Point(0,height/2);
-                labelComponent.fontFamily = 'Roboto Mono';
-                labelComponent.visible = true;
-            
-                type = new Group(type, labelComponent ,openIOBindings);
+                    type = new Group(type, labelComponent ,openIOBindings);
             }
 
                 
@@ -474,6 +484,9 @@ export default function Sketch() {
                 paper.project.layers[2].addChild(group);
                 
             };
+            type.onMouseLeave = function(event) {
+                paper.project.layers[2].removeChildren();
+            }
     }
 
     const runFault =  function() {
