@@ -258,7 +258,12 @@ export default function Sketch() {
                 type = paper.project.importSVG(catchEvent);
                 type.scale(0.5);
             }
-            
+
+            if (node_dict[node.id()].type === 'userTask'){
+                type = paper.project.importSVG(userTaskSVG);
+                type.scale(0.2);
+
+            }
 
             if (gateway_types.includes(node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
@@ -267,7 +272,6 @@ export default function Sketch() {
             }
 
             
-            addMouseNodeInteraction(type, node_dict[node.id()], node.position())
             
            
 
@@ -275,6 +279,22 @@ export default function Sketch() {
 
             // Checks if there are io bindings and allows it to be opened
             if (node_dict[node.id()].inputOutputBinding){
+                if (!type.children[2]){
+                var openIOBindings = new Raster('openIcon');
+                openIOBindings.scale(0.3);
+                openIOBindings.position = new Point(type.position.x, type.position.y);
+                
+                var labelComponent = new PointText();
+                labelComponent.content = "";
+                labelComponent.scale(1);
+                labelComponent.position = new Point(0,height/2);
+                labelComponent.fontFamily = 'Roboto Mono';
+                labelComponent.visible = true;
+            
+                type = new Group(type, labelComponent ,openIOBindings);
+            }
+
+                
                 type.children[2].visible = true;
                 type.children[2].onMouseUp = function(event){
                     if (!mouseDrag.current){
@@ -284,6 +304,8 @@ export default function Sketch() {
 
             node_dict[node.id()].group = type;
             
+            addMouseNodeInteraction(type, node_dict[node.id()], node.position())
+
             
 
             x = x*spacing;
