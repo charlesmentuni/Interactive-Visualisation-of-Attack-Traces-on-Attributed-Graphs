@@ -103,9 +103,8 @@ export default function Sketch() {
     }, []);
 	
 
-   window.onload = function() {
-
-        
+   useEffect(function() {
+        if (!graph_layout){return;}
         paper.setup('paper-canvas');
 
         const nodeLayer  = paper.project.activeLayer;
@@ -175,7 +174,7 @@ export default function Sketch() {
         
 
        
-   }
+   }, [graph_layout])
 
     const drawGraph = () => {
 
@@ -209,8 +208,7 @@ export default function Sketch() {
         task.position = new Point(200,200);
         task.visible = false;
         
-        
-
+        console.log(graph_layout.nodes()[0].position().x);
 
         
         
@@ -221,12 +219,12 @@ export default function Sketch() {
             var tolerance = 10;
             // This is used to wrap the text inside the node  
             var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
-            
-            // This snaps the nodes into place, so that the layout is more elegant.
-            node.position().x = Math.round(node.position().x/tolerance)*tolerance;
-            node.position().y = Math.round(node.position().y/tolerance)*tolerance;
 
-           
+
+            // This snaps the nodes into place, so that the layout is more elegant.
+            let x = Math.round(node.position().x/tolerance)*tolerance;
+            let y = Math.round(node.position().y/tolerance)*tolerance;
+
 
             const numChars = 20;
             if (label){
@@ -260,6 +258,7 @@ export default function Sketch() {
                 type = paper.project.importSVG(catchEvent);
                 type.scale(0.5);
             }
+            
 
             if (gateway_types.includes(node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
@@ -287,18 +286,12 @@ export default function Sketch() {
             
             
 
-            let x = node.position().x*spacing;
-            let y = Math.round(node.position().y*spacing);
+            x = x*spacing;
+            y = Math.round(y*spacing);
         
 
             type.position = new Point(x,y);
 
-            if (node_dict[node.id()].name === "Go to jobRelinquished"){
-                console.log(type.position.y);
-                console.log(y === 500);
-                console.log(type.position.y === 500);
-
-            }
             type.visible = true;
             
         });
@@ -650,7 +643,7 @@ export default function Sketch() {
     }, [isPlaying, paper.view]);
     
     document.fonts.ready.then(function () {
-        paper.view.draw(); 
+        //paper.view.draw(); 
     });
     
    

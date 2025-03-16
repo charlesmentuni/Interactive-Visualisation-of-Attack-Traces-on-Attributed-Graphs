@@ -13,7 +13,7 @@ export function GraphCreation() {
     const [node_dict, setNode_dict] = useState({});
     const [edge_dict, setEdge_dict] = useState({});
     const [data_source_dict, setData_source_dict] = useState({});
-    const [graph_layout, setGraph_layout] = useState({});
+    const [graph_layout, setGraph_layout] = useState(null);
     const [fault_dict, setFault_dict] = useState({});
 
     const [io_dict, setIo_dict] = useState({});
@@ -88,12 +88,18 @@ export function GraphCreation() {
         //cytoscape.use(klay);
         cytoscape.use(elk);
         const layout = cy.layout({
-            name: "elk", // Use 'breadthfirst', 'grid', 'circle', etc.
+            name: "elk", 
             animate: false
         });
-            
+
+        layout.on("layoutstop", () => {
+            cy.nodes().forEach((node) => {
+                setGraph_layout(cy); 
+            });
+          });
+          
         layout.run();
-        setGraph_layout(cy);
+        
     }
 
     const convertToGraph = () => {
