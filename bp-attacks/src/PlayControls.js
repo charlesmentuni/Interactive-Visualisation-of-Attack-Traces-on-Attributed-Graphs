@@ -64,7 +64,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                 if (elapsedTime.current >= 1/speeds[playbackSpeed.current%4]){
                     animateFault();
                     // ANIMATION FINISHED
-                    console.log(stage);
 
                     
                     // Check if the last node or edge has been reached
@@ -79,7 +78,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                         return;
                     }
                     stageRef.current += 1;
-                    console.log(stage);
 
                     elapsedTime.current = 0;
                     faultSetup();
@@ -100,7 +98,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
         var faultPath = faultPathRef.current;
         
-        console.log(stageRef.current);
         if (stageRef.current === 0){
             runFault();
             return;}
@@ -221,8 +218,29 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             let edgeLayer = paper.project.layers[3];
             let faultEdge = edgeLayer.lastChild.children[0];
             let edge = faultPathRef.current[stageRef.current].edge;
-            
-            faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done;
+        
+
+            if (faultEdge.segments.length === 2){
+                // is it horizontal or vertical
+                faultEdge.segments[1].point.y = faultEdge.segments[0].point.y + (edge.segments[1].point.y-faultEdge.segments[0].point.y) * percent_done;
+                faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done;
+            }
+            if (faultEdge.segments.length === 3){
+                var yDistance = Math.abs(edge.segments[2].point.y - faultEdge.segments[0].point.y);
+                var xDistance = Math.abs(edge.segments[1].point.x - faultEdge.segments[0].point.x);
+                var split = xDistance/(xDistance + yDistance);
+                console.log(xDistance, yDistance, split);
+                if (percent_done < split){
+                    console.log('split');
+                    faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done * (1/split);
+                }
+                else {
+                    console.log('no split', percent_done);
+                    faultEdge.segments[1].point.x = edge.segments[1].point.x;
+                    faultEdge.segments[2].point.x = edge.segments[1].point.x;
+                    faultEdge.segments[2].point.y = faultEdge.segments[1].point.y + (edge.segments[2].point.y-edge.segments[1].point.y) * (percent_done-split) * (1/(1-split));}
+
+            }
             
             if (percent_done === 1){
                 faultEdge.segments[1].point = edge.segments[1].point;
