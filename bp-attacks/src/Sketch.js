@@ -114,7 +114,6 @@ export default function Sketch() {
         nodeLayer.activate();
 
         drawGraph();
-        
         // Add layer for annotations
         paper.project.addLayer(new Layer());
         paper.project.layers[2].name = "annotationLayer";
