@@ -22,6 +22,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
     const playing = useRef(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const playbackSpeed = useRef(0);
+    const skip = useRef(false);
 
     const resetFault = () => {
         runFault();
@@ -104,7 +105,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             runFault();
             return;}
         
-        
 
         var stage = stageRef.current;
 
@@ -120,7 +120,25 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             nodeLayer.lastChild.remove();
         }
         stageRef.current = nodeLayer.children.length + edgeLayer.children.length - 1;
+        elapsedTime.current = 1;
     } 
+
+    const nextFault = function() {
+        if (stageRef.current === faultPathRef.current.length){
+            return;
+        }
+        skip.current = true;
+        animateFault();
+        skip.current = false;
+        if (stageRef.current === faultPathRef.current.length-1){
+            return;
+        }
+        stageRef.current += 1;
+        elapsedTime.current = 0;
+        faultSetup();
+
+
+    }
 
     const faultSetup = function() {
 
@@ -177,8 +195,8 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
 
         let speeds = [1, 1.2, 1.5, 2];
-
-        let percent_done = elapsedTime.current/(1/speeds[playbackSpeed.current%4]);
+        
+        var percent_done = skip.current ? 1 : elapsedTime.current/(1/speeds[playbackSpeed.current%4]);
         if (percent_done >= 1){
             percent_done = 1;
         }
@@ -299,7 +317,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         color: '#fefefe'
     }}
     disabled={isPlaying}
-    onClick={faultSetup}
+    onClick={nextFault}
 >
     <SkipNext/>
 </Button>
