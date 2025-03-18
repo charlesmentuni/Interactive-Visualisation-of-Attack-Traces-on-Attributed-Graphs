@@ -425,10 +425,9 @@ export default function Sketch() {
             new_edge.add(targetPoint);
             
             
-
             new_edge.strokeColor = '#0984e3';
             new_edge.strokeWidth = 4;
-            temp_edge_dict[edge.id] = new_edge;
+            temp_edge_dict[edge.id] = {"edge" : new_edge, "arrowHead" : arrowHead};
 
         });
         return temp_edge_dict;

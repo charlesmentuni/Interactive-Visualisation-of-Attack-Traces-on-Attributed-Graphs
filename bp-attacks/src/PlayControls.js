@@ -115,8 +115,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
         
 
-       
-
+        // THIS WORKS BUT IS A LITTLE BAD
         if (faultPath[stage].group){
             var fp = faultPath[stage].group.clone();
             nodeLayer.addChild(fp);
@@ -137,9 +136,14 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         
         }
         // Checks if it is an edge as a group only exists for the nodes
-        if (faultPath[stage].visible){ 
-            var fp = faultPath[stage].clone();
+        if (faultPath[stage].edge){ 
+            var fp = faultPath[stage].edge.clone();
+            var arrowHead = faultPath[stage].arrowHead.clone();
             edgeLayer.addChild(fp);
+            edgeLayer.addChild(arrowHead);
+
+            arrowHead.fillColor = '#d63031';
+            arrowHead.scale(1.5);
             fp.strokeColor ='#d63031';
             fp.strokeWidth = 10;
         }
