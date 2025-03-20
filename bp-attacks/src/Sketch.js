@@ -225,7 +225,7 @@ export default function Sketch() {
             
             // variable used to snap the nodes to the grid
             var tolerance = 10;
-            // This is used to wrap the text inside the node  
+            // This is used to wrap the text inside the node 
             var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
 
 
@@ -297,7 +297,6 @@ export default function Sketch() {
             // Checks if there are io bindings and allows it to be opened
             if (node_dict[node.id()].inputOutputBinding){
                 if (!type.children[2]){
-                    console.log(node_dict[node.id()].type);
                     var openIOBindings = new Raster('openIcon');
                     openIOBindings.scale(0.3);
                     openIOBindings.bounds.bottomRight = new Point(type.bounds.bottomRight.x, type.bounds.bottomRight.y);
@@ -360,26 +359,30 @@ export default function Sketch() {
         var temp_edge_dict = {};
         json.edges.forEach((edge) => {
 
-            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
+            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || edge.type === "processFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
                 return;
             }
 
             var arrowHead  = paper.project.importSVG(arrowHeadSVG);
             arrowHead.scale(0.1);
-
+             
             var sourcePoint = node_dict[edge.sourceRef].group.position;
             var targetPoint = node_dict[edge.targetRef].group.position;
             var arrowHeadDirection = 0;
             
-            const sourcePosition = {x : Math.floor(node_dict[edge.sourceRef].group.position.x), y: Math.floor(node_dict[edge.sourceRef].group.position.y)};
-            const targetPosition = {x : Math.floor(node_dict[edge.targetRef].group.position.x), y: Math.floor(node_dict[edge.targetRef].group.position.y)};
+           
 
-            if (sourcePosition.x > sourcePosition.x){
+            const sourcePosition = {x : Math.round(node_dict[edge.sourceRef].group.position.x), y: Math.round(node_dict[edge.sourceRef].group.position.y)};
+            const targetPosition = {x : Math.round(node_dict[edge.targetRef].group.position.x), y: Math.round(node_dict[edge.targetRef].group.position.y)};
+
+            
+
+            if (sourcePosition.x > targetPosition.x){
+                
                 sourcePoint = node_dict[edge.sourceRef].group.bounds.leftCenter;
                 targetPoint = node_dict[edge.targetRef].group.bounds.rightCenter;
                 arrowHead.bounds.leftCenter = targetPoint;
                 arrowHeadDirection = 270;
-
             }
 
             if (sourcePosition.x < targetPosition.x ){
@@ -419,12 +422,13 @@ export default function Sketch() {
                 var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
                 new_edge.add(point);
             }
-            
-            
+                
+        
             new_edge.add(targetPoint);
             
             
             new_edge.strokeColor = '#0984e3';
+            
             new_edge.strokeWidth = 4;
             temp_edge_dict[edge.id] = {"edge" : new_edge, "arrowHead" : arrowHead};
 

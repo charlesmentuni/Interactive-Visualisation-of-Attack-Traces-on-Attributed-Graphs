@@ -220,7 +220,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             faultNode.opacity = percent_done;
 
         }
-        console.log(paper.project.exportSVG());
 
         if (faultPathRef.current[stageRef.current].edge){
             
@@ -239,7 +238,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                 var yDistance = Math.abs(edge.segments[2].point.y - faultEdge.segments[0].point.y);
                 var xDistance = Math.abs(edge.segments[1].point.x - faultEdge.segments[0].point.x);
                 var split = xDistance/(xDistance + yDistance);
-                console.log(xDistance, yDistance, split);
+
                 if (percent_done < split){
                     faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done * (1/split);
                 }
