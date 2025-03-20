@@ -7,6 +7,7 @@ import paper from 'paper';
 import { gateway_types, event_types } from './blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
+import { scriptTaskFaultSVG } from './SVGAssets';
 
 
 export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
@@ -77,12 +78,11 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                         playbackSpeed.current = 0;
                         return;
                     }
+
                     stageRef.current += 1;
 
                     elapsedTime.current = 0;
                     faultSetup();
-
-                    
                 }
                 else {
                     animateFault();
@@ -152,15 +152,24 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         // THIS WORKS BUT IS A LITTLE BAD
         if (faultPath[stage].group){
             var fp = faultPath[stage].group.clone();
-            nodeLayer.addChild(fp);
+            
             
             addMouseNodeInteraction(fp, faultPath[stage], fp.position);
             
+            if (faultPath[stage].type === 'scriptTask'){
+                const importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.position;
+                importedSVG.opacity = 0;
+                fp.addChild(importedSVG);
+                nodeLayer.addChild(fp);
+                return;
+            }
             var i = 0;
             if (gateway_types.includes(faultPath[stage].type) || event_types.includes(faultPath[stage].type)){
                 i = 1;
             } 
-
+            nodeLayer.addChild(fp);
             fp.children[i].fillColor = '#d63031'; 
 
             fp.children[i].opacity = 0;
@@ -211,6 +220,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             faultNode.opacity = percent_done;
 
         }
+        console.log(paper.project.exportSVG());
 
         if (faultPathRef.current[stageRef.current].edge){
             
@@ -231,15 +241,12 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                 var split = xDistance/(xDistance + yDistance);
                 console.log(xDistance, yDistance, split);
                 if (percent_done < split){
-                    console.log('split');
                     faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done * (1/split);
                 }
                 else {
-                    console.log('no split', percent_done);
                     faultEdge.segments[1].point.x = edge.segments[1].point.x;
                     faultEdge.segments[2].point.x = edge.segments[1].point.x;
                     faultEdge.segments[2].point.y = faultEdge.segments[1].point.y + (edge.segments[2].point.y-edge.segments[1].point.y) * (percent_done-split) * (1/(1-split));}
-
             }
             
             if (percent_done === 1){

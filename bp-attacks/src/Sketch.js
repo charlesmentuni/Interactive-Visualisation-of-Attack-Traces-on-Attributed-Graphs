@@ -503,8 +503,6 @@ export default function Sketch() {
             }
     }
 
-
-
     const displayIOBindings = (node) => {
         // Switches from open button to close
         node.group.children[2].source = closeIcon;
