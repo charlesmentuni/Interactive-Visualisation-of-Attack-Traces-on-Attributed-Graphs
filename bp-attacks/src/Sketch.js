@@ -185,7 +185,14 @@ export default function Sketch() {
        
    }, [graph_layout])
 
-    const drawGraph = () => {
+   const displaySubProcesses = (node) => {
+        
+        node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
+        console.log(node.group.position);
+
+    }
+    
+    const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0,y:0}) => {
 
         paper.project.activeLayer.name = "nodeLayer";
 
@@ -213,25 +220,27 @@ export default function Sketch() {
         openIOBindings.position = new Point(width-20, height-20);
         openIOBindings.visible = false;
 
-        var task = new Group(rect, label, openIOBindings);
+        var openSubProcess = openIOBindings.clone();
+        openSubProcess.position = new Point(20, height - 20);
+
+
+        var task = new Group(rect, label, openIOBindings, openSubProcess);
         task.position = new Point(200,200);
         task.visible = false;
-        
 
-        
-        
-        graph_layout.nodes().forEach((node) => { 
+        new_graph_layout.nodes().forEach((node) => { 
+            console.log(node.position());
             var type = task.clone();
             
             // variable used to snap the nodes to the grid
             var tolerance = 10;
             // This is used to wrap the text inside the node 
-            var label = node_dict[node.id()].name ? node_dict[node.id()].name : node_dict[node.id()].type;
+            var label = temp_node_dict[node.id()].name ? temp_node_dict[node.id()].name : temp_node_dict[node.id()].type;
 
 
             // This snaps the nodes into place, so that the layout is more elegant.
-            let x = Math.round(node.position().x/tolerance)*tolerance;
-            let y = Math.round(node.position().y/tolerance)*tolerance;
+            let x = Math.round((node.position().x+padding.x)/tolerance)*tolerance;
+            let y = Math.round((node.position().y+padding.y)/tolerance)*tolerance;
 
 
             const numChars = 20;
@@ -248,54 +257,54 @@ export default function Sketch() {
             }
 
             
-            if (node_dict[node.id()].type === 'startEvent'){
+            if (temp_node_dict[node.id()].type === 'startEvent'){
                 type = paper.project.importSVG(startEvent);
                 type.scale(0.5);
             }
-            if (node_dict[node.id()].type === 'endEvent'){
+            if (temp_node_dict[node.id()].type === 'endEvent'){
                 type = paper.project.importSVG(endEvent);
                 type.scale(0.5);
             }
             
-            if (node_dict[node.id()].type === 'intermediateThrowEvent'){
+            if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
                 type = paper.project.importSVG(throwEvent);
                 type.scale(0.5);
             }
 
-            if (node_dict[node.id()].type === 'intermediateCatchEvent'){
+            if (temp_node_dict[node.id()].type === 'intermediateCatchEvent'){
                 type = paper.project.importSVG(catchEvent);
                 type.scale(0.5);
             }
 
-            if (node_dict[node.id()].type === 'userTask'){
+            if (temp_node_dict[node.id()].type === 'userTask'){
                 type = paper.project.importSVG(userTaskSVG);
                 type.scale(0.2);
 
             }
 
-            if (node_dict[node.id()].type === 'scriptTask'){
+            if (temp_node_dict[node.id()].type === 'scriptTask'){
                 type = paper.project.importSVG(scriptTaskSVG);
                 type.scale(0.4);
             }
 
-            if (node_dict[node.id()].type === 'serviceTask'){
+            if (temp_node_dict[node.id()].type === 'serviceTask'){
                 type = paper.project.importSVG(serviceTaskSVG);
                 type.scale(0.4);
             }
             
-            if (node_dict[node.id()].type === 'sendTask'){
+            if (temp_node_dict[node.id()].type === 'sendTask'){
                 type = paper.project.importSVG(sendTaskSVG);
                 type.scale(0.4);
             }
 
-            if (gateway_types.includes(node_dict[node.id()].type)){
+            if (gateway_types.includes(temp_node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
                 type.scale(0.6)
                 
             }
 
             // Checks if there are io bindings and allows it to be opened
-            if (node_dict[node.id()].inputOutputBinding){
+            if (temp_node_dict[node.id()].inputOutputBinding){
                 if (!type.children[2]){
                     var openIOBindings = new Raster('openIcon');
                     openIOBindings.scale(0.3);
@@ -309,19 +318,28 @@ export default function Sketch() {
                     labelComponent.visible = true;
                 
                     type = new Group(type, labelComponent ,openIOBindings);
-            }
+                }
 
                 
                 type.children[2].visible = true;
                 type.children[2].onMouseUp = function(event){
                     if (!mouseDrag.current){
-                        displayIOBindings(node_dict[node.id()]);}
+                        displayIOBindings(temp_node_dict[node.id()]);}
                 };
             }
 
-            node_dict[node.id()].group = type;
+            if (temp_node_dict[node.id()].type === "subProcess"){
+               type.children[3].visible = true;
+               type.children[3].onMouseUp = (event) => {
+                    if (!mouseDrag.current){
+                        displaySubProcesses(temp_node_dict[node.id()]);
+                    }
+               }
+            }
+
+            temp_node_dict[node.id()].group = type;
             
-            addMouseNodeInteraction(type, node_dict[node.id()], node.position())
+            addMouseNodeInteraction(type, temp_node_dict[node.id()], node.position())
 
             
 
@@ -334,9 +352,15 @@ export default function Sketch() {
             type.visible = true;
             
         });
+        return temp_node_dict;
+    }
 
+    const drawGraph = () => {
 
-        setNode_dict(node_dict);
+        setNode_dict(displayGraphLayout(graph_layout, node_dict));
+
+        
+        
 
         paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
         
@@ -353,48 +377,40 @@ export default function Sketch() {
 
     }
 
-    const createEdges = (node_dict) => {
-        // create edges
-        paper.project.activeLayer.name = "edgeLayer";
-        var temp_edge_dict = {};
-        json.edges.forEach((edge) => {
-
-            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || edge.type === "processFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
-                return;
-            }
+    const createEdge = (source, target) => {
 
             var arrowHead  = paper.project.importSVG(arrowHeadSVG);
             arrowHead.scale(0.1);
              
-            var sourcePoint = node_dict[edge.sourceRef].group.position;
-            var targetPoint = node_dict[edge.targetRef].group.position;
+            var sourcePoint = source.group.position;
+            var targetPoint = target.group.position;
             var arrowHeadDirection = 0;
             
            
 
-            const sourcePosition = {x : Math.round(node_dict[edge.sourceRef].group.position.x), y: Math.round(node_dict[edge.sourceRef].group.position.y)};
-            const targetPosition = {x : Math.round(node_dict[edge.targetRef].group.position.x), y: Math.round(node_dict[edge.targetRef].group.position.y)};
+            const sourcePosition = {x : Math.round(source.group.position.x), y: Math.round(source.group.position.y)};
+            const targetPosition = {x : Math.round(target.group.position.x), y: Math.round(target.group.position.y)};
 
             
 
             if (sourcePosition.x > targetPosition.x){
                 
-                sourcePoint = node_dict[edge.sourceRef].group.bounds.leftCenter;
-                targetPoint = node_dict[edge.targetRef].group.bounds.rightCenter;
+                sourcePoint = source.group.bounds.leftCenter;
+                targetPoint = target.group.bounds.rightCenter;
                 arrowHead.bounds.leftCenter = targetPoint;
                 arrowHeadDirection = 270;
             }
 
             if (sourcePosition.x < targetPosition.x ){
-                sourcePoint = node_dict[edge.sourceRef].group.bounds.rightCenter;
-                targetPoint = node_dict[edge.targetRef].group.bounds.leftCenter;
+                sourcePoint = source.group.bounds.rightCenter;
+                targetPoint = target.group.bounds.leftCenter;
                 arrowHead.bounds.rightCenter = targetPoint;
                 arrowHeadDirection = 90;
 
             }
 
             if (sourcePosition.y < targetPosition.y){
-                targetPoint = node_dict[edge.targetRef].group.bounds.topCenter;
+                targetPoint = target.group.bounds.topCenter;
                 arrowHead.bounds.bottomCenter = targetPoint;
                 arrowHeadDirection = 180;
 
@@ -403,7 +419,7 @@ export default function Sketch() {
             
             if (sourcePosition.y > targetPosition.y){
                 
-                targetPoint = node_dict[edge.targetRef].group.bounds.bottomCenter;
+                targetPoint = target.group.bounds.bottomCenter;
                 arrowHead.bounds.topCenter = targetPoint;
                 arrowHeadDirection = 0;
 
@@ -419,7 +435,7 @@ export default function Sketch() {
 
             // This checks whether to add an elbow corner or if it's just a straight line
             if (sourcePoint.x !== targetPoint.x && sourcePoint.y !== targetPoint.y){
-                var point = new Point(node_dict[edge.targetRef].group.position.x, node_dict[edge.sourceRef].group.position.y );
+                var point = new Point(target.group.position.x, source.group.position.y );
                 new_edge.add(point);
             }
                 
@@ -430,7 +446,20 @@ export default function Sketch() {
             new_edge.strokeColor = '#0984e3';
             
             new_edge.strokeWidth = 4;
-            temp_edge_dict[edge.id] = {"edge" : new_edge, "arrowHead" : arrowHead};
+            return {"edge" : new_edge, "arrowHead" : arrowHead};
+    };
+
+    const createEdges = (node_dict) => {
+        // create edges
+        paper.project.activeLayer.name = "edgeLayer";
+        var temp_edge_dict = {};
+        json.edges.forEach((edge) => {
+
+            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || edge.type === "processFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
+                return;
+            }
+
+            temp_edge_dict[edge.id] = createEdge(node_dict[edge.sourceRef], node_dict[edge.targetRef]);
 
         });
         return temp_edge_dict;
@@ -564,6 +593,7 @@ export default function Sketch() {
         paper.project.layers[6].addChild(node.group);
     }
 
+    
 
     useEffect(() =>{
         if (playing.current && paper.view){

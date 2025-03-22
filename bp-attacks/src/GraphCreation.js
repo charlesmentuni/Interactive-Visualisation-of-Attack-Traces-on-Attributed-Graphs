@@ -20,6 +20,7 @@ export function GraphCreation({json}) {
     const processName = useRef("WF102-Pick");
     const subProcessChildren = useRef(null);
     const subProcessNodes = useRef(null);
+    const subProcessGraphs = useRef({});
 
     const createND = () => {
         // Creates a dictionary of nodes with their uuid as the key
@@ -72,7 +73,7 @@ export function GraphCreation({json}) {
         subProcessNodes.current = temp_subProcessNodes;
         subProcessChildren.current = temp_subProcessChildren;
 
-       }
+    }
 
     const getIONodes = () => {
         var temp_node_dict = node_dict;
@@ -105,20 +106,29 @@ export function GraphCreation({json}) {
         // Sets up graph layout using Cytoscape to output the coordinates of the nodes
         // May potentially be used for the edges as well.
         // The fact that it is so close to BPMN should mean that could layout graph in own way
+        cytoscape.use(elk);  // Move this before initializing Cytoscape
+
         const cy = cytoscape(convertToGraph(dict));
-        //cytoscape.use(klay);
-        cytoscape.use(elk);
+
+    
+
         const layout = cy.layout({
             name: "elk", 
+            elk : {
+                'algorithm': 'mrtree',
+                'elk.direction': 'RIGHT',
+            },
+            avoidOverlap:true,
             animate: false
         });
 
         layout.on("layoutstop", () => {
             setGraph_layout(cy);
             console.log(cy);
-          });
+        });
 
         layout.run();
+
         
     }
 
@@ -171,20 +181,20 @@ export function GraphCreation({json}) {
         subProcessLayout(subProcessNodes);
         
     }
+
     const getSubProcessEdges = () => {
         json.edges.forEach((edge) => {
             
             if (node_dict[edge.sourceRef] && node_dict[edge.sourceRef].type === "subProcess"){
                 return;
             }
-            if (!node_dict[edge.sourceRef] && !node_dict[edge.targetRef]){return;}
 
             Object.keys(subProcessNodes.current).forEach((key) => {
-                if (subProcessNodes.current[key].children[edge.sourceRef] || subProcessNodes.current[key].children[edge.targetRef]){
+                if (subProcessNodes.current[key].children[edge.sourceRef] && subProcessNodes.current[key].children[edge.targetRef]){
+
                     if (!subProcessNodes.current[key].edges){
                         subProcessNodes.current[key].edges = [];
                     }
-                    console.log("edge", edge.uuid);
                     subProcessNodes.current[key].edges.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
                     return;
                 }
@@ -193,18 +203,20 @@ export function GraphCreation({json}) {
     }
 
     const subProcessLayout = () => {
-        var graph = {elements: []};
+        var temp_node_dict = node_dict;
         Object.keys(subProcessNodes.current).forEach((key) => {
+            var graph = {elements: []};
+
             Object.keys(subProcessNodes.current[key].children).forEach((key1) => {
                 graph.elements.push({data: {id: key1}});
             });
             
             if (subProcessNodes.current[key].edges){
                 subProcessNodes.current[key].edges.forEach((edge) => {
+        
                     graph.elements.push(edge);
                 });
             }
-            console.log("sub", graph);
             // Sets up graph layout using Cytoscape to output the coordinates of the nodes
             // May potentially be used for the edges as well.
             // The fact that it is so close to BPMN should mean that could layout graph in own way
@@ -213,11 +225,28 @@ export function GraphCreation({json}) {
             cytoscape.use(elk);
             const layout = cy.layout({
                 name: "elk", 
+                elk : {
+                    'algorithm': 'mrtree',
+                    'elk.direction': 'RIGHT',
+                },
+                avoidOverlap:true,
                 animate: false
             });
 
             layout.on("layoutstop", () => {
-                console.log(cy);
+                var minX = null;
+                var minY = null;
+                cy.nodes().forEach((node)=>{
+                    if (!minX || node.position().x < minX){minX = node.position().x;}
+                    if (!minY || node.position().y < minY){minY = node.position().y;}
+                })
+                cy.nodes().map((node)=>{
+                    node.position().x-=minX;
+                    node.position().y-=minY;
+                })
+                temp_node_dict[key].layout = cy;
+
+                
             });
 
             layout.run();
