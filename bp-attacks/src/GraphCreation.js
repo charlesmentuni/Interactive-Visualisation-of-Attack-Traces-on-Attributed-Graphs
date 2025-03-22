@@ -37,7 +37,7 @@ export function GraphCreation({json}) {
                 temp_io_dict[node.uuid] = node;
                 return;
             }
-
+            if (node.type === "userForm"){return;}
             if (node.type === "subProcess"){
                 // Pop from dictionary
                 temp_subProcessNodes[node.uuid] = node;

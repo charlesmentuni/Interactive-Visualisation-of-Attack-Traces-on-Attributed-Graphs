@@ -48,6 +48,7 @@ export default function Sketch() {
     const playing = useRef(false);
     const elapsedTime = useRef(0);
     const mouseDrag = useRef(false);
+    const edge_dict_ref = useRef("");
     const [fault, setFault] = useState("");
 
     const [isPlaying, setIsPlaying] = useState(false);
@@ -187,10 +188,45 @@ export default function Sketch() {
 
    const displaySubProcesses = (node) => {
         
-        node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
-        console.log(node.group.position);
+        var maxXNode = null;
+        var maxYNode = null;
 
+        node.layout.nodes().forEach((node)=>{
+            if (!maxXNode || node.position().x >= maxXNode.position().x){maxXNode = node;}
+            if (!maxYNode || node.position().y >= maxYNode.position().y){maxYNode = node;}
+        })
+        console.log(maxYNode);
+        node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
+        Object.keys(node.children).forEach((subnode)=>{
+            node.children[subnode].group.addTo(node.group);
+        });
+        node.group.children[0].bounds.width = node.children[maxXNode.id()].group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
+        //node.group.children[0].bounds.height = node.children[maxYNode.id()].group.children[0].bounds.bottomCenter.y - node.group.children[0].bounds.topCenter.y;
+        node.group.children[1].content = ""
+        node.group.children[0].fillColor = "#dfe6e9";
+        shiftNodes(node);
+        
     }
+
+    const shiftNodes = (subProcessNode ) => {
+        Object.keys(node_dict).forEach((key)=>{
+            var node = node_dict[key];
+            if (node.id === "Activity_1ij231b" ){console.log(node.group.position);}
+            if (subProcessNode.id === node.id){return;}
+            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+                node.group.position.x += subProcessNode.group.children[0].bounds.width;
+                return;
+            }
+
+            if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                node.group.position.y += subProcessNode.group.children[0].bounds.height;
+            }
+        });
+
+        paper.project.layers[0].removeChildren();
+        paper.project.layers[0].activate();
+        createEdges(node_dict);
+    } 
     
     const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0,y:0}) => {
 
@@ -229,7 +265,6 @@ export default function Sketch() {
         task.visible = false;
 
         new_graph_layout.nodes().forEach((node) => { 
-            console.log(node.position());
             var type = task.clone();
             
             // variable used to snap the nodes to the grid
@@ -370,7 +405,9 @@ export default function Sketch() {
             
         paper.view.draw(); 
         
-        setEdge_dict(createEdges(node_dict));
+        var temp_edge_dict = createEdges(node_dict);
+        setEdge_dict(temp_edge_dict);
+        edge_dict_ref.current = temp_edge_dict;
 
         paper.view.pause();
 
@@ -446,7 +483,7 @@ export default function Sketch() {
             new_edge.strokeColor = '#0984e3';
             
             new_edge.strokeWidth = 4;
-            return {"edge" : new_edge, "arrowHead" : arrowHead};
+            return {"edge" : new_edge, "arrowHead" : arrowHead, "source":source, "target":target};
     };
 
     const createEdges = (node_dict) => {
@@ -610,7 +647,6 @@ export default function Sketch() {
        // paper.view.draw(); 
     });
     
-   
 
    return (
         <> 
