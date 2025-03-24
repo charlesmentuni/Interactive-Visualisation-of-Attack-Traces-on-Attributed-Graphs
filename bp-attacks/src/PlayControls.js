@@ -12,7 +12,7 @@ import { scriptTaskFaultSVG } from './SVGAssets';
 
 export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
-    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -22,6 +22,8 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
     const elapsedTime = useRef(0);
     const playing = useRef(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [edgeDictChanged, setEdgeDictChanged] = useState(false);
+    const [edgeDictChangedSetup, setEdgeDictChangedSetup] = useState(false);
     const playbackSpeed = useRef(0);
     const skip = useRef(false);
 
@@ -39,6 +41,12 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         fault_dict[fault].execution_path.forEach((node) => {
             if (node_dict[node]){
                 faultPathRef.current.push(node_dict[node]);
+                // Checks if sub process and if open
+                if (node_dict[node].type === "subProcess" && node_dict[node].opened){
+                    closeSubProcesses(node_dict[node]);
+                    setEdgeDictChanged(true);
+                    return;
+                }
             }
             if (edge_dict[node]){
                 faultPathRef.current.push(edge_dict[node]);
@@ -151,11 +159,17 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
         // THIS WORKS BUT IS A LITTLE BAD
         if (faultPath[stage].group){
+            if(faultPath[stage].opened){
+                closeSubProcesses(faultPath[stage]);
+                setEdgeDictChangedSetup(true);
+                return;
+            }
             var fp = faultPath[stage].group.clone();
             
             
             addMouseNodeInteraction(fp, faultPath[stage], fp.position);
             
+
             if (faultPath[stage].type === 'scriptTask'){
                 const importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
                 importedSVG.scale(0.4);
@@ -260,6 +274,25 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
 
     }
+    useEffect(() => {
+        if (fault) {
+            runFault();
+        }
+    }, [fault]);
+
+    useEffect(() => {
+        if (edgeDictChanged) {
+            runFault();
+            setEdgeDictChanged(false);
+        }
+    }, [edge_dict, edgeDictChanged]);
+
+    useEffect(() => {
+        if (edgeDictChangedSetup) {
+            faultSetup();
+            setEdgeDictChanged(false);
+        }
+    }, [edge_dict, edgeDictChangedSetup]);
 
     useEffect(()=>{if (fault){ runFault()}}, [fault]);
 

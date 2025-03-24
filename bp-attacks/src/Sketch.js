@@ -186,8 +186,72 @@ export default function Sketch() {
        
    }, [graph_layout])
 
+   const closeSubProcesses = (subProcessNode) =>{
+        subProcessNode.group.children[3].source = openIcon;
+        subProcessNode.opened = false;
+    
+
+        // Functionality for open button
+        subProcessNode.group.children[3].onMouseUp = function(event){
+            if (!mouseDrag.current){
+                displaySubProcesses(subProcessNode);
+            }
+        };
+        Object.keys(node_dict).forEach((key)=>{
+            var node = node_dict[key];
+
+            if (subProcessNode.id === node.id){return;}
+            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+                node.group.position.x -= subProcessNode.group.children[0].bounds.width;
+                return;
+            }
+
+            if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                node.group.position.y -= subProcessNode.group.children[0].bounds.height;
+            }
+        });
+
+        subProcessNode.group.children[0].bounds.width = 150;
+        subProcessNode.group.children[0].bounds.height = 100;
+        subProcessNode.group.children[0].fillColor = "#b2bec3";
+
+        const numChars = 20;
+        var label = subProcessNode.name;
+        if (label.length > numChars){
+            label = label.slice(0, numChars-3) + "...";
+        }
+        else{
+            label = " ".repeat(Math.floor((numChars - label.length)/2)) + label;
+        }
+
+        subProcessNode.group.children[1].content = label;
+        
+        paper.project.layers[0].removeChildren();
+        paper.project.layers[0].activate();
+        setEdge_dict(createEdges(node_dict));
+
+        Object.keys(subProcessNode.children).forEach((key)=>{
+            subProcessNode.children[key].group.visible = false;
+        })
+
+        Object.keys(subProcessNode.edges).forEach((key)=>{
+            subProcessNode.edges[key].arrowHead.remove();
+            subProcessNode.edges[key].edge.remove();
+
+        })
+        
+
+
+
+   }
+
    const displaySubProcesses = (node) => {
         
+        node.opened = true;
+
+        node.group.children[3].source = closeIcon;
+
+
         var maxXNode = null;
         var maxYNode = null;
 
@@ -195,23 +259,38 @@ export default function Sketch() {
             if (!maxXNode || node.position().x >= maxXNode.position().x){maxXNode = node;}
             if (!maxYNode || node.position().y >= maxYNode.position().y){maxYNode = node;}
         })
-        console.log(maxYNode);
+
+        paper.project.layers[1].activate();
         node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
-        Object.keys(node.children).forEach((subnode)=>{
+
+        node.edges = createEdges(node.children);
+        
+       /*  Object.keys(node.children).forEach((subnode)=>{
             node.children[subnode].group.addTo(node.group);
-        });
+        }); */
         node.group.children[0].bounds.width = node.children[maxXNode.id()].group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
+
         //node.group.children[0].bounds.height = node.children[maxYNode.id()].group.children[0].bounds.bottomCenter.y - node.group.children[0].bounds.topCenter.y;
+        
         node.group.children[1].content = ""
         node.group.children[0].fillColor = "#dfe6e9";
         shiftNodes(node);
+
+        node.group.children[3].onMouseUp = function(event){
+            if (mouseDrag.current) {return;}
+            closeSubProcesses(node);
+
+
+            
+        };
+
         
     }
 
     const shiftNodes = (subProcessNode ) => {
         Object.keys(node_dict).forEach((key)=>{
             var node = node_dict[key];
-            if (node.id === "Activity_1ij231b" ){console.log(node.group.position);}
+
             if (subProcessNode.id === node.id){return;}
             if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                 node.group.position.x += subProcessNode.group.children[0].bounds.width;
@@ -225,7 +304,7 @@ export default function Sketch() {
 
         paper.project.layers[0].removeChildren();
         paper.project.layers[0].activate();
-        createEdges(node_dict);
+        setEdge_dict(createEdges(node_dict));
     } 
     
     const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0,y:0}) => {
@@ -394,8 +473,6 @@ export default function Sketch() {
 
         setNode_dict(displayGraphLayout(graph_layout, node_dict));
 
-        
-        
 
         paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
         
@@ -419,8 +496,8 @@ export default function Sketch() {
             var arrowHead  = paper.project.importSVG(arrowHeadSVG);
             arrowHead.scale(0.1);
              
-            var sourcePoint = source.group.position;
-            var targetPoint = target.group.position;
+            var sourcePoint = Math.round(source.group.position);
+            var targetPoint = Math.round(target.group.position);
             var arrowHeadDirection = 0;
             
            
@@ -428,7 +505,7 @@ export default function Sketch() {
             const sourcePosition = {x : Math.round(source.group.position.x), y: Math.round(source.group.position.y)};
             const targetPosition = {x : Math.round(target.group.position.x), y: Math.round(target.group.position.y)};
 
-            
+
 
             if (sourcePosition.x > targetPosition.x){
                 
@@ -441,6 +518,7 @@ export default function Sketch() {
             if (sourcePosition.x < targetPosition.x ){
                 sourcePoint = source.group.bounds.rightCenter;
                 targetPoint = target.group.bounds.leftCenter;
+
                 arrowHead.bounds.rightCenter = targetPoint;
                 arrowHeadDirection = 90;
 
@@ -470,6 +548,10 @@ export default function Sketch() {
 
             new_edge.add(sourcePoint);
 
+            targetPoint.x = Math.round(targetPoint.x);
+            targetPoint.y = Math.round(targetPoint.y);
+            sourcePoint.x = Math.round(sourcePoint.x);
+            sourcePoint.y = Math.round(sourcePoint.y);
             // This checks whether to add an elbow corner or if it's just a straight line
             if (sourcePoint.x !== targetPoint.x && sourcePoint.y !== targetPoint.y){
                 var point = new Point(target.group.position.x, source.group.position.y );
@@ -480,6 +562,7 @@ export default function Sketch() {
             new_edge.add(targetPoint);
             
             
+
             new_edge.strokeColor = '#0984e3';
             
             new_edge.strokeWidth = 4;
@@ -535,6 +618,7 @@ export default function Sketch() {
                         displayIOBindings(node);}
                 };
             }
+           
 
              // Hover over and display the full name
              type.onMouseEnter = function(event){
@@ -665,7 +749,7 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
-         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction}}>
+         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses}}>
             <PlayControls onPlay={onPlay} playing={isPlaying}/>
         </FaultContext.Provider> 
         
