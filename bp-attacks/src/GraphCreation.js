@@ -67,7 +67,6 @@ export function GraphCreation({json}) {
     
             
         });
-
         setIo_dict(temp_io_dict);
         setNode_dict(temp_node_dict);
         subProcessNodes.current = temp_subProcessNodes;
@@ -79,7 +78,17 @@ export function GraphCreation({json}) {
         var temp_node_dict = node_dict;
 
         json.edges.forEach((edge) => {
-            if (!temp_node_dict[edge.sourceRef]){return;}
+            if (!temp_node_dict[edge.sourceRef]){
+                if (!subProcessChildren.current[edge.sourceRef]){return;}
+                if (io_dict[edge.targetRef]){
+                    if (!subProcessChildren.current[edge.sourceRef].inputOutputBinding){
+                        subProcessChildren.current[edge.sourceRef].inputOutputBinding = {};
+                    }
+                    subProcessChildren.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = io_dict[edge.targetRef];
+                }
+                return;
+            }
+
             // if target ref is in input output dictionary then add to an array the sourceRef record in the node dictionary
             if (io_dict[edge.targetRef]){
                 if (!temp_node_dict[edge.sourceRef].inputOutputBinding){

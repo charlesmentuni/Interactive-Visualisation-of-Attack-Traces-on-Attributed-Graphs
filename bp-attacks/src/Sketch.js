@@ -281,7 +281,7 @@ export default function Sketch() {
     const shiftNodes = (subProcessNode, direction=1) => {
 
         
-        
+        console.log(subProcessNode);
         Object.keys(node_dict).forEach((key)=>{
             var node = node_dict[key];
 
@@ -297,8 +297,6 @@ export default function Sketch() {
                     }
                 });
             }
-
-            if (node.id === "Activity_0uamf40"){console.log(node);}
             if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                 node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
