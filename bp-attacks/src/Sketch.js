@@ -33,9 +33,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json} = useContext(GraphContext);
-
-
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes} = useContext(GraphContext);
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -197,23 +195,17 @@ export default function Sketch() {
                 displaySubProcesses(subProcessNode);
             }
         };
-        Object.keys(node_dict).forEach((key)=>{
-            var node = node_dict[key];
 
-            if (subProcessNode.id === node.id){return;}
-            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
-                node.group.position.x -= subProcessNode.group.children[0].bounds.width;
-                return;
-            }
-
-            if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                node.group.position.y -= subProcessNode.group.children[0].bounds.height;
-            }
-        });
+        shiftNodes(subProcessNode, -1);
 
         subProcessNode.group.children[0].bounds.width = 150;
         subProcessNode.group.children[0].bounds.height = 100;
         subProcessNode.group.children[0].fillColor = "#b2bec3";
+
+
+        paper.project.layers[0].removeChildren();
+        paper.project.layers[0].activate();
+        setEdge_dict(createEdges(node_dict));
 
         const numChars = 20;
         var label = subProcessNode.name;
@@ -226,9 +218,7 @@ export default function Sketch() {
 
         subProcessNode.group.children[1].content = label;
         
-        paper.project.layers[0].removeChildren();
-        paper.project.layers[0].activate();
-        setEdge_dict(createEdges(node_dict));
+        
 
         Object.keys(subProcessNode.children).forEach((key)=>{
             subProcessNode.children[key].group.visible = false;
@@ -250,7 +240,7 @@ export default function Sketch() {
         node.opened = true;
 
         node.group.children[3].source = closeIcon;
-
+    
 
         var maxXNode = null;
         var maxYNode = null;
@@ -263,11 +253,15 @@ export default function Sketch() {
         paper.project.layers[1].activate();
         node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
 
+
         node.edges = createEdges(node.children);
         
-       /*  Object.keys(node.children).forEach((subnode)=>{
-            node.children[subnode].group.addTo(node.group);
-        }); */
+        /* var subnodes = new Group();
+        Object.keys(node.children).forEach((subnode)=>{
+            node.children[subnode].group.addTo(subnodes);
+        }); 
+        subnodes.addTo(node.group); */
+        
         node.group.children[0].bounds.width = node.children[maxXNode.id()].group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
 
         //node.group.children[0].bounds.height = node.children[maxYNode.id()].group.children[0].bounds.bottomCenter.y - node.group.children[0].bounds.topCenter.y;
@@ -278,33 +272,57 @@ export default function Sketch() {
 
         node.group.children[3].onMouseUp = function(event){
             if (mouseDrag.current) {return;}
-            closeSubProcesses(node);
-
-
-            
+            closeSubProcesses(node); 
         };
 
         
     }
 
-    const shiftNodes = (subProcessNode ) => {
+    const shiftNodes = (subProcessNode, direction=1) => {
+
+        
+        
         Object.keys(node_dict).forEach((key)=>{
             var node = node_dict[key];
 
             if (subProcessNode.id === node.id){return;}
-            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
-                node.group.position.x += subProcessNode.group.children[0].bounds.width;
-                return;
+            if(node.opened){
+                Object.keys(node.children).forEach((key)=>{
+                    var subnode = node.children[key];
+                    if (subProcessNode.group.children[0].contains(subnode.group.position) || Math.round(subnode.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+                        subnode.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
+                    }
+                    else if (Math.round(subnode.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                        subnode.group.position.y += direction*subProcessNode.group.children[0].bounds.height;
+                    }
+                });
             }
 
-            if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                node.group.position.y += subProcessNode.group.children[0].bounds.height;
+            if (node.id === "Activity_0uamf40"){console.log(node);}
+            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+                node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
+            else if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                node.group.position.y += direction*Math.round(subProcessNode.group.children[0].bounds.height);
+            }
+            
         });
+
+       
+        paper.project.layers[1].activate();
+        Object.keys(subProcessNodes.current).forEach((key)=>{
+            var node = node_dict[key];
+
+            if (node_dict[key].opened){
+                Object.keys(node_dict[key].edges).forEach((key1)=>{node_dict[key].edges[key1].edge.remove(); node_dict[key].edges[key1].arrowHead.remove(); })
+                node_dict[key].edges = createEdges(node_dict[key].children);
+            }
+        })
 
         paper.project.layers[0].removeChildren();
         paper.project.layers[0].activate();
         setEdge_dict(createEdges(node_dict));
+        
     } 
     
     const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0,y:0}) => {
@@ -370,71 +388,79 @@ export default function Sketch() {
                 type.children[1].content = label;
             }
 
-            
+            var isSVG = false;
             if (temp_node_dict[node.id()].type === 'startEvent'){
                 type = paper.project.importSVG(startEvent);
                 type.scale(0.5);
+                isSVG=true;
             }
             if (temp_node_dict[node.id()].type === 'endEvent'){
                 type = paper.project.importSVG(endEvent);
                 type.scale(0.5);
+                isSVG=true;
             }
             
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
                 type = paper.project.importSVG(throwEvent);
                 type.scale(0.5);
+                isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateCatchEvent'){
                 type = paper.project.importSVG(catchEvent);
                 type.scale(0.5);
+                isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'userTask'){
                 type = paper.project.importSVG(userTaskSVG);
                 type.scale(0.2);
+                isSVG=true;
 
             }
 
             if (temp_node_dict[node.id()].type === 'scriptTask'){
                 type = paper.project.importSVG(scriptTaskSVG);
                 type.scale(0.4);
+                isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'serviceTask'){
                 type = paper.project.importSVG(serviceTaskSVG);
                 type.scale(0.4);
+                isSVG=true;
             }
             
             if (temp_node_dict[node.id()].type === 'sendTask'){
                 type = paper.project.importSVG(sendTaskSVG);
                 type.scale(0.4);
+                isSVG=true;
             }
 
             if (gateway_types.includes(temp_node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
-                type.scale(0.6)
+                type.scale(0.6);
+                isSVG=true;
                 
             }
-
+            if (isSVG){
+                var openIOBindings = new Raster('openIcon');
+                openIOBindings.scale(0.3);
+                openIOBindings.bounds.bottomRight = new Point(type.bounds.bottomRight.x, type.bounds.bottomRight.y);
+                openIOBindings.visible = false;
+                
+                var labelComponent = new PointText();
+                labelComponent.content = "";
+                labelComponent.scale(1);
+                labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
+                labelComponent.fontFamily = 'Roboto Mono';
+                labelComponent.visible = true;
+            
+                type = new Group(type, labelComponent, openIOBindings);
+            }
             // Checks if there are io bindings and allows it to be opened
             if (temp_node_dict[node.id()].inputOutputBinding){
-                if (!type.children[2]){
-                    var openIOBindings = new Raster('openIcon');
-                    openIOBindings.scale(0.3);
-                    openIOBindings.bounds.bottomRight = new Point(type.bounds.bottomRight.x, type.bounds.bottomRight.y);
-                    
-                    var labelComponent = new PointText();
-                    labelComponent.content = "";
-                    labelComponent.scale(1);
-                    labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
-                    labelComponent.fontFamily = 'Roboto Mono';
-                    labelComponent.visible = true;
-                
-                    type = new Group(type, labelComponent ,openIOBindings);
-                }
-
-                
+            
                 type.children[2].visible = true;
                 type.children[2].onMouseUp = function(event){
                     if (!mouseDrag.current){
@@ -714,8 +740,6 @@ export default function Sketch() {
         paper.project.layers[6].addChild(node.group);
     }
 
-    
-
     useEffect(() =>{
         if (playing.current && paper.view){
             paper.view.play();
@@ -749,7 +773,7 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
-         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses}}>
+         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses}}>
             <PlayControls onPlay={onPlay} playing={isPlaying}/>
         </FaultContext.Provider> 
         

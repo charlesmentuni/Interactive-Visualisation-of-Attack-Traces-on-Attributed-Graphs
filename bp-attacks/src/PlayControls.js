@@ -7,12 +7,12 @@ import paper from 'paper';
 import { gateway_types, event_types } from './blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { scriptTaskFaultSVG } from './SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './SVGAssets';
 
 
 export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
-    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -37,13 +37,24 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         stageRef.current = 0;
         faultPathRef.current = [];
         
+        var temp_node_dict = {...node_dict};
+        Object.keys(subProcessNodes.current).forEach((key)=>{
+            if (subProcessNodes.current[key].id === fault_dict[fault].processRef){
+                if (!node_dict[key].opened){
+                    displaySubProcesses(node_dict[key]);
+                    setEdgeDictChanged(true);
+                    return;
+                }
+                temp_node_dict = {...subProcessNodes.current[key].children};
+            }
+        });
         // Loops through the execution path and changes the color of the nodes and edges
         fault_dict[fault].execution_path.forEach((node) => {
-            if (node_dict[node]){
-                faultPathRef.current.push(node_dict[node]);
+            if (temp_node_dict[node]){
+                faultPathRef.current.push(temp_node_dict[node]);
                 // Checks if sub process and if open
-                if (node_dict[node].type === "subProcess" && node_dict[node].opened){
-                    closeSubProcesses(node_dict[node]);
+                if (temp_node_dict[node].type === "subProcess" && temp_node_dict[node].opened){
+                    closeSubProcesses(temp_node_dict[node]);
                     setEdgeDictChanged(true);
                     return;
                 }
@@ -147,12 +158,10 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
     const faultSetup = function() {
 
-
         var faultPath = faultPathRef.current;
         var stage = stageRef.current;
 
         if (!faultPath[stage]){return;}
-        
         const nodeLayer = paper.project.layers[4];
         const edgeLayer = paper.project.layers[3];
         if (faultPath.length === nodeLayer.children.length + edgeLayer.children.length){return;}
@@ -164,29 +173,45 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
                 setEdgeDictChangedSetup(true);
                 return;
             }
+
             var fp = faultPath[stage].group.clone();
-            
-            
-            addMouseNodeInteraction(fp, faultPath[stage], fp.position);
+            console.log(fp.children);
+            var i = 0;
             
 
-            if (faultPath[stage].type === 'scriptTask'){
-                const importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
-                importedSVG.scale(0.4);
-                importedSVG.position = fp.position;
-                importedSVG.opacity = 0;
-                fp.addChild(importedSVG);
-                nodeLayer.addChild(fp);
-                return;
-            }
-            var i = 0;
-            if (gateway_types.includes(faultPath[stage].type) || event_types.includes(faultPath[stage].type)){
-                i = 1;
-            } 
-            nodeLayer.addChild(fp);
             fp.children[i].fillColor = '#d63031'; 
 
             fp.children[i].opacity = 0;
+
+            if (faultPath[stage].type === 'scriptTask'){
+                var importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+
+            if (faultPath[stage].type === 'intermediateCatchEvent'){
+                var importedSVG = paper.project.importSVG(catchEventFaultSVG);
+                importedSVG.scale(0.5);
+                importedSVG.position = fp.position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'serviceTask'){
+                var importedSVG = paper.project.importSVG(serviceTaskFaultSVG);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+
+
+            addMouseNodeInteraction(fp, faultPath[stage], fp.position);
+
+            
+            nodeLayer.addChild(fp);
+            
 
         }
         // Checks if it is an edge as a group only exists for the nodes
@@ -223,13 +248,10 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         
         if (faultPathRef.current[stageRef.current].group){
             
-            var i = 0;
-            if (gateway_types.includes(faultPathRef.current[stageRef.current].type) || event_types.includes(faultPathRef.current[stageRef.current].type)){
-                i=1;
-            }
+           
 
             let nodeLayer = paper.project.layers[4];
-            let faultNode = nodeLayer.lastChild.children[i];
+            let faultNode = nodeLayer.lastChild.children[0];
             
             faultNode.opacity = percent_done;
 
@@ -289,6 +311,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
     useEffect(() => {
         if (edgeDictChangedSetup) {
+
             faultSetup();
             setEdgeDictChanged(false);
         }
