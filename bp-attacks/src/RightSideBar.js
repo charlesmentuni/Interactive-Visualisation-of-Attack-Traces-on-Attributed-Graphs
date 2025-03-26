@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Button, Card, CardContent, Collapse, Typography} from '@mui/material';
 import {ChevronLeftRounded, ChevronRightRounded} from '@mui/icons-material';
 import ShowCodeBlock from './CodeBlock';
@@ -7,6 +7,7 @@ export default function RightSideBar({nodeCard}) {
 
     const [openRight, setOpenRight] = useState(false);
 
+    useEffect(()=>{if(!nodeCard){return;}setOpenRight(true);}, [nodeCard])
     return (
     <Box sx={{ position: "absolute", right: 0, top: 0, maxHeight: "50vh",display: "flex", flexDirection: "column", alignItems: "flex-end", paddingTop:2}}>
         <Button 

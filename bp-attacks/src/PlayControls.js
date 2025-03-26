@@ -185,8 +185,8 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
             if (faultPath[stage].type === 'scriptTask'){
                 var importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
-                importedSVG.scale(0.4);
-                importedSVG.position = fp.position;
+                importedSVG.scale(0.5);
+                importedSVG.position = fp.children[0].position;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
@@ -194,14 +194,14 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             if (faultPath[stage].type === 'intermediateCatchEvent'){
                 var importedSVG = paper.project.importSVG(catchEventFaultSVG);
                 importedSVG.scale(0.5);
-                importedSVG.position = fp.position;
+                importedSVG.position = fp.children[0].position;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
             if (faultPath[stage].type === 'serviceTask'){
                 var importedSVG = paper.project.importSVG(serviceTaskFaultSVG);
                 importedSVG.scale(0.4);
-                importedSVG.position = fp.position;
+                importedSVG.position = fp.children[0].position;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }

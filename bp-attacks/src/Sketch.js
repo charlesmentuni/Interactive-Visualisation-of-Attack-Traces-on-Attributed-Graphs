@@ -49,6 +49,7 @@ export default function Sketch() {
     const edge_dict_ref = useRef("");
     const [fault, setFault] = useState("");
 
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
 
@@ -373,11 +374,12 @@ export default function Sketch() {
             let y = Math.round((node.position().y+padding.y)/tolerance)*tolerance;
 
 
-            const numChars = 20;
+            var numChars = 15;
+            if (temp_node_dict[node.id()].type === "subProcess"){numChars=20;}
             if (label){
                 
                 if (label.length > numChars){
-                    label = label.slice(0, numChars-3) + "...";
+                    label = label.slice(0, numChars-3) + "..";
                 }
                 else{
                     label = " ".repeat(Math.floor((numChars - label.length)/2)) + label;
@@ -390,36 +392,40 @@ export default function Sketch() {
             if (temp_node_dict[node.id()].type === 'startEvent'){
                 type = paper.project.importSVG(startEvent);
                 type.scale(0.5);
+                label ="";
                 isSVG=true;
             }
             if (temp_node_dict[node.id()].type === 'endEvent'){
                 type = paper.project.importSVG(endEvent);
                 type.scale(0.5);
+                label="";
                 isSVG=true;
             }
             
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
                 type = paper.project.importSVG(throwEvent);
                 type.scale(0.5);
+                label="";
                 isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateCatchEvent'){
                 type = paper.project.importSVG(catchEvent);
                 type.scale(0.5);
+                label="";
                 isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'userTask'){
                 type = paper.project.importSVG(userTaskSVG);
-                type.scale(0.2);
+                type.scale(0.4);
                 isSVG=true;
 
             }
 
             if (temp_node_dict[node.id()].type === 'scriptTask'){
                 type = paper.project.importSVG(scriptTaskSVG);
-                type.scale(0.4);
+                type.scale(0.5);
                 isSVG=true;
             }
 
@@ -438,6 +444,7 @@ export default function Sketch() {
             if (gateway_types.includes(temp_node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
                 type.scale(0.6);
+                label="";
                 isSVG=true;
                 
             }
@@ -448,7 +455,7 @@ export default function Sketch() {
                 openIOBindings.visible = false;
                 
                 var labelComponent = new PointText();
-                labelComponent.content = "";
+                labelComponent.content = label;
                 labelComponent.scale(1);
                 labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
                 labelComponent.fontFamily = 'Roboto Mono';
@@ -673,11 +680,14 @@ export default function Sketch() {
                 var group = new Group(annotationRect, label);
                 group.position.x = type.position.x;
                 paper.project.layers[2].addChild(group);
-                paper.project.layers[2].addChild(labelHead)
+                paper.project.layers[2].addChild(labelHead);
+
+                document.getElementById('paper-canvas').style.cursor = "pointer";
                 
             };
             type.onMouseLeave = function(event) {
                 paper.project.layers[2].removeChildren();
+                document.getElementById('paper-canvas').style.cursor = "default";
             }
     }
 
@@ -723,6 +733,8 @@ export default function Sketch() {
                     setNodeCard(node.inputOutputBinding[io]);
                 }
             };
+            ioImage.onMouseEnter = function(event){document.getElementById('paper-canvas').style.cursor = 'pointer'};
+            ioImage.onMouseLeave = function(event){document.getElementById('paper-canvas').style.cursor = 'default'};
 
             var edge = new Path();
             edge.add(node.group.position);
@@ -757,7 +769,6 @@ export default function Sketch() {
    return (
         <> 
 
-        <LeftSideBar openLeft={openLeft} />
         <RightSideBar nodeCard={nodeCard} />
         
 
