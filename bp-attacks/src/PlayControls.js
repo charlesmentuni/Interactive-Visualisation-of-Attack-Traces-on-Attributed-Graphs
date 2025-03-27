@@ -12,7 +12,7 @@ import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './S
 
 export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
 
-    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -74,7 +74,8 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         faultSetup();
         // This is for highlighting the path.
         paper.view.onFrame = (event) => {
-
+            animateZoomToNode(event);
+            
             if (playing.current){
                 
                 var stage = stageRef.current;

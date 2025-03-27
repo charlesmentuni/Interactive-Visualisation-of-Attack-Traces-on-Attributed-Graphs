@@ -47,8 +47,11 @@ export default function Sketch() {
     const elapsedTime = useRef(0);
     const mouseDrag = useRef(false);
     const edge_dict_ref = useRef("");
+    const time_passed_zoom = useRef(0);
     const [fault, setFault] = useState("");
-
+    const zoomed_node_current = useRef(null);
+    const percent_done = useRef(0);
+    const initial_pos = useRef(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
@@ -184,6 +187,29 @@ export default function Sketch() {
 
        
    }, [graph_layout])
+
+   const animateZoomToNode = (event) =>{
+        if (!zoomed_node_current.current){return;}
+        if (time_passed_zoom.current === 0){initial_pos.current = paper.view.center; }
+        var zoomDuration = 1;
+        time_passed_zoom.current += event.delta;
+    
+        //console.log(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center)).multiply(Math.sin(time_passed_zoom.current*(Math.PI/2))));
+         // Duration of zoom is 2 seconds
+        if (time_passed_zoom.current > zoomDuration){time_passed_zoom.current = 0; percent_done.current=0;paper.view.center = zoomed_node_current.current.group.position; zoomed_node_current.current =null; return;}
+        //console.log((Math.PI/2)*percent_done.current);
+        percent_done.current = time_passed_zoom.current/zoomDuration;
+        //console.log(percent_done);
+        //console.log(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center).multiply(speed)));
+
+        console.log(percent_done.current*(Math.PI/2));
+        var newCenter = new Point();
+        newCenter.x =  initial_pos.current.x + (zoomed_node_current.current.group.position.x-initial_pos.current.x)*Math.sin(percent_done.current*(Math.PI/2));
+        newCenter.y = initial_pos.current.y + (zoomed_node_current.current.group.position.y-initial_pos.current.y)*Math.sin(percent_done.current*(Math.PI/2));
+        paper.view.setCenter(newCenter);
+        //paper.view.setCenter(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center)).multiply(Math.sin((Math.PI/2)*percent_done.current)));
+        paper.view.draw();
+   }
 
    const closeSubProcesses = (subProcessNode) =>{
         subProcessNode.group.children[3].source = openIcon;
@@ -782,7 +808,7 @@ export default function Sketch() {
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
-         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses}}>
+         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current}}>
             <PlayControls onPlay={onPlay} playing={isPlaying}/>
         </FaultContext.Provider> 
         

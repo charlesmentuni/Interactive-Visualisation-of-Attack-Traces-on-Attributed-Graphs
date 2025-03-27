@@ -8,7 +8,7 @@ export default function ShowCodeBlock({lang, code}) {
 
     return (
       
-      <SyntaxHighlighter language={String.prototype.toLowerCase(lang)} style={stackoverflowDark} customStyle={{ fontSize: '12px' }}>
+      <SyntaxHighlighter language={lang.toLowerCase()} style={stackoverflowDark} customStyle={{ fontSize: '12px' }}>
         {code}
       </SyntaxHighlighter>);
 }
