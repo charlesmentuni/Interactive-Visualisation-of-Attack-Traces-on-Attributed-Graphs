@@ -283,7 +283,7 @@ export function GraphCreation({json}) {
     
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren}}>
             <Sketch />
         </GraphContext.Provider>
     )

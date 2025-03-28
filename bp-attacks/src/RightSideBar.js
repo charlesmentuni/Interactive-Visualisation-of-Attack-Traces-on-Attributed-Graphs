@@ -9,7 +9,7 @@ export default function RightSideBar({nodeCard}) {
 
     useEffect(()=>{if(!nodeCard){return;}setOpenRight(true);}, [nodeCard])
     return (
-    <Box sx={{ position: "absolute", right: 0, top: 0, maxHeight: "50vh",display: "flex", flexDirection: "column", alignItems: "flex-end", paddingTop:2}}>
+    <Box sx={{ position: "fixed", right: 0, top: 0, maxHeight: "50vh",display: "flex", flexDirection: "column", alignItems: "flex-end", paddingTop:2}}>
         <Button 
             onClick={() => {setOpenRight(!openRight)}} 
             variant="contained" 

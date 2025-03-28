@@ -33,7 +33,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren} = useContext(GraphContext);
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -50,7 +50,6 @@ export default function Sketch() {
     const time_passed_zoom = useRef(0);
     const [fault, setFault] = useState("");
     const zoomed_node_current = useRef(null);
-    const percent_done = useRef(0);
     const initial_pos = useRef(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
@@ -189,25 +188,20 @@ export default function Sketch() {
    }, [graph_layout])
 
    const animateZoomToNode = (event) =>{
+        console.log(zoomed_node_current.current);
         if (!zoomed_node_current.current){return;}
         if (time_passed_zoom.current === 0){initial_pos.current = paper.view.center; }
         var zoomDuration = 1;
         time_passed_zoom.current += event.delta;
     
-        //console.log(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center)).multiply(Math.sin(time_passed_zoom.current*(Math.PI/2))));
-         // Duration of zoom is 2 seconds
-        if (time_passed_zoom.current > zoomDuration){time_passed_zoom.current = 0; percent_done.current=0;paper.view.center = zoomed_node_current.current.group.position; zoomed_node_current.current =null; return;}
-        //console.log((Math.PI/2)*percent_done.current);
-        percent_done.current = time_passed_zoom.current/zoomDuration;
-        //console.log(percent_done);
-        //console.log(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center).multiply(speed)));
+        if (time_passed_zoom.current > zoomDuration){time_passed_zoom.current = 0; paper.view.center = zoomed_node_current.current.group.position; zoomed_node_current.current =null; return;}
+        var percent_done = time_passed_zoom.current/zoomDuration;
 
-        console.log(percent_done.current*(Math.PI/2));
         var newCenter = new Point();
-        newCenter.x =  initial_pos.current.x + (zoomed_node_current.current.group.position.x-initial_pos.current.x)*Math.sin(percent_done.current*(Math.PI/2));
-        newCenter.y = initial_pos.current.y + (zoomed_node_current.current.group.position.y-initial_pos.current.y)*Math.sin(percent_done.current*(Math.PI/2));
+        newCenter.x =  initial_pos.current.x + (zoomed_node_current.current.group.position.x-initial_pos.current.x)*Math.sin(percent_done*(Math.PI/2));
+        newCenter.y = initial_pos.current.y + (zoomed_node_current.current.group.position.y-initial_pos.current.y)*Math.sin(percent_done*(Math.PI/2));
         paper.view.setCenter(newCenter);
-        //paper.view.setCenter(paper.view.center.add(zoomed_node_current.current.group.position.subtract(paper.view.center)).multiply(Math.sin((Math.PI/2)*percent_done.current)));
+
         paper.view.draw();
    }
 
@@ -308,7 +302,6 @@ export default function Sketch() {
     const shiftNodes = (subProcessNode, direction=1) => {
 
         
-        console.log(subProcessNode);
         Object.keys(node_dict).forEach((key)=>{
             var node = node_dict[key];
 
@@ -794,7 +787,7 @@ export default function Sketch() {
 
    return (
         <> 
-
+        <LeftSideBar nodeZoom={zoomed_node_current} displaySubProcess={(node) =>{displaySubProcesses(node)}} animateZoomToNode={(event) =>{animateZoomToNode(event)}}/>
         <RightSideBar nodeCard={nodeCard} />
         
 

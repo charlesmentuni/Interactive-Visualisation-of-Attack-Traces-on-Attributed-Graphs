@@ -325,7 +325,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         <FaultDescription fault={fault} />
 
         <Card sx={{
-    position: 'absolute', 
+    position: 'fixed', 
     bottom: '7%', 
     right: '0', 
     margin: '2%', 
@@ -335,7 +335,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
     color: '#fefefe'
 }}> 
     <CardContent>
-        <FormControl fullWidth>
+        <FormControl fullWidth variant='outlined'>
             <InputLabel id="demo-simple-select-label" style={{color:'#fefefe'}}>Fault</InputLabel>
             <Select
                 color="greySelect"
@@ -353,7 +353,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         </FormControl>
     </CardContent>
 </Card>
-<div style={{flexDirection: 'row', display: 'flex', position: 'absolute', bottom: '0', right: '0', margin: '2%', width: '30%', height: '6%', justifyContent:'space-between'}}>
+<div style={{flexDirection: 'row', display: 'flex', position: 'fixed', bottom: '0', right: '0', margin: '2%', width: '30%', height: '6%', justifyContent:'space-between'}}>
 <Button 
     variant="contained"  
     sx={{

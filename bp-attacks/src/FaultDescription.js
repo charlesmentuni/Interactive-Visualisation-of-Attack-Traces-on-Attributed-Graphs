@@ -10,7 +10,7 @@ export default function FaultDescription({fault}) {
         <>
         <Card
             sx={{
-                position: "absolute",
+                position: "fixed",
                 opacity: 0.75,
                 margin: "2%",
                 bottom: 0,
@@ -76,7 +76,7 @@ export default function FaultDescription({fault}) {
 
         <Card
             sx={{
-                position: "absolute",
+                position: "fixed",
                 opacity: 0.75,
                 margin: "2%",
                 bottom: 0,
