@@ -220,11 +220,11 @@ export default function Sketch() {
         };
 
         shiftNodes(subProcessNode, -1);
-
+        var temp_pos = subProcessNode.group.position.y
         subProcessNode.group.children[0].bounds.width = 150;
         subProcessNode.group.children[0].bounds.height = 100;
         subProcessNode.group.children[0].fillColor = "#b2bec3";
-
+        subProcessNode.group.position.y = temp_pos;
 
         paper.project.layers[0].removeChildren();
         paper.project.layers[0].activate();
@@ -265,30 +265,39 @@ export default function Sketch() {
         node.group.children[3].source = closeIcon;
     
 
-        var maxXNode = null;
-        var maxYNode = null;
+        
 
-        node.layout.nodes().forEach((node)=>{
-            if (!maxXNode || node.position().x >= maxXNode.position().x){maxXNode = node;}
-            if (!maxYNode || node.position().y >= maxYNode.position().y){maxYNode = node;}
-        })
 
         paper.project.layers[1].activate();
-        node.children = displayGraphLayout(node.layout, node.children, {x:node.group.position.x/spacing, y:  node.group.position.y/spacing});
+        node.children = displayGraphLayout(node.layout, node.children, {x:(node.group.position.x)/spacing, y:  (node.group.position.y)/spacing});
 
 
         node.edges = createEdges(node.children);
         
+
+        var maxXNode = null;
+        var maxYNode = null;
+
+        Object.keys(node.children).forEach((key)=>{
+            let node1 = node.children[key]
+            if (!maxXNode || node1.group.bounds.leftCenter.x >= maxXNode.group.bounds.leftCenter.x){maxXNode = node1;}
+            if (!maxYNode || node1.group.bounds.bottomCenter.y >= maxYNode.group.bounds.bottomCenter.y){maxYNode = node1;}
+        });
+
         /* var subnodes = new Group();
         Object.keys(node.children).forEach((subnode)=>{
             node.children[subnode].group.addTo(subnodes);
         }); 
         subnodes.addTo(node.group); */
-        
-        node.group.children[0].bounds.width = node.children[maxXNode.id()].group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
+         
+        var temp_pos = node.group.position;
 
-        //node.group.children[0].bounds.height = node.children[maxYNode.id()].group.children[0].bounds.bottomCenter.y - node.group.children[0].bounds.topCenter.y;
         
+        node.group.children[0].bounds.width = maxXNode.group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
+        node.group.children[0].bounds.height =20+  maxYNode.group.bounds.bottomCenter.y - node.group.bounds.topCenter.y;
+
+        node.group.position.y =temp_pos.y
+
         node.group.children[1].content = ""
         node.group.children[0].fillColor = "#dfe6e9";
         shiftNodes(node);
