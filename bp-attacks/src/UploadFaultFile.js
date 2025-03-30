@@ -1,12 +1,17 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {Box, Button, Card, CardContent, Collapse, Typography} from '@mui/material';
 import {ChevronLeftRounded, ChevronRightRounded} from '@mui/icons-material';
 import { GraphCreation } from './GraphCreation';
+import wf102 from './wf102.json';
+
 
 export default function UploadFaultFile() {
 
     const [json, setJson] = useState(null);
 
+    useEffect(()=>{
+        setJson(wf102);
+    });
     const uploadFile = (event) => {
 
         if (!event.target.files[0]){return;}

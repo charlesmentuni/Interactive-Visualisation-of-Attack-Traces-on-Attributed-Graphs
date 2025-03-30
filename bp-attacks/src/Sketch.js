@@ -182,13 +182,15 @@ export default function Sketch() {
         }
 
 
-        
+    console.timeEnd('timeGraph');
+    performance.mark('afterInit');
+    console.log("timeGraph",performance.measure('finalMeasure', 'beforeInit', 'afterInit').duration);
 
        
    }, [graph_layout])
 
    const animateZoomToNode = (event) =>{
-        console.log(zoomed_node_current.current);
+
         if (!zoomed_node_current.current){return;}
         if (time_passed_zoom.current === 0){initial_pos.current = paper.view.center; }
         var zoomDuration = 1;
@@ -317,7 +319,9 @@ export default function Sketch() {
                     }
                 });
             }
-            if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+            if (subProcessNode.group.children[0].contains(node.group.position)){console.log("yassss");}
+            if (node.name === "node 36"){console.log(node.group.bounds.leftCenter); console.log(subProcessNode.group.children[0].position);}
+            if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                 node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
             else if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){

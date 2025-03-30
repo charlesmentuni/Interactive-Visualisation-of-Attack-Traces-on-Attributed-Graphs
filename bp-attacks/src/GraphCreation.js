@@ -133,7 +133,6 @@ export function GraphCreation({json}) {
 
         layout.on("layoutstop", () => {
             setGraph_layout(cy);
-            console.log(cy);
         });
 
         layout.run();
@@ -169,10 +168,8 @@ export function GraphCreation({json}) {
             }
 
             
-            console.log("edge", edge.uuid);
             graph.elements.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
         });
-        console.log("main", graph);
         return graph;
     }
 
@@ -213,6 +210,7 @@ export function GraphCreation({json}) {
 
     const subProcessLayout = () => {
         var temp_node_dict = node_dict;
+        performance.mark('subProcessLayout')
         Object.keys(subProcessNodes.current).forEach((key) => {
             var graph = {elements: []};
 
@@ -254,6 +252,8 @@ export function GraphCreation({json}) {
                     node.position().y-=minY;
                 })
                 temp_node_dict[key].layout = cy;
+                performance.mark('graphLayoutEnd')
+                console.log('performance subprocess layout' , performance.measure('layout measure perform', 'subProcessLayout', 'graphLayoutEnd'));
 
                 
             });
@@ -266,6 +266,9 @@ export function GraphCreation({json}) {
 
     useEffect(() => {
         if (!json){return;}
+        performance.mark("beforeInit")
+        console.time('timeGraph')
+        console.log('nodeNum' ,json.nodes.length)
         createND();
         
     }, [json])
