@@ -474,7 +474,7 @@ export default function Sketch() {
 
             if (gateway_types.includes(temp_node_dict[node.id()].type)){
                 type = paper.project.importSVG(gatewaySVG);
-                type.scale(0.6);
+                type.scale(0.9);
                 label="";
                 isSVG=true;
                 
@@ -734,7 +734,7 @@ export default function Sketch() {
             if (mouseDrag.current) {return;}
             node.group.children[2].source = openIcon;
 
-            paper.project.layers[ 0 ].addChild(node.group);
+            paper.project.layers[0].addChild(node.group);
 
             // Functionality for open button
             node.group.children[2].onMouseUp = function(event){
@@ -770,10 +770,20 @@ export default function Sketch() {
             var edge = new Path();
             edge.add(node.group.position);
             edge.add(ioImage.position);
-            edge.strokeColor = '#0984e3';
+            edge.strokeColor = (node.inputOutputBinding[io].InputOutput === "inputParameter") ? '#4cd137' : '#EA2027';
             edge.strokeWidth = 4;
 
+            var midpoint = edge.getPointAt(edge.length/2);
+            var arrowHead = paper.project.importSVG(arrowHeadSVG);
+            var direction = (node.inputOutputBinding[io].InputOutput === "inputParameter") ? 0 : 180;
+            arrowHead.fillColor = (node.inputOutputBinding[io].InputOutput === "inputParameter") ? '#4cd137' : '#EA2027';
+            arrowHead.scale(0.2);
+            arrowHead.rotate(direction-angle*(180/Math.PI));
+            arrowHead.position = midpoint;
+
             paper.project.layers[6].addChild(edge);
+            paper.project.layers[6].addChild(arrowHead);
+
             paper.project.layers[6].addChild(ioImage);
 
         });

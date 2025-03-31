@@ -84,7 +84,9 @@ export function GraphCreation({json}) {
                     if (!subProcessChildren.current[edge.sourceRef].inputOutputBinding){
                         subProcessChildren.current[edge.sourceRef].inputOutputBinding = {};
                     }
-                    subProcessChildren.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = io_dict[edge.targetRef];
+                    
+                    
+                    subProcessChildren.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = {...io_dict[edge.targetRef], "InputOutput": edge.type};
                 }
                 return;
             }
@@ -94,7 +96,7 @@ export function GraphCreation({json}) {
                 if (!temp_node_dict[edge.sourceRef].inputOutputBinding){
                     temp_node_dict[edge.sourceRef].inputOutputBinding = {};
                 }
-                temp_node_dict[edge.sourceRef].inputOutputBinding[edge.targetRef] = io_dict[edge.targetRef];
+                temp_node_dict[edge.sourceRef].inputOutputBinding[edge.targetRef] =  {...io_dict[edge.targetRef], "InputOutput": edge.type};
             }
              
         }); 
@@ -255,7 +257,6 @@ export function GraphCreation({json}) {
                 performance.mark('graphLayoutEnd')
                 console.log('performance subprocess layout' , performance.measure('layout measure perform', 'subProcessLayout', 'graphLayoutEnd'));
 
-                
             });
 
             layout.run();
