@@ -226,8 +226,8 @@ export default function Sketch() {
         subProcessNode.group.children[0].fillColor = "#b2bec3";
         subProcessNode.group.position.y = temp_pos;
 
-        paper.project.layers[0].removeChildren();
-        paper.project.layers[0].activate();
+        paper.project.layers[ 1 ].removeChildren();
+        paper.project.layers[ 1 ].activate();
         setEdge_dict(createEdges(node_dict));
 
         const numChars = 20;
@@ -268,7 +268,7 @@ export default function Sketch() {
         
 
 
-        paper.project.layers[1].activate();
+        paper.project.layers[ 0 ].activate();
         node.children = displayGraphLayout(node.layout, node.children, {x:(node.group.position.x)/spacing, y:  (node.group.position.y)/spacing});
 
 
@@ -339,7 +339,7 @@ export default function Sketch() {
         });
 
        
-        paper.project.layers[1].activate();
+        paper.project.layers[ 0 ].activate();
         Object.keys(subProcessNodes.current).forEach((key)=>{
             var node = node_dict[key];
 
@@ -349,8 +349,8 @@ export default function Sketch() {
             }
         })
 
-        paper.project.layers[0].removeChildren();
-        paper.project.layers[0].activate();
+        paper.project.layers[ 1 ].removeChildren();
+        paper.project.layers[ 1 ].activate();
         setEdge_dict(createEdges(node_dict));
         
     } 
@@ -540,7 +540,7 @@ export default function Sketch() {
         
         
         // The new active layer will be the edge layer
-        paper.project.activeLayer.insertAbove(new Layer());
+        paper.project.activeLayer.insertBelow(new Layer());
             
         paper.view.draw(); 
         
@@ -734,7 +734,7 @@ export default function Sketch() {
             if (mouseDrag.current) {return;}
             node.group.children[2].source = openIcon;
 
-            paper.project.layers[1].addChild(node.group);
+            paper.project.layers[ 0 ].addChild(node.group);
 
             // Functionality for open button
             node.group.children[2].onMouseUp = function(event){

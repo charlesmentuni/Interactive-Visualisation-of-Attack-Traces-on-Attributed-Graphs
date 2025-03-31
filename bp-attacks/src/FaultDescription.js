@@ -5,7 +5,7 @@ import { FaultContext } from "./Sketch";
 
 export default function FaultDescription({fault}) {
 
-    const {  fault_dict, node_dict, setNodeCard, zoomed_node_current, subProcessNodes} = useContext(FaultContext);
+    const {  fault_dict, node_dict, setNodeCard, zoomed_node_current, subProcessNodes, displaySubProcesses} = useContext(FaultContext);
     return (
         <>
         <Card
@@ -120,23 +120,23 @@ export default function FaultDescription({fault}) {
                     var temp_node_dict = node_dict;
                     console.log(subProcessNodes);
 
+                    var subProcessNode;
                     Object.keys(subProcessNodes.current).forEach((key)=>{
                         if (fault_dict[fault]["processRef"] === subProcessNodes.current[key].id){
-                            temp_node_dict = node_dict[key].children
+                            subProcessNode = node_dict[key];
+                            temp_node_dict = subProcessNode.children;
                         }
                     });
-                    console.log(temp_node_dict);
-
+                    
                     if (temp_node_dict[e]){
                     return(
                         <>
-                        
                         <ListItem
                             sx={{
                                 transition: "background-color 0.3s",
                                 "&:hover": { backgroundColor: "#636e72" },
                                 
-                            }} onClick={()=>{setNodeCard(temp_node_dict[e]); zoomed_node_current.current = temp_node_dict[e]}}>
+                            }} onClick={()=>{setNodeCard(temp_node_dict[e]); zoomed_node_current.current = temp_node_dict[e]; if (subProcessNode && !subProcessNode.opened){displaySubProcesses(subProcessNode)}}}>
                                 
                         <ListItemText primary={((index/2)+1).toString() + ". " + temp_node_dict[e].name} />
                         </ListItem>
