@@ -10,7 +10,7 @@ import { Color, Point } from 'paper/dist/paper-core';
 import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './SVGAssets';
 
 
-export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
+export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
 
     const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode} = useContext(FaultContext);
 
@@ -26,6 +26,8 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
     const [edgeDictChangedSetup, setEdgeDictChangedSetup] = useState(false);
     const playbackSpeed = useRef(0);
     const skip = useRef(false);
+    const subProcessParent = useRef(null);
+
 
     const resetFault = () => {
         runFault();
@@ -40,6 +42,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{
             if (subProcessNodes.current[key].id === fault_dict[fault].processRef){
+                subProcessParent.current = node_dict[key];
                 if (!node_dict[key].opened){
                     displaySubProcesses(node_dict[key]);
                     setEdgeDictChanged(true);
@@ -76,12 +79,22 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         paper.view.onFrame = (event) => {
             animateZoomToNode(event);
             
+           
+            if (subProcessParent.current && !subProcessParent.current.opened){
+                nodeLayer.visible = false;
+                edgeLayer.visible =false;
+            }
+            else{
+                nodeLayer.visible =true;
+                edgeLayer.visible =true;
+            }
+
             if (playing.current){
                 
                 var stage = stageRef.current;
                 var faultPath = faultPathRef.current;
                 
-                let speeds = [1, 1.2, 1.5, 2];
+                let speeds = [1, 2, 3, 5];
                 if (elapsedTime.current >= 1/speeds[playbackSpeed.current%4]){
                     animateFault();
                     // ANIMATION FINISHED
@@ -176,7 +189,6 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
             }
 
             var fp = faultPath[stage].group.clone();
-            console.log(fp.children);
             var i = 0;
             
 
@@ -240,7 +252,7 @@ export default function PlayControls({onPlay, onChange, onNext, onPrev}) {
         if (!faultPathRef.current[stageRef.current]){return;}
 
 
-        let speeds = [1, 1.2, 1.5, 2];
+        let speeds = [1, 2, 3, 5];
         
         var percent_done = skip.current ? 1 : elapsedTime.current/(1/speeds[playbackSpeed.current%4]);
         if (percent_done >= 1){

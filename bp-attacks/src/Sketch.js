@@ -25,7 +25,7 @@ import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js'
 import CodeBlock from './CodeBlock.js';
 import RightSideBar from './RightSideBar.js';
 import LeftSideBar from './LeftSideBar.js';
-import PlayControls from './PlayControls.js';
+import FaultControls from './FaultControls.js';
 import NodeLabel from './NodeLabel.js';
 
 export const FaultContext = createContext();
@@ -294,7 +294,7 @@ export default function Sketch() {
 
         
         node.group.children[0].bounds.width = maxXNode.group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
-        node.group.children[0].bounds.height =20+  maxYNode.group.bounds.bottomCenter.y - node.group.bounds.topCenter.y;
+        node.group.children[0].bounds.height = 20 +  maxYNode.group.bounds.bottomCenter.y - node.group.bounds.topCenter.y;
 
         node.group.position.y =temp_pos.y
 
@@ -323,17 +323,16 @@ export default function Sketch() {
                     if (subProcessNode.group.children[0].contains(subnode.group.position) || Math.round(subnode.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                         subnode.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
                     }
-                    else if (Math.round(subnode.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                    else if (Math.round(subnode.group.position.y) > Math.round(subProcessNode.group.position.y)){
                         subnode.group.position.y += direction*subProcessNode.group.children[0].bounds.height;
                     }
                 });
             }
-            if (subProcessNode.group.children[0].contains(node.group.position)){console.log("yassss");}
-            if (node.name === "node 36"){console.log(node.group.bounds.leftCenter); console.log(subProcessNode.group.children[0].position);}
+
             if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                 node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
-            else if (Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+            else if (Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
                 node.group.position.y += direction*Math.round(subProcessNode.group.children[0].bounds.height);
             }
             
@@ -815,7 +814,7 @@ export default function Sketch() {
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
          <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current}}>
-            <PlayControls onPlay={onPlay} playing={isPlaying}/>
+            <FaultControls onPlay={onPlay} playing={isPlaying}/>
         </FaultContext.Provider> 
         
         </>

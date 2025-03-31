@@ -5,7 +5,7 @@ import { FaultContext } from "./Sketch";
 
 export default function FaultDescription({fault}) {
 
-    const {  fault_dict, node_dict, setNodeCard, zoomed_node_current} = useContext(FaultContext);
+    const {  fault_dict, node_dict, setNodeCard, zoomed_node_current, subProcessNodes} = useContext(FaultContext);
     return (
         <>
         <Card
@@ -114,8 +114,20 @@ export default function FaultDescription({fault}) {
                             Execution Path
                         </Typography>
                 <List sx={{minWidth:'100%'}}>
-                {fault_dict[fault]["execution_path"].map((e, index)=>{
-                    if (node_dict[e]){
+                {
+                fault_dict[fault]["execution_path"].map((e, index)=>{
+                
+                    var temp_node_dict = node_dict;
+                    console.log(subProcessNodes);
+
+                    Object.keys(subProcessNodes.current).forEach((key)=>{
+                        if (fault_dict[fault]["processRef"] === subProcessNodes.current[key].id){
+                            temp_node_dict = node_dict[key].children
+                        }
+                    });
+                    console.log(temp_node_dict);
+
+                    if (temp_node_dict[e]){
                     return(
                         <>
                         
@@ -124,9 +136,9 @@ export default function FaultDescription({fault}) {
                                 transition: "background-color 0.3s",
                                 "&:hover": { backgroundColor: "#636e72" },
                                 
-                            }} onClick={()=>{setNodeCard(node_dict[e]); zoomed_node_current.current = node_dict[e]}}>
+                            }} onClick={()=>{setNodeCard(temp_node_dict[e]); zoomed_node_current.current = temp_node_dict[e]}}>
                                 
-                        <ListItemText primary={((index/2)+1).toString() + ". " + node_dict[e].name} />
+                        <ListItemText primary={((index/2)+1).toString() + ". " + temp_node_dict[e].name} />
                         </ListItem>
                         {index < fault_dict[fault].execution_path.length - 1 && <Divider />}
 
