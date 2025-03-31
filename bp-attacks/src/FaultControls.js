@@ -38,6 +38,8 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
 
         stageRef.current = 0;
         faultPathRef.current = [];
+        elapsedTime.current =0;
+        playbackSpeed.current = 0;
         
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{
