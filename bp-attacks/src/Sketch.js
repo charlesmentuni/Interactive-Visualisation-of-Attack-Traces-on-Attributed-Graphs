@@ -298,6 +298,11 @@ export default function Sketch() {
 
         node.group.position.y =temp_pos.y
 
+        Object.keys(node.children).forEach((key)=>{
+            let node1 = node.children[key]
+            node1.group.bounds.topCenter.y -= (maxYNode.group.bounds.bottomCenter.y - node.group.bounds.bottomCenter.y) + 10
+        });
+
         node.group.children[1].content = ""
         node.group.children[0].fillColor = "#dfe6e9";
         shiftNodes(node);
@@ -323,8 +328,11 @@ export default function Sketch() {
                     if (subProcessNode.group.children[0].contains(subnode.group.position) || Math.round(subnode.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
                         subnode.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
                     }
-                    else if (Math.round(subnode.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                        subnode.group.position.y += direction*subProcessNode.group.children[0].bounds.height;
+                    else if (subProcessNode.group.children[0].contains(subnode.group.topCenter) || Math.round(subnode.group.position.y) > Math.round(subProcessNode.group.position.y)){
+                        subnode.group.position.y += direction*subProcessNode.group.children[0].bounds.height/2;
+                    }
+                    else if (subProcessNode.group.children[0].contains(subnode.group.bottomCenter) || Math.round(subnode.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                        subnode.group.position.y -= direction*subProcessNode.group.children[0].bounds.height/2;
                     }
                 });
             }
@@ -333,7 +341,10 @@ export default function Sketch() {
                 node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
             else if (Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                node.group.position.y += direction*Math.round(subProcessNode.group.children[0].bounds.height);
+                node.group.position.y += direction*Math.round(subProcessNode.group.children[0].bounds.height/2);
+            }
+            else if (subProcessNode.group.children[0].contains(node.group.bottomCenter) || Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+                node.group.position.y -= direction*subProcessNode.group.children[0].bounds.height/2;
             }
             
         });

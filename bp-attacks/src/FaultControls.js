@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Card, CardContent, Select , Box, MenuItem, InputLabel, FormControl} from '@mui/material';
-import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward } from '@mui/icons-material';
+import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward, FollowTheSigns } from '@mui/icons-material';
 import {useContext, useEffect, useState, useRef} from 'react';
 import {FaultContext} from './Sketch'
 import FaultDescription from './FaultDescription';
@@ -12,7 +12,7 @@ import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './S
 
 export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
 
-    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode, zoomed_node_current} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -27,6 +27,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
     const playbackSpeed = useRef(0);
     const skip = useRef(false);
     const subProcessParent = useRef(null);
+    const followFault = useRef(false);
 
 
     const resetFault = () => {
@@ -40,6 +41,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         faultPathRef.current = [];
         elapsedTime.current =0;
         playbackSpeed.current = 0;
+        followFault.current =false;
         
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{
@@ -264,7 +266,9 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         if (faultPathRef.current[stageRef.current].group){
             
            
-
+            if (followFault.current){
+                zoomed_node_current.current = faultPathRef.current[stageRef.current];
+            }
             let nodeLayer = paper.project.layers[4];
             let faultNode = nodeLayer.lastChild.children[0];
             
@@ -376,7 +380,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
     }}
-    disabled={isPlaying}
+    disabled={isPlaying || !fault}
     onClick={prevFault}
 >
     <SkipPrevious/>
@@ -397,6 +401,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         setNextDisabled(!nextDisabled);
         setPrevDisabled(!prevDisabled);
     }}
+    disabled={!fault}
 >
     {playing.current ? <PauseSharp/> : <PlayArrow/>}
 </Button>
@@ -411,7 +416,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
     }}
-    disabled={isPlaying}
+    disabled={isPlaying || !fault}
     onClick={nextFault}
 >
     <SkipNext/>
@@ -424,7 +429,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
-    }} onClick={resetFault}>
+    }} onClick={resetFault} disabled={!fault}>
     <Refresh/>
 </Button>
 
@@ -437,8 +442,8 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
-    }} disabled={!isPlaying} onClick={() => {if (playbackSpeed.current > 0){playbackSpeed.current -= 1}}}>
-    <FastRewind/>
+    }} disabled={!isPlaying} onClick={() => {followFault.current =!followFault.current; }}>
+    <FollowTheSigns/>
 </Button>
 
 <Button
