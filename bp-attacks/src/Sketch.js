@@ -19,7 +19,7 @@ import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -300,7 +300,8 @@ export default function Sketch() {
 
         Object.keys(node.children).forEach((key)=>{
             let node1 = node.children[key]
-            node1.group.bounds.topCenter.y -= (maxYNode.group.bounds.bottomCenter.y - node.group.bounds.bottomCenter.y) + 10
+            node1.group.bounds.topCenter.y -= Math.round((maxYNode.group.bounds.bottomCenter.y - node.group.bounds.bottomCenter.y) + 10)
+            node1.group.position.y = Math.round(node1.group.position.y/50)*50;
         });
 
         node.group.children[1].content = ""
@@ -329,10 +330,10 @@ export default function Sketch() {
                         subnode.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
                     }
                     else if (subProcessNode.group.children[0].contains(subnode.group.topCenter) || Math.round(subnode.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                        subnode.group.position.y += direction*subProcessNode.group.children[0].bounds.height/2;
+                        subnode.group.position.y += Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
                     }
                     else if (subProcessNode.group.children[0].contains(subnode.group.bottomCenter) || Math.round(subnode.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                        subnode.group.position.y -= direction*subProcessNode.group.children[0].bounds.height/2;
+                        subnode.group.position.y -= Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
                     }
                 });
             }
@@ -341,10 +342,10 @@ export default function Sketch() {
                 node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
             }
             else if (Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                node.group.position.y += direction*Math.round(subProcessNode.group.children[0].bounds.height/2);
+                node.group.position.y += Math.round(direction*Math.round(subProcessNode.group.children[0].bounds.height/2));
             }
             else if (subProcessNode.group.children[0].contains(node.group.bottomCenter) || Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                node.group.position.y -= direction*subProcessNode.group.children[0].bounds.height/2;
+                node.group.position.y -= Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
             }
             
         });
@@ -443,7 +444,31 @@ export default function Sketch() {
                 label="";
                 isSVG=true;
             }
-            
+            if (temp_node_dict[node.id()].type === 'messageStartEvent'){
+                type = paper.project.importSVG(messageStartEvent);
+                type.scale(0.5);
+                label ="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'messageEndEvent'){
+                type = paper.project.importSVG(messageEndEvent);
+                type.scale(0.5);
+                label ="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'timerStartEvent'){
+                type = paper.project.importSVG(timerStartEvent);
+                type.scale(0.5);
+                label ="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'timerEndEvent'){
+                type = paper.project.importSVG(timerEndEvent);
+                type.scale(0.5);
+                label ="";
+                isSVG=true;
+            }
+
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
                 type = paper.project.importSVG(throwEvent);
                 type.scale(0.5);
@@ -483,13 +508,58 @@ export default function Sketch() {
                 isSVG=true;
             }
 
-            if (gateway_types.includes(temp_node_dict[node.id()].type)){
+            if (temp_node_dict[node.id()].type === 'businessRuleTask'){
+                type = paper.project.importSVG(businessRulesTask);
+                type.scale(0.4);
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'receiveTask'){
+                type = paper.project.importSVG(receiveTask);
+                type.scale(0.4);
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'manualTask'){
+                type = paper.project.importSVG(manualTask);
+                type.scale(0.4);
+                isSVG=true;
+            }
+
+
+
+           
+
+            if (temp_node_dict[node.id()].type === 'eventBasedGateway'){
+                type = paper.project.importSVG(eventBasedGateway);
+                type.scale(0.9);
+                label="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'exclusiveGateway'){
                 type = paper.project.importSVG(gatewaySVG);
                 type.scale(0.9);
                 label="";
                 isSVG=true;
-                
             }
+            if (temp_node_dict[node.id()].type === 'inclusiveGateway'){
+                type = paper.project.importSVG(inclusiveGateway);
+                type.scale(0.9);
+                label="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'parallelGateway'){
+                type = paper.project.importSVG(parallelGateway);
+                type.scale(0.9);
+                label="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'complexGateway'){
+                type = paper.project.importSVG(complexGateway);
+                type.scale(0.9);
+                label="";
+                isSVG=true;
+            }
+
+
             if (isSVG){
                 var openIOBindings = new Raster('openIcon');
                 openIOBindings.scale(0.3);

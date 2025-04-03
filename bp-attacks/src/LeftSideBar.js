@@ -3,6 +3,8 @@ import {Box, Button, Card, CardContent, Collapse, TextField, Typography} from '@
 import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext} from '@mui/icons-material';
 import paper from 'paper';
 import GraphContext from './GraphCreation';
+import Fuse from 'fuse.js';
+
 
 export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToNode}) {
 
@@ -24,6 +26,13 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
     const searchNode = (query) =>{
         var foundNode = null;
+        const options = {includeScore: true,
+        keys: ['name', 'type', 'script', 'assignments', 'documentation']}
+
+        const fuse = new Fuse(Object.values(node_dict), options);
+        const result = fuse.search(query, {limit:1});
+
+
         Object.keys(node_dict).forEach((key) => {
             if (node_dict[key].name === query){foundNode = node_dict[key]; return;}
             if (key === query){foundNode = node_dict[key];return;}
@@ -39,7 +48,10 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
             }
         });
-        console.log(foundNode);
+        if (result[0]){
+            foundNode = result[0].item
+        }
+       
         nodeZoom.current =  foundNode;
         if(!paper.view.onFrame){paper.view.onFrame = (event) => {animateZoomToNode(event)}}
         //paper.view.play();
