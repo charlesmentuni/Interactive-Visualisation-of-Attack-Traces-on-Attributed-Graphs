@@ -118,7 +118,6 @@ export default function FaultDescription({fault}) {
                 fault_dict[fault]["execution_path"].map((e, index)=>{
                 
                     var temp_node_dict = node_dict;
-                    console.log(subProcessNodes);
 
                     var subProcessNode;
                     Object.keys(subProcessNodes.current).forEach((key)=>{

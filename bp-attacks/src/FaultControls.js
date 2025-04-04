@@ -10,7 +10,7 @@ import { Color, Point } from 'paper/dist/paper-core';
 import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './SVGAssets';
 
 
-export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
+export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
 
     const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode, zoomed_node_current} = useContext(FaultContext);
 
@@ -30,6 +30,39 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
     const followFault = useRef(false);
 
 
+    const setAnimateSnapshot = (dict) => {
+        
+
+        for (let i = 0; i<dict.stage; i++ ){
+            nextFault();
+        }
+            elapsedTime.current =dict.elapsed;
+            playbackSpeed.current = dict.speed;
+            followFault.current = dict.follow;
+            subProcessParent.current = dict.subParent;
+            
+
+        animateFault();
+    }
+    const getAnimateSnapshot = () =>{
+        return {stage: stageRef.current, faultPath: faultPathRef.current, elapsed: elapsedTime.current, speed: playbackSpeed.current, follow: followFault.current, subParent : subProcessParent.current};
+    }
+
+    useEffect(()=>{
+        console.log(subProcessOpened);
+        console.log(subProcessParent);
+
+        setSubProcessOpened(null);
+
+        // When subprocess is opened
+        if (!subProcessOpened || !fault || (subProcessParent.current && subProcessParent.current.id === subProcessOpened.id)){return;}
+        var snapshot = getAnimateSnapshot();
+        resetFault();
+        setAnimateSnapshot(snapshot);
+
+
+    }, [subProcessOpened])
+
     const resetFault = () => {
         runFault();
     };
@@ -42,6 +75,7 @@ export default function FaultControls({onPlay, onChange, onNext, onPrev}) {
         elapsedTime.current =0;
         playbackSpeed.current = 0;
         followFault.current =false;
+        subProcessParent.current =null;
         
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{

@@ -19,7 +19,7 @@ import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -48,12 +48,13 @@ export default function Sketch() {
     const mouseDrag = useRef(false);
     const edge_dict_ref = useRef("");
     const time_passed_zoom = useRef(0);
-    const [fault, setFault] = useState("");
+
     const zoomed_node_current = useRef(null);
     const initial_pos = useRef(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
+    const [shiftFaults, setShiftFaults] = useState(null);
 
     const onPlay = () => {
         playing.current = !playing.current;
@@ -316,6 +317,18 @@ export default function Sketch() {
         
     }
 
+    const boundsCheck = (subProcessNode, node, direction) => {
+        if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+            node.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
+        }
+        else if (subProcessNode.group.children[0].contains(node.group.topCenter) || Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
+            node.group.position.y += Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
+        }
+        else if (subProcessNode.group.children[0].contains(node.group.bottomCenter) || Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
+            node.group.position.y -= Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
+        }
+    }
+
     const shiftNodes = (subProcessNode, direction=1) => {
 
         
@@ -326,30 +339,15 @@ export default function Sketch() {
             if(node.opened){
                 Object.keys(node.children).forEach((key)=>{
                     var subnode = node.children[key];
-                    if (subProcessNode.group.children[0].contains(subnode.group.position) || Math.round(subnode.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
-                        subnode.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
-                    }
-                    else if (subProcessNode.group.children[0].contains(subnode.group.topCenter) || Math.round(subnode.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                        subnode.group.position.y += Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
-                    }
-                    else if (subProcessNode.group.children[0].contains(subnode.group.bottomCenter) || Math.round(subnode.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                        subnode.group.position.y -= Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
-                    }
+                    boundsCheck(subProcessNode, subnode, direction);
                 });
             }
 
-            if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
-                node.group.position.x += direction*Math.round(subProcessNode.group.children[0].bounds.width);
-            }
-            else if (Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
-                node.group.position.y += Math.round(direction*Math.round(subProcessNode.group.children[0].bounds.height/2));
-            }
-            else if (subProcessNode.group.children[0].contains(node.group.bottomCenter) || Math.round(node.group.position.y) < Math.round(subProcessNode.group.position.y)){
-                node.group.position.y -= Math.round(direction*subProcessNode.group.children[0].bounds.height/2);
-            }
+            boundsCheck(subProcessNode, node, direction);
             
         });
-
+        console.log('yes');
+        setShiftFaults(subProcessNode);
        
         paper.project.layers[ 0 ].activate();
         Object.keys(subProcessNodes.current).forEach((key)=>{
@@ -513,6 +511,7 @@ export default function Sketch() {
                 type.scale(0.4);
                 isSVG=true;
             }
+
             if (temp_node_dict[node.id()].type === 'receiveTask'){
                 type = paper.project.importSVG(receiveTask);
                 type.scale(0.4);
@@ -520,6 +519,11 @@ export default function Sketch() {
             }
             if (temp_node_dict[node.id()].type === 'manualTask'){
                 type = paper.project.importSVG(manualTask);
+                type.scale(0.4);
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'callActivity'){
+                type = paper.project.importSVG(callTask);
                 type.scale(0.4);
                 isSVG=true;
             }
@@ -905,7 +909,7 @@ export default function Sketch() {
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
 
          <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current}}>
-            <FaultControls onPlay={onPlay} playing={isPlaying}/>
+            <FaultControls subProcessOpened={shiftFaults} setSubProcessOpened={setShiftFaults}/>
         </FaultContext.Provider> 
         
         </>
