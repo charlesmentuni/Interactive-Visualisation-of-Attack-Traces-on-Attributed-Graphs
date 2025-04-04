@@ -27,28 +27,30 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
     const searchNode = (query) =>{
         var foundNode = null;
         const options = {includeScore: true,
-        keys: ['name', 'type', 'script', 'assignments', 'documentation']}
+        keys: [{name: 'name', weight: 1}, {name: 'type', weight:0.5}, {name: 'documentation', weight:0.4}]}
 
         const fuse = new Fuse(Object.values(node_dict), options);
-        const result = fuse.search(query, {limit:1});
+        var result = fuse.search(query, {limit:1});
 
 
-        Object.keys(node_dict).forEach((key) => {
-            if (node_dict[key].name === query){foundNode = node_dict[key]; return;}
-            if (key === query){foundNode = node_dict[key];return;}
-            if (node_dict[key].type === "subProcess"){
-                Object.keys(node_dict[key].children).forEach((key1)=>{
-                    // open subprocess in here
-                    if (node_dict[key].children[key1].name === query){
-                        foundNode = node_dict[key].children[key1]; 
-                        if (!node_dict[key].opened){displaySubProcess(node_dict[key]);}
-                        return;}
-                    if (key === query){foundNode = node_dict[key].children[key1]; if (!node_dict[key].opened){displaySubProcess(node_dict[key]);}  return;}
-                });
+        console.log(subProcessNodes);
+        Object.values(subProcessNodes.current).forEach((subProcessNode) => {
+            var temp_fuse = new Fuse(Object.values(subProcessNode.children), options);
+            var temp_result = temp_fuse.search(query, {limit:1}); 
 
+            if (!temp_result[0]){return;}
+            
+            if (!result[0] || result[0].score > temp_result[0].score){
+                result =temp_result;
+                result[0].parent = subProcessNode;
             }
         });
+
         if (result[0]){
+            console.log(result[0])
+            if (result[0].parent && !result[0].parent.opened){
+                displaySubProcess(result[0].parent);
+            }
             foundNode = result[0].item
         }
        
