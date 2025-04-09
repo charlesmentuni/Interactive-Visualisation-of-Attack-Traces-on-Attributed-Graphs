@@ -49,8 +49,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
     }
 
     useEffect(()=>{
-        console.log(subProcessOpened);
-        console.log(subProcessParent);
+        
 
         setSubProcessOpened(null);
 
@@ -387,10 +386,13 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
     color: '#fefefe'
 }}> 
     <CardContent>
-        <FormControl fullWidth variant='outlined'>
+        <FormControl fullWidth variant='outlined'  >
             <InputLabel id="demo-simple-select-label" style={{color:'#fefefe'}}>Fault</InputLabel>
             <Select
-                color="greySelect"
+
+                style={{color:"#fefefe",
+                    backgroundColor:"rgb(64,64,64)"}}
+                
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={fault}

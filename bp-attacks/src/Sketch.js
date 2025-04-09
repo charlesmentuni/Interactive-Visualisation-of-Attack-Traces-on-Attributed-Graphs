@@ -70,11 +70,15 @@ export default function Sketch() {
                 newZoom = paper.view.zoom * 0.95;
                 paper.project.layers[5].children[0].bounds.height *= 1/0.95;
                 paper.project.layers[5].children[0].bounds.width *= 1/0.95;
+
+                paper.project.layers[7].children[0].bounds.height *= 1/0.95;
+                paper.project.layers[7].children[0].bounds.width *= 1/0.95;
+                placeSmallBox();
                 
             } else {
                 newZoom = paper.view.zoom * 1.05;
-                paper.project.layers[5].children[0].bounds.height *= 1/1.05;
-                paper.project.layers[5].children[0].bounds.width *= 1/1.05;
+                paper.project.layers[7].children[0].bounds.height *= 1/1.05;
+                paper.project.layers[7].children[0].bounds.width *= 1/1.05;
                 
             }
 
@@ -96,6 +100,8 @@ export default function Sketch() {
             paper.view.zoom = newZoom;
             paper.view.center = paper.view.center.add(offset);
             paper.project.layers[5].children[0].position = paper.view.center;
+            placeBigBox();
+            placeSmallBox();
 
             
             event.preventDefault();
@@ -141,6 +147,10 @@ export default function Sketch() {
         paper.project.addLayer(new Layer());
         paper.project.layers[6].name = "ioBindingLayer";
 
+        paper.project.addLayer(new Layer());
+        paper.project.layers[7].name = "littleBoxInTheCorner"
+        drawNavigationBox();
+
         var tool = new Tool();
         
         // These are functions for users to observe the canvas
@@ -154,6 +164,8 @@ export default function Sketch() {
             }
             paper.view.scrollBy(delta)
             paper.project.layers[5].children[0].position = paper.view.center;
+            placeBigBox();
+            placeSmallBox();                    
         }
 
         tool.onMouseUp = function(event){
@@ -166,6 +178,12 @@ export default function Sketch() {
                 paper.project.layers[5].children[0].bounds.height *= 1/1.2;
                 paper.project.layers[5].children[0].bounds.width *= 1/1.2;
                 paper.project.layers[5].children[0].position = paper.view.center;
+
+                paper.project.layers[7].children[0].bounds.height *= 1/1.2;
+                paper.project.layers[7].children[0].bounds.width *= 1/1.2;
+
+                placeBigBox();
+                placeSmallBox();
             }
 
             if (event.key === 's'){
@@ -173,13 +191,25 @@ export default function Sketch() {
                 paper.project.layers[5].children[0].bounds.height *= 1/0.8;
                 paper.project.layers[5].children[0].bounds.width *= 1/0.8;
                 paper.project.layers[5].children[0].position = paper.view.center;
+
+                paper.project.layers[7].children[0].bounds.height *= 1/0.8;
+                paper.project.layers[7].children[0].bounds.width *= 1/0.8;
+
+                placeBigBox();
+                placeSmallBox();
             }
             // RECENTER
-            if (event.key === 'r'){
+            /* if (event.key === 'r'){
                 paper.view.zoom = 1;
                 paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
+
+                //let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
+                //paper.project.layers[7].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.3).x, new_pos.multiply(0.2).y));  
+                placeBigBox();
+                placeSmallBox();                     
+            
                 
-            }
+            } */
         }
 
 
@@ -205,7 +235,101 @@ export default function Sketch() {
         newCenter.y = initial_pos.current.y + (zoomed_node_current.current.group.position.y-initial_pos.current.y)*Math.sin(percent_done*(Math.PI/2));
         paper.view.setCenter(newCenter);
 
+        placeBigBox();
+        placeSmallBox();
+
         paper.view.draw();
+   }
+
+   const drawNavigationBox = () => {
+        paper.project.layers[7].activate();
+        const width = 100;
+        const height = 100;
+    
+        var bigBox = new Path.Rectangle(paper.view.center, new Size(width, height));
+        bigBox.strokeColor = 'black';
+        bigBox.strokeWidth = 2;
+        bigBox.fillColor = 'white';
+        var raster = bigBox.rasterize();
+        bigBox.remove();
+
+        var smallBox = new Path.Rectangle(paper.view.center, new Size(10, 10));
+        smallBox.strokeWidth =0;
+        smallBox.fillColor = 'black';
+
+
+
+        placeBigBox();
+        placeSmallBox();                              
+
+
+
+   }
+   const placeBigBox = () =>{
+        let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
+        paper.project.layers[7].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));                       
+
+   }
+
+   const placeSmallBox = () => {
+        var distanceToView = paper.view.center.subtract(paper.project.layers[0].bounds.topLeft);
+        var dimensions = Math.max(paper.project.layers[0].bounds.height, paper.project.layers[0].bounds.width);
+        var bigBoxSize = paper.project.layers[7].children[0].bounds.width;
+
+        // Get size of small box relative to big navigation box
+        var viewToBounds = paper.view.bounds.width/dimensions;
+        paper.project.layers[7].children[1].bounds.width = viewToBounds*paper.project.layers[7].children[0].bounds.width;
+        paper.project.layers[7].children[1].bounds.height = viewToBounds*paper.project.layers[7].children[0].bounds.height;
+        // Checks if the small box is too big for the big box to fit, so that it is not oversized. 
+        if (paper.project.layers[7].children[1].bounds.height > bigBoxSize*0.8){paper.project.layers[7].children[1].bounds.height=bigBoxSize*0.8; paper.project.layers[7].children[1].bounds.width=bigBoxSize*0.8;}
+
+
+        var newPos = paper.project.layers[7].children[0].bounds.leftCenter.add(distanceToView.divide(dimensions).multiply(bigBoxSize));
+        paper.project.layers[7].children[1].position = newPos;
+
+        var bigBox =  paper.project.layers[7].children[0];
+        var smallBox = paper.project.layers[7].children[1];
+        if (bigBox.bounds.leftCenter.x > smallBox.bounds.leftCenter.x){
+
+            if (!((bigBox.bounds.leftCenter.x-smallBox.bounds.leftCenter.x) >= smallBox.bounds.width)){
+                smallBox.bounds.width -=  bigBox.bounds.leftCenter.x-smallBox.bounds.leftCenter.x;
+            }
+            else {smallBox.bounds.width =1;}
+
+            smallBox.bounds.leftCenter.x = bigBox.bounds.leftCenter.x;
+
+        }
+        if (bigBox.bounds.rightCenter.x < smallBox.bounds.rightCenter.x){
+
+            if (!((smallBox.bounds.rightCenter.x- bigBox.bounds.rightCenter.x) >= smallBox.bounds.width)){
+                smallBox.bounds.width -=  smallBox.bounds.rightCenter.x-bigBox.bounds.rightCenter.x;
+            }
+            else {smallBox.bounds.width =1;}
+
+            smallBox.bounds.rightCenter.x = bigBox.bounds.rightCenter.x;
+
+        }
+        if (bigBox.bounds.topCenter.y > smallBox.bounds.topCenter.y){
+
+            if (!((bigBox.bounds.topCenter.y-smallBox.bounds.topCenter.y) >= smallBox.bounds.height)){
+                smallBox.bounds.height -=  bigBox.bounds.topCenter.y-smallBox.bounds.topCenter.y;
+            }
+            else {smallBox.bounds.height =1;}
+
+            smallBox.bounds.topCenter.y = bigBox.bounds.topCenter.y;
+
+        }
+        if (bigBox.bounds.bottomCenter.y < smallBox.bounds.bottomCenter.y){
+
+            if (!((smallBox.bounds.bottomCenter.y- bigBox.bounds.bottomCenter.y) >= smallBox.bounds.height)){
+                smallBox.bounds.height -=  smallBox.bounds.bottomCenter.y-bigBox.bounds.bottomCenter.y;
+            }
+            else {smallBox.bounds.height =1;}
+
+            smallBox.bounds.bottomCenter.y = bigBox.bounds.bottomCenter.y;
+
+        }
+
    }
 
    const closeSubProcesses = (subProcessNode) =>{
@@ -314,7 +438,7 @@ export default function Sketch() {
             closeSubProcesses(node); 
         };
 
-        
+        placeSmallBox();
     }
 
     const boundsCheck = (subProcessNode, node, direction) => {
@@ -346,7 +470,6 @@ export default function Sketch() {
             boundsCheck(subProcessNode, node, direction);
             
         });
-        console.log('yes');
         setShiftFaults(subProcessNode);
        
         paper.project.layers[ 0 ].activate();

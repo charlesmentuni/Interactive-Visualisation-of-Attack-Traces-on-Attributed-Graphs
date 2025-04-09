@@ -17,7 +17,7 @@ import numpy as np
 
 def performance_test(driver,nodeNum):
 
-    CreateBLModel( nodeNum,subprocesses=True)
+    CreateBLModel( nodeNum,subprocesses=False)
     
     
     # Wait until an element is present (e.g., an element with id 'content')
@@ -25,15 +25,24 @@ def performance_test(driver,nodeNum):
         upload_file = "/Users/charlesment/Version_2/Interactive-Visualisation-of-Attack-Traces-on-Attributed-Graphs/bp-attacks/src/wf111.json"
         file_input = driver.find_element(By.CSS_SELECTOR, "input[type='file']")
         file_input.send_keys(upload_file)  
-        time.sleep(600)
 
         text = driver.get_log('browser')
 
-        match = re.search(r"timeGraph\" \s*([\d.]+)", str(text))
-        match1 = re.search(r"nodeNum\" \s*([\d.]+)\'", str(text))
-
+        match = re.search(r"\"timeGraph\" \s*([\d.]+)", str(text))
+        match1 = re.search(r"\"nodeNum\" \s*([\d.]+)\'", str(text))
+        while not match or not match1:
+            text = driver.get_log('browser')
+            if not match:
+                match = re.search(r"timeGraph\" \s*([\d.]+)", str(text))
+            if not match1:
+                match1 = re.search(r"nodeNum\" \s*([\d.]+)\'", str(text))
+            
+            time.sleep(0.1)
+        
+    
         timeTaken = None
         nodesNum = None
+
         if match and match1:
             timeTaken = match.group(1)
             nodesNum = match1.group(1)
@@ -47,11 +56,11 @@ def performance_test(driver,nodeNum):
    
 def plot_test_data(tests):
 
-    
 
     # plot
     fig, ax = plt.subplots()
-
+    ax.set_xlabel('Number of Nodes')
+    ax.set_ylabel('Time Taken to Initialise (milliseconds)')
     x = tests[:, 0]
     y = tests[:, 1]
 
@@ -70,9 +79,16 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(options=options)
     # Open the webpage
     driver.get(url)
-    tests = np.ndarray((int(300/10)*5, 2))
-    for j in range(5):
-        for i in range(10, 310, 10):
-            timeTaken, nodesNum = performance_test(driver, 3)
-            tests[int(i/10)-1] = [nodesNum, timeTaken]
+    iterations = 5
+    initNum = 2000
+    tests = np.ndarray((int(initNum/10)*5, 2))
+    for j in range(iterations):
+        for i in range(10, initNum, 10):
+            timeTaken, nodesNum = performance_test(driver, i)
+            print(f"Time taken for {nodesNum} nodes: {timeTaken}")
+            tests[int(i/10)-1] = [float(nodesNum), float(timeTaken)]
+    f = open("bp-attacks/src/test.txt", "w")
+    f.write(str(tests))
+    f.close()
+    
     plot_test_data(tests)
