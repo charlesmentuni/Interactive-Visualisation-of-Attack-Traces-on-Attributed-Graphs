@@ -248,12 +248,16 @@ export function GraphCreation({json}) {
                 cy.nodes().forEach((node)=>{
                     if (!minX || node.position().x < minX){minX = node.position().x;}
                     if (!minY || node.position().y < minY){minY = node.position().y;}
+
                 })
+
+                console.log(minY);
                 cy.nodes().map((node)=>{
                     node.position().x-=minX;
                     node.position().y-=minY;
                 })
                 temp_node_dict[key].layout = cy;
+                console.log(cy);
                 performance.mark('graphLayoutEnd')
                 console.log('performance subprocess layout' , performance.measure('layout measure perform', 'subProcessLayout', 'graphLayoutEnd'));
 

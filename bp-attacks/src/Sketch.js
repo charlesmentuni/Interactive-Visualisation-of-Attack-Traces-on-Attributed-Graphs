@@ -388,14 +388,10 @@ export default function Sketch() {
         node.opened = true;
 
         node.group.children[3].source = closeIcon;
-    
-
-        
-
 
         paper.project.layers[ 0 ].activate();
-        node.children = displayGraphLayout(node.layout, node.children, {x:(node.group.position.x)/spacing, y:  (node.group.position.y)/spacing});
 
+        node.children = displayGraphLayout(node.layout, node.children); //, {x:(node.group.bounds.leftCenter.x)/spacing, y:  (node.group.bounds.topCenter.y)/spacing});
 
         node.edges = createEdges(node.children);
         
@@ -403,31 +399,34 @@ export default function Sketch() {
         var maxXNode = null;
         var maxYNode = null;
 
+        var minYNode = null;
+        var minXNode =null;
+
         Object.keys(node.children).forEach((key)=>{
             let node1 = node.children[key]
-            if (!maxXNode || node1.group.bounds.leftCenter.x >= maxXNode.group.bounds.leftCenter.x){maxXNode = node1;}
+            if (!maxXNode || node1.group.bounds.rightCenter.x >= maxXNode.group.bounds.rightCenter.x){maxXNode = node1;}
             if (!maxYNode || node1.group.bounds.bottomCenter.y >= maxYNode.group.bounds.bottomCenter.y){maxYNode = node1;}
+            if (!minYNode || node1.group.bounds.topCenter.y <= minYNode.group.bounds.topCenter.y){minYNode = node1;}
+            if (!minXNode || node1.group.bounds.leftCenter.x <= minXNode.group.bounds.leftCenter.x){minXNode = node1;}
         });
-
-        /* var subnodes = new Group();
-        Object.keys(node.children).forEach((subnode)=>{
-            node.children[subnode].group.addTo(subnodes);
-        }); 
-        subnodes.addTo(node.group); */
-         
-        var temp_pos = node.group.position;
 
         
-        node.group.children[0].bounds.width = maxXNode.group.children[0].bounds.rightCenter.x - node.group.children[0].bounds.leftCenter.x;
-        node.group.children[0].bounds.height = 20 +  maxYNode.group.bounds.bottomCenter.y - node.group.bounds.topCenter.y;
+        var temp_pos = node.group.position;
 
-        node.group.position.y =temp_pos.y
+        var padding = {x:50, y:20};
+        node.group.children[0].bounds.width = maxXNode.group.children[0].bounds.rightCenter.x - minXNode.group.children[0].bounds.leftCenter.x + padding.x;
+        node.group.children[0].bounds.height = maxYNode.group.bounds.bottomCenter.y - minYNode.group.bounds.topCenter.y + padding.y;
 
+        node.group.position.y = temp_pos.y
+
+
+        var minX = minXNode.group.bounds.leftCenter.x;
+        var minY = minYNode.group.bounds.topCenter.y;
         Object.keys(node.children).forEach((key)=>{
             let node1 = node.children[key]
-            node1.group.bounds.topCenter.y -= Math.round((maxYNode.group.bounds.bottomCenter.y - node.group.bounds.bottomCenter.y) + 10)
-            node1.group.position.y = Math.round(node1.group.position.y/50)*50;
-        });
+            node1.group.bounds.leftCenter.x += padding.x/1.2 + node.group.bounds.leftCenter.x - minX ;
+            node1.group.bounds.topCenter.y += padding.y/2 + node.group.bounds.topCenter.y - minY;
+        }); 
 
         node.group.children[1].content = ""
         node.group.children[0].fillColor = "#dfe6e9";
@@ -442,7 +441,7 @@ export default function Sketch() {
     }
 
     const boundsCheck = (subProcessNode, node, direction) => {
-        if (subProcessNode.group.children[0].contains(node.group.position) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
+        if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
             node.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
         }
         else if (subProcessNode.group.children[0].contains(node.group.topCenter) || Math.round(node.group.position.y) > Math.round(subProcessNode.group.position.y)){
@@ -488,7 +487,7 @@ export default function Sketch() {
         
     } 
     
-    const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0,y:0}) => {
+    const displayGraphLayout = (new_graph_layout, temp_node_dict, padding={x:0, y:0}) => {
 
         paper.project.activeLayer.name = "nodeLayer";
 
@@ -536,7 +535,6 @@ export default function Sketch() {
             // This snaps the nodes into place, so that the layout is more elegant.
             let x = Math.round((node.position().x+padding.x)/tolerance)*tolerance;
             let y = Math.round((node.position().y+padding.y)/tolerance)*tolerance;
-
 
             var numChars = 15;
             if (temp_node_dict[node.id()].type === "subProcess"){numChars=20;}
@@ -651,10 +649,6 @@ export default function Sketch() {
                 isSVG=true;
             }
 
-
-
-           
-
             if (temp_node_dict[node.id()].type === 'eventBasedGateway'){
                 type = paper.project.importSVG(eventBasedGateway);
                 type.scale(0.9);
@@ -725,14 +719,17 @@ export default function Sketch() {
             
             addMouseNodeInteraction(type, temp_node_dict[node.id()], node.position())
 
-            
 
-            x = x*spacing;
+            x = Math.round(x*spacing);
             y = Math.round(y*spacing);
         
-
             type.position = new Point(x,y);
-
+            
+            if (temp_node_dict[node.id()].id === "Event_0lh4by8"){
+                console.log(type);
+                console.log(type.position);
+            }
+            
             type.visible = true;
             
         });
@@ -879,6 +876,7 @@ export default function Sketch() {
             type.onMouseUp = function(event){
                 if (!mouseDrag.current){
                     setNodeCard(node);
+                    console.log(node.group.position);
                 }
             };
 
