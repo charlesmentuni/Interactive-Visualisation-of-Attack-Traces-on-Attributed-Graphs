@@ -1,6 +1,6 @@
 import {useContext, useState} from 'react';
 import {Box, Button, Card, CardContent, Collapse, TextField, Typography} from '@mui/material';
-import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext} from '@mui/icons-material';
+import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext, UploadFileRounded} from '@mui/icons-material';
 import paper from 'paper';
 import GraphContext from './GraphCreation';
 import Fuse from 'fuse.js';
@@ -10,9 +10,9 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
     const [searchOpen, setSearchOpen] = useState(false);
     const [textInput, setTextInput] = useState("");
-    const {node_dict, subProcessNodes} = useContext(GraphContext);
+    const {node_dict, subProcessNodes, setJson} = useContext(GraphContext);
     const downloadAsSVG = () =>{
-        var fileName = "WF102_Attributed_Graph.svg";
+        var fileName = "Resulting_Graph.svg";
         
         
         var url = "data:image/svg+xml;utf8," + encodeURIComponent(paper.project.exportSVG({bounds:'content',asString:true}));
@@ -65,9 +65,33 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             searchNode(textInput);}
     }
 
+    const uploadNewFile = () => {
+        // When button is clicked, allow user to upload new file
+        // Use file input to select file
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        fileInput.onchange = (event) => {
+            if (!event.target.files[0]){return;}
+            if (event.target.files[0].type !== "application/json"){return;}
+            var reader = new FileReader()
+            reader.onload = () => {
+                let jsonData = JSON.parse(reader.result);
+                setJson(jsonData);
+                paper.projects.forEach((project) => {
+                    project.remove();
+                });
+                console.log(paper.projects);
+            }
+            reader.readAsText(event.target.files[0]);
+        }
+        fileInput.click();
+        
+    }
+
     return (
         <>
-        <div style={{flexDirection: 'column', display: 'flex', position: 'absolute', top: '0', left: '0', margin: '2vh', maxWidth: '8vh', height: '60%', justifyContent:'space-between'}}>
+        <div style={{flexDirection: 'column', display: 'flex', position: 'absolute', top: '0', left: '0', margin: '2vh', maxWidth: '8vh', height: '30%', justifyContent:'space-between'}}>
         <Button 
             variant="contained"  
             sx={{
@@ -110,43 +134,16 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
                 width: '8vh',
                 backgroundColor: 'rgb(64, 64, 64)',
                 color: '#fefefe'
-            }}
+            }} onClick={()=>{uploadNewFile();}}
         >
-            <SkipNext/>
+            <UploadFileRounded/>
         </Button>
         
-        <Button
-            variant="contained"  
-            sx={{
-                height: '8vh',
-                width: '8vh',
-                backgroundColor: 'rgb(64, 64, 64)',
-                color: '#fefefe'
-            }} >
-            <Refresh/>
-        </Button>
+       
         
-        <Button
-            variant="contained"  
-            sx={{
-                height: '8vh',
-                width: '8vh',
-                backgroundColor: 'rgb(64, 64, 64)',
-                color: '#fefefe'
-            }} >
-            <FastRewind/>
-        </Button>
         
-        <Button
-            variant="contained"  
-            sx={{
-                height: '8vh',
-                width: '8vh',
-                backgroundColor: 'rgb(64, 64, 64)',
-                color: '#fefefe'
-            }} >
-            <FastForward/>
-        </Button>
+        
+      
         </div>
 
     

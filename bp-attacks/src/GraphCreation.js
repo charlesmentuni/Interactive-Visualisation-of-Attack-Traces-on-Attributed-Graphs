@@ -5,11 +5,15 @@ import { data_source_types, io_binding_edge_types } from './blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
 import elk from "cytoscape-elk";
+import UploadContext from './UploadFaultFile';
 
 const GraphContext = createContext();
 export default GraphContext;
 
-export function GraphCreation({json}) {
+export function GraphCreation() {
+
+    const {json, setJson} = useContext(UploadContext);
+
     const [node_dict, setNode_dict] = useState(null);
     const [edge_dict, setEdge_dict] = useState({});
     const [data_source_dict, setData_source_dict] = useState({});
@@ -251,15 +255,12 @@ export function GraphCreation({json}) {
 
                 })
 
-                console.log(minY);
                 cy.nodes().map((node)=>{
                     node.position().x-=minX;
                     node.position().y-=minY;
                 })
                 temp_node_dict[key].layout = cy;
-                console.log(cy);
                 performance.mark('graphLayoutEnd')
-                console.log('performance subprocess layout' , performance.measure('layout measure perform', 'subProcessLayout', 'graphLayoutEnd'));
 
             });
 
@@ -291,7 +292,7 @@ export function GraphCreation({json}) {
     
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, subProcessNodes, subProcessChildren}}>
             <Sketch />
         </GraphContext.Provider>
     )

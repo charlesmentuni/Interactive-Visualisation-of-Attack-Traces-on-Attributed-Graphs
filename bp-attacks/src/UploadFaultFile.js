@@ -1,13 +1,16 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, createContext} from 'react';
 import {Box, Button, Card, CardContent, Collapse, Typography} from '@mui/material';
 import {ChevronLeftRounded, ChevronRightRounded} from '@mui/icons-material';
 import { GraphCreation } from './GraphCreation';
 import wf102 from './wf102.json';
 
+const UploadContext = createContext();
+export default UploadContext;
 
-export default function UploadFaultFile() {
+export function UploadFaultFile() {
 
     const [json, setJson] = useState(null);
+
 
     useEffect(()=>{
         setJson(wf102);
@@ -22,7 +25,6 @@ export default function UploadFaultFile() {
             setJson(jsonData);
         }
         reader.readAsText(event.target.files[0]);
-        console.log(event.target.files[0])
         
     }
 
@@ -30,8 +32,10 @@ export default function UploadFaultFile() {
         <>
             {json ? 
             <>
-                <canvas id='paper-canvas' resize style={{'width' : window.innerWidth, 'height':'100vh'}}  />
-                <GraphCreation json={json}/>
+                <canvas id='paper-canvas' width={window.innerWidth} height={window.innerHeight} style={{'width' : window.innerWidth, 'height':window.innerHeight}}  />
+                <UploadContext.Provider value={{json, setJson}}>
+                    <GraphCreation />
+                </UploadContext.Provider>
             </> : 
                 <Box sx={{position:"absolute", height:'100vh', width:'100vw', backgroundColor:"#1e272e"}}>
                     <Card sx= {{backgroundColor:'#d2dae2', position:"absolute", top:"25vh", left:"25vw" , height:'40vh', width:'40vw', paddingX:"5vw", paddingY:"5vh", display:"flex", flexDirection:"column", justifyContent:"space-between"}}>

@@ -19,7 +19,7 @@ import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask} from './SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
 
 import CodeBlock from './CodeBlock.js';
@@ -117,7 +117,10 @@ export default function Sketch() {
 
    useEffect(function() {
         if (!graph_layout){return;}
+        if (paper.project){return;}
+        console.log(paper.project);
         paper.setup('paper-canvas');
+        paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
 
         const nodeLayer  = paper.project.activeLayer;
         nodeLayer.activate();
@@ -221,7 +224,6 @@ export default function Sketch() {
    }, [graph_layout])
 
    const animateZoomToNode = (event) =>{
-
         if (!zoomed_node_current.current){return;}
         if (time_passed_zoom.current === 0){initial_pos.current = paper.view.center; }
         var zoomDuration = 1;
@@ -265,6 +267,7 @@ export default function Sketch() {
 
 
    }
+
    const placeBigBox = () =>{
         let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
         paper.project.layers[7].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));                       
@@ -589,15 +592,15 @@ export default function Sketch() {
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
-                type = paper.project.importSVG(throwEvent);
-                type.scale(0.5);
+                type = paper.project.importSVG(intermediateThrowEvent);
+                type.scale(0.4);
                 label="";
                 isSVG=true;
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateCatchEvent'){
-                type = paper.project.importSVG(catchEvent);
-                type.scale(0.5);
+                type = paper.project.importSVG(intermediateCatchEvent);
+                type.scale(0.4);
                 label="";
                 isSVG=true;
             }
@@ -725,10 +728,7 @@ export default function Sketch() {
         
             type.position = new Point(x,y);
             
-            if (temp_node_dict[node.id()].id === "Event_0lh4by8"){
-                console.log(type);
-                console.log(type.position);
-            }
+           
             
             type.visible = true;
             
@@ -888,8 +888,8 @@ export default function Sketch() {
             }
            
 
-             // Hover over and display the full name
-             type.onMouseEnter = function(event){
+            // Hover over and display the full name
+            type.onMouseEnter = function(event){
                 
                 paper.project.layers[2].removeChildren();
 
@@ -1008,9 +1008,7 @@ export default function Sketch() {
         
     }, [isPlaying, paper.view]);
     
-    document.fonts.ready.then(function () {
-       // paper.view.draw(); 
-    });
+
     
 
    return (

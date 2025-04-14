@@ -7,7 +7,7 @@ import paper from 'paper';
 import { gateway_types, event_types } from './blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG } from './SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG } from './SVGAssets';
 
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
@@ -125,7 +125,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
                 nodeLayer.visible =true;
                 edgeLayer.visible =true;
             }
-
+            console.log(playing.current);
             if (playing.current){
                 
                 var stage = stageRef.current;
@@ -255,10 +255,17 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
-
+            if (faultPath[stage].type === 'userTask'){
+                var importedSVG = paper.project.importSVG(userTaskFaultSVG);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
 
             addMouseNodeInteraction(fp, faultPath[stage], fp.position);
-
+            
             
             nodeLayer.addChild(fp);
             
