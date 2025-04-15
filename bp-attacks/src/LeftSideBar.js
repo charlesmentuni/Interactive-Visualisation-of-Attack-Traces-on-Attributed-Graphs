@@ -81,7 +81,6 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
                 paper.projects.forEach((project) => {
                     project.remove();
                 });
-                console.log(paper.projects);
             }
             reader.readAsText(event.target.files[0]);
         }

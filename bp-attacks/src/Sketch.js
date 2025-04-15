@@ -118,7 +118,7 @@ export default function Sketch() {
    useEffect(function() {
         if (!graph_layout){return;}
         if (paper.project){return;}
-        console.log(paper.project);
+        
         paper.setup('paper-canvas');
         paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
 
@@ -758,7 +758,7 @@ export default function Sketch() {
 
     }
 
-    const createEdge = (source, target) => {
+    const createEdge = (source, target, expression) => {
 
             var arrowHead  = paper.project.importSVG(arrowHeadSVG);
             arrowHead.scale(0.1);
@@ -767,7 +767,14 @@ export default function Sketch() {
             var targetPoint = Math.round(target.group.position);
             var arrowHeadDirection = 0;
             
+            var edgeLabelText = new PointText();
+            edgeLabelText.content = expression ? expression : "";
+            //edgeLabelText.fontFamily = "Roboto Mono";
+
+            var edgeLabelBackground = new Path.Rectangle(edgeLabelText.bounds);
+            edgeLabelBackground.fillColor = 'white';
            
+            var edgeLabel = new Group(edgeLabelBackground, edgeLabelText);
 
             const sourcePosition = {x : Math.round(source.group.position.x), y: Math.round(source.group.position.y)};
             const targetPosition = {x : Math.round(target.group.position.x), y: Math.round(target.group.position.y)};
@@ -779,13 +786,14 @@ export default function Sketch() {
                 sourcePoint = source.group.bounds.leftCenter;
                 targetPoint = target.group.bounds.rightCenter;
                 arrowHead.bounds.leftCenter = targetPoint;
+                edgeLabel.bounds.leftCenter = new Point(targetPoint.x+10, targetPoint.y-15);
                 arrowHeadDirection = 270;
             }
 
             if (sourcePosition.x < targetPosition.x ){
                 sourcePoint = source.group.bounds.rightCenter;
                 targetPoint = target.group.bounds.leftCenter;
-
+                edgeLabel.bounds.rightCenter = new Point(targetPoint.x-10, targetPoint.y-15);
                 arrowHead.bounds.rightCenter = targetPoint;
                 arrowHeadDirection = 90;
 
@@ -793,7 +801,11 @@ export default function Sketch() {
 
             if (sourcePosition.y < targetPosition.y){
                 targetPoint = target.group.bounds.topCenter;
+                edgeLabel.bounds.bottomCenter = targetPoint;
                 arrowHead.bounds.bottomCenter = targetPoint;
+
+                edgeLabel.bounds.bottomCenter = new Point(targetPoint.x, arrowHead.bounds.topCenter.y-5);
+
                 arrowHeadDirection = 180;
 
 
@@ -803,6 +815,7 @@ export default function Sketch() {
                 
                 targetPoint = target.group.bounds.bottomCenter;
                 arrowHead.bounds.topCenter = targetPoint;
+                edgeLabel.bounds.topCenter = new Point(targetPoint.x, arrowHead.bounds.bottomCenter.y+5);
                 arrowHeadDirection = 0;
 
 
@@ -833,6 +846,12 @@ export default function Sketch() {
             new_edge.strokeColor = '#0984e3';
             
             new_edge.strokeWidth = 4;
+
+            edgeLabelBackground.position = edgeLabel.position;
+
+            edgeLabel.bringToFront();
+
+
             return {"edge" : new_edge, "arrowHead" : arrowHead, "source":source, "target":target};
     };
 
@@ -846,7 +865,7 @@ export default function Sketch() {
                 return;
             }
 
-            temp_edge_dict[edge.id] = createEdge(node_dict[edge.sourceRef], node_dict[edge.targetRef]);
+            temp_edge_dict[edge.id] = createEdge(node_dict[edge.sourceRef], node_dict[edge.targetRef], edge.expression ? edge.name: null);
 
         });
         return temp_edge_dict;
@@ -1007,8 +1026,6 @@ export default function Sketch() {
         }
         
     }, [isPlaying, paper.view]);
-    
-
     
 
    return (
