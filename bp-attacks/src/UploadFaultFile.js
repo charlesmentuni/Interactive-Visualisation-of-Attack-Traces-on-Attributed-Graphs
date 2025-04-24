@@ -12,9 +12,9 @@ export function UploadFaultFile() {
     const [json, setJson] = useState(null);
 
 
-    useEffect(()=>{
+     /* useEffect(()=>{
         setJson(wf102);
-    }); 
+    });   */
     const uploadFile = (event) => {
 
         if (!event.target.files[0]){return;}

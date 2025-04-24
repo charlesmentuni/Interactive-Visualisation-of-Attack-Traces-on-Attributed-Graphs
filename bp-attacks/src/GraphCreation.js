@@ -19,12 +19,15 @@ export function GraphCreation() {
     const [data_source_dict, setData_source_dict] = useState({});
     const [graph_layout, setGraph_layout] = useState(null);
     const [fault_dict, setFault_dict] = useState({});
+    const [new_view, setNew_view] = useState(null);
+    
 
     const [io_dict, setIo_dict] = useState(null);
     const processName = useRef("WF102-Pick");
     const subProcessChildren = useRef(null);
     const subProcessNodes = useRef(null);
     const subProcessGraphs = useRef({});
+    
 
     const createND = () => {
         // Creates a dictionary of nodes with their uuid as the key
@@ -272,9 +275,9 @@ export function GraphCreation() {
 
     useEffect(() => {
         if (!json){return;}
-        performance.mark("beforeInit")
-        console.time('timeGraph')
-        console.log('nodeNum' ,json.nodes.length)
+        performance.mark("beforeInit");
+        console.time('timeGraph');
+        console.log('nodeNum' ,json.nodes.length);
         createND();
         
     }, [json])
@@ -289,10 +292,8 @@ export function GraphCreation() {
 
     }, [ node_dict]);
 
-    
-
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, subProcessNodes, subProcessChildren}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, subProcessNodes, subProcessChildren, setNew_view, new_view}}>
             <Sketch />
         </GraphContext.Provider>
     )

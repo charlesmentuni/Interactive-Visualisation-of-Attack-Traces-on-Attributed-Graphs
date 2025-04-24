@@ -7,7 +7,7 @@ import paper from 'paper';
 import { gateway_types, event_types } from './blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG } from './SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from './SVGAssets';
 
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
@@ -28,6 +28,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
     const skip = useRef(false);
     const subProcessParent = useRef(null);
     const followFault = useRef(false);
+    const [disabledSpeed, setDisabledSpeed] = useState(false);
 
 
     const setAnimateSnapshot = (dict) => {
@@ -75,6 +76,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         playbackSpeed.current = 0;
         followFault.current =false;
         subProcessParent.current =null;
+        setDisabledSpeed(false);
         
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{
@@ -105,8 +107,8 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         });
 
         
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
+        const nodeLayer = paper.project.layers[  3  ];
+        const edgeLayer = paper.project.layers[  2  ];
 
         nodeLayer.removeChildren();
         edgeLayer.removeChildren();
@@ -125,7 +127,6 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
                 nodeLayer.visible =true;
                 edgeLayer.visible =true;
             }
-            console.log(playing.current);
             if (playing.current){
                 
                 var stage = stageRef.current;
@@ -138,8 +139,8 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
 
                     
                     // Check if the last node or edge has been reached
-                    const nodeLayer = paper.project.layers[4];
-                    const edgeLayer = paper.project.layers[3];
+                    const nodeLayer = paper.project.layers[  3  ];
+                    const edgeLayer = paper.project.layers[  2  ];
 
 
                     if (nodeLayer.children.length + edgeLayer.children.length === faultPathRef.current.length) {
@@ -175,8 +176,8 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
 
         var stage = stageRef.current;
 
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
+        const nodeLayer = paper.project.layers[  3  ];
+        const edgeLayer = paper.project.layers[  2  ];
 
     
         // This assumes that is starts with a node
@@ -213,8 +214,8 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         var stage = stageRef.current;
 
         if (!faultPath[stage]){return;}
-        const nodeLayer = paper.project.layers[4];
-        const edgeLayer = paper.project.layers[3];
+        const nodeLayer = paper.project.layers[  3  ];
+        const edgeLayer = paper.project.layers[  2  ];
         if (faultPath.length === nodeLayer.children.length + edgeLayer.children.length){return;}
 
         // THIS WORKS BUT IS A LITTLE BAD
@@ -237,13 +238,27 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
                 var importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
                 importedSVG.scale(0.5);
                 importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
 
             if (faultPath[stage].type === 'intermediateCatchEvent'){
-                var importedSVG = paper.project.importSVG(catchEventFaultSVG);
-                importedSVG.scale(0.5);
+                var importedSVG = paper.project.importSVG(intermediateCatchEventFault);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'intermediateThrowEvent'){
+                var importedSVG = paper.project.importSVG(intermediateThrowEventFault);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'exclusiveGateway'){
+                var importedSVG = paper.project.importSVG(exclusiveGatewayFault);
                 importedSVG.position = fp.children[0].position;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
@@ -252,6 +267,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
                 var importedSVG = paper.project.importSVG(serviceTaskFaultSVG);
                 importedSVG.scale(0.4);
                 importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
@@ -297,8 +313,9 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
 
 
         let speeds = [1, 2, 3, 5];
-        
-        var percent_done = skip.current ? 1 : elapsedTime.current/(1/speeds[playbackSpeed.current%4]);
+        if (playbackSpeed.current>3){playbackSpeed.current = 3; setDisabledSpeed(true);}
+        console.log(playbackSpeed.current);
+        var percent_done = skip.current ? 1 : elapsedTime.current/(1/speeds[playbackSpeed.current]);
         if (percent_done >= 1){
             percent_done = 1;
         }
@@ -309,7 +326,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
             if (followFault.current){
                 zoomed_node_current.current = faultPathRef.current[stageRef.current];
             }
-            let nodeLayer = paper.project.layers[4];
+            let nodeLayer = paper.project.layers[  3  ];
             let faultNode = nodeLayer.lastChild.children[0];
             
             faultNode.opacity = percent_done;
@@ -319,7 +336,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         if (faultPathRef.current[stageRef.current].edge){
             
 
-            let edgeLayer = paper.project.layers[3];
+            let edgeLayer = paper.project.layers[  2  ];
             let faultEdge = edgeLayer.lastChild.children[0];
             let edge = faultPathRef.current[stageRef.current].edge;
         
@@ -496,7 +513,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         minHeight: '3vh',
         backgroundColor: 'rgb(64, 64, 64)',
         color: '#fefefe'
-    }} disabled={!isPlaying} onClick={() => {playbackSpeed.current += 1}}>
+    }} disabled={!isPlaying || disabledSpeed } onClick={() => {playbackSpeed.current += 1}}>
     
     <FastForward/>
 </Button>

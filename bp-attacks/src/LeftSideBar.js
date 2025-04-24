@@ -1,6 +1,6 @@
-import {useContext, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import {Box, Button, Card, CardContent, Collapse, TextField, Typography} from '@mui/material';
-import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext, UploadFileRounded} from '@mui/icons-material';
+import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext, SwapHoriz, SwapHorizRounded, UploadFileRounded} from '@mui/icons-material';
 import paper from 'paper';
 import GraphContext from './GraphCreation';
 import Fuse from 'fuse.js';
@@ -10,7 +10,10 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
     const [searchOpen, setSearchOpen] = useState(false);
     const [textInput, setTextInput] = useState("");
-    const {node_dict, subProcessNodes, setJson} = useContext(GraphContext);
+    const {node_dict, subProcessNodes, json, setJson, setNew_view} = useContext(GraphContext);
+    const [prevGraph, setPrevGraph] = useState(null);
+    const isGraphSwitched = useRef(null);
+    
     const downloadAsSVG = () =>{
         var fileName = "Resulting_Graph.svg";
         
@@ -66,6 +69,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
     }
 
     const uploadNewFile = () => {
+        //setPrevGraph({"json": json, "view":paper.view});
         // When button is clicked, allow user to upload new file
         // Use file input to select file
         const fileInput = document.createElement('input');
@@ -77,7 +81,10 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             var reader = new FileReader()
             reader.onload = () => {
                 let jsonData = JSON.parse(reader.result);
+                setPrevGraph({"json": json, "view" : paper.view});
                 setJson(jsonData);
+                setNew_view(null);
+
                 paper.projects.forEach((project) => {
                     project.remove();
                 });
@@ -87,10 +94,27 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
         fileInput.click();
         
     }
+    const switchGraphs = () => {
+        setJson(prevGraph.json);
+        setPrevGraph({"json": json, "view" : paper.view});
+        setNew_view(prevGraph.view);
+
+        paper.projects.forEach((project) => {
+            project.remove();
+        });
+    }
+   /*  useEffect(() => {
+        if (prevGraph && isGraphSwitched.current){
+            console.log('isGraphSwitched center', isGraphSwitched.current.center);
+            paper.view.center = isGraphSwitched.current.center;
+            paper.view.zoom = isGraphSwitched.current.zoom;
+            isGraphSwitched.current = null;
+        }
+    }, [json]); */
 
     return (
         <>
-        <div style={{flexDirection: 'column', display: 'flex', position: 'absolute', top: '0', left: '0', margin: '2vh', maxWidth: '8vh', height: '30%', justifyContent:'space-between'}}>
+        <div style={{flexDirection: 'column', display: 'flex', position: 'absolute', top: '0', left: '0', margin: '2vh', maxWidth: '8vh', height: '40%', justifyContent:'space-between'}}>
         <Button 
             variant="contained"  
             sx={{
@@ -136,6 +160,18 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             }} onClick={()=>{uploadNewFile();}}
         >
             <UploadFileRounded/>
+        </Button>
+
+        <Button 
+            variant="contained"  
+            sx={{
+                height: '8vh',
+                width: '8vh',
+                backgroundColor: 'rgb(64, 64, 64)',
+                color: '#fefefe'
+            }} onClick={()=>{switchGraphs();}}
+        >
+            <SwapHoriz style={{height:'100%', width:'100%'}}/>
         </Button>
         
        

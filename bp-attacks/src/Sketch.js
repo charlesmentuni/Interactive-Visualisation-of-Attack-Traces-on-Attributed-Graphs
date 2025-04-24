@@ -33,7 +33,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren, new_view} = useContext(GraphContext);
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -68,17 +68,17 @@ export default function Sketch() {
             
             if (event.deltaY > 0) {			
                 newZoom = paper.view.zoom * 0.95;
-                paper.project.layers[5].children[0].bounds.height *= 1/0.95;
-                paper.project.layers[5].children[0].bounds.width *= 1/0.95;
+                paper.project.layers[  6  ].children[0].bounds.height *= 1/0.95;
+                paper.project.layers[  6  ].children[0].bounds.width *= 1/0.95;
 
-                paper.project.layers[7].children[0].bounds.height *= 1/0.95;
-                paper.project.layers[7].children[0].bounds.width *= 1/0.95;
+                paper.project.layers[  5  ].children[0].bounds.height *= 1/0.95;
+                paper.project.layers[  5  ].children[0].bounds.width *= 1/0.95;
                 placeSmallBox();
                 
             } else {
                 newZoom = paper.view.zoom * 1.05;
-                paper.project.layers[7].children[0].bounds.height *= 1/1.05;
-                paper.project.layers[7].children[0].bounds.width *= 1/1.05;
+                paper.project.layers[  5  ].children[0].bounds.height *= 1/1.05;
+                paper.project.layers[  5  ].children[0].bounds.width *= 1/1.05;
                 
             }
 
@@ -99,7 +99,7 @@ export default function Sketch() {
             
             paper.view.zoom = newZoom;
             paper.view.center = paper.view.center.add(offset);
-            paper.project.layers[5].children[0].position = paper.view.center;
+            paper.project.layers[  6  ].children[0].position = paper.view.center;
             placeBigBox();
             placeSmallBox();
 
@@ -115,7 +115,7 @@ export default function Sketch() {
     }, []);
 	
 
-   useEffect(function() {
+   useEffect(()=> {
         if (!graph_layout){return;}
         if (paper.project){return;}
         
@@ -124,35 +124,39 @@ export default function Sketch() {
 
         const nodeLayer  = paper.project.activeLayer;
         nodeLayer.activate();
-
+        
         drawGraph();
-        // Add layer for annotations
-        paper.project.addLayer(new Layer());
-        paper.project.layers[2].name = "annotationLayer";
+        
         
 
         // Add layers for fault edges and nodes
         paper.project.addLayer(new Layer());
         paper.project.addLayer(new Layer());
-        paper.project.layers[3].name = "faultEdgeLayer";
-        paper.project.layers[4].name = "faultNodeLayer";
+        paper.project.layers[  2  ].name = "faultEdgeLayer";
+        paper.project.layers[  3  ].name = "faultNodeLayer";
+
+        // Add layer for annotations
+        paper.project.addLayer(new Layer());
+        paper.project.layers[  4  ].name = "annotationLayer";
+
+        paper.project.addLayer(new Layer());
+        paper.project.layers[  5  ].name = "littleBoxInTheCorner"
+        drawNavigationBox();
 
         // Add Layer for input output bindings
         paper.project.addLayer(new Layer());
-        paper.project.layers[5].name = "ioBindingCoverLayer";
+        paper.project.layers[  6  ].name = "ioBindingCoverLayer";
         var background = new Path.Rectangle(paper.view.bounds.topLeft, paper.view.size);
         background.fillColor = 'black';
         background.opacity = 0.75;
         background.visible = false;
 
-        paper.project.layers[5].addChild(background);
+        paper.project.layers[  6  ].addChild(background);
 
         paper.project.addLayer(new Layer());
-        paper.project.layers[6].name = "ioBindingLayer";
+        paper.project.layers[  7  ].name = "ioBindingLayer";
 
-        paper.project.addLayer(new Layer());
-        paper.project.layers[7].name = "littleBoxInTheCorner"
-        drawNavigationBox();
+       
 
         var tool = new Tool();
         
@@ -166,7 +170,7 @@ export default function Sketch() {
                 mouseDrag.current = true;
             }
             paper.view.scrollBy(delta)
-            paper.project.layers[5].children[0].position = paper.view.center;
+            paper.project.layers[  6  ].children[0].position = paper.view.center;
             placeBigBox();
             placeSmallBox();                    
         }
@@ -176,27 +180,27 @@ export default function Sketch() {
         }
         //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
-            if (event.key === 'w'){
+            if (event.key === 'up'){
                 paper.view.zoom *= 1.2;
-                paper.project.layers[5].children[0].bounds.height *= 1/1.2;
-                paper.project.layers[5].children[0].bounds.width *= 1/1.2;
-                paper.project.layers[5].children[0].position = paper.view.center;
+                paper.project.layers[  6  ].children[0].bounds.height *= 1/1.2;
+                paper.project.layers[  6  ].children[0].bounds.width *= 1/1.2;
+                paper.project.layers[  6  ].children[0].position = paper.view.center;
 
-                paper.project.layers[7].children[0].bounds.height *= 1/1.2;
-                paper.project.layers[7].children[0].bounds.width *= 1/1.2;
+                paper.project.layers[  5  ].children[0].bounds.height *= 1/1.2;
+                paper.project.layers[  5  ].children[0].bounds.width *= 1/1.2;
 
                 placeBigBox();
                 placeSmallBox();
             }
 
-            if (event.key === 's'){
+            if (event.key === 'down'){
                 paper.view.zoom *= 0.8;
-                paper.project.layers[5].children[0].bounds.height *= 1/0.8;
-                paper.project.layers[5].children[0].bounds.width *= 1/0.8;
-                paper.project.layers[5].children[0].position = paper.view.center;
+                paper.project.layers[  6  ].children[0].bounds.height *= 1/0.8;
+                paper.project.layers[  6  ].children[0].bounds.width *= 1/0.8;
+                paper.project.layers[  6  ].children[0].position = paper.view.center;
 
-                paper.project.layers[7].children[0].bounds.height *= 1/0.8;
-                paper.project.layers[7].children[0].bounds.width *= 1/0.8;
+                paper.project.layers[  5  ].children[0].bounds.height *= 1/0.8;
+                paper.project.layers[  5  ].children[0].bounds.width *= 1/0.8;
 
                 placeBigBox();
                 placeSmallBox();
@@ -207,7 +211,7 @@ export default function Sketch() {
                 paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
 
                 //let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
-                //paper.project.layers[7].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.3).x, new_pos.multiply(0.2).y));  
+                //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.3).x, new_pos.multiply(0.2).y));  
                 placeBigBox();
                 placeSmallBox();                     
             
@@ -221,7 +225,7 @@ export default function Sketch() {
     console.log("timeGraph",performance.measure('finalMeasure', 'beforeInit', 'afterInit').duration);
 
        
-   }, [graph_layout])
+   }, [graph_layout]);
 
    const animateZoomToNode = (event) =>{
         if (!zoomed_node_current.current){return;}
@@ -244,7 +248,7 @@ export default function Sketch() {
    }
 
    const drawNavigationBox = () => {
-        paper.project.layers[7].activate();
+        paper.project.layers[  5  ].activate();
         const width = 100;
         const height = 100;
     
@@ -270,28 +274,29 @@ export default function Sketch() {
 
    const placeBigBox = () =>{
         let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
-        paper.project.layers[7].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));                       
+        //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));                       
+        paper.project.layers[  5  ].children[0].bounds.topLeft = paper.view.bounds.topLeft.add(100 / paper.view.zoom, 20 / paper.view.zoom);                       
 
    }
 
    const placeSmallBox = () => {
         var distanceToView = paper.view.center.subtract(paper.project.layers[0].bounds.topLeft);
         var dimensions = Math.max(paper.project.layers[0].bounds.height, paper.project.layers[0].bounds.width);
-        var bigBoxSize = paper.project.layers[7].children[0].bounds.width;
+        var bigBoxSize = paper.project.layers[  5  ].children[0].bounds.width;
 
         // Get size of small box relative to big navigation box
         var viewToBounds = paper.view.bounds.width/dimensions;
-        paper.project.layers[7].children[1].bounds.width = viewToBounds*paper.project.layers[7].children[0].bounds.width;
-        paper.project.layers[7].children[1].bounds.height = viewToBounds*paper.project.layers[7].children[0].bounds.height;
+        paper.project.layers[  5  ].children[1].bounds.width = viewToBounds*paper.project.layers[  5  ].children[0].bounds.width;
+        paper.project.layers[  5  ].children[1].bounds.height = viewToBounds*paper.project.layers[  5  ].children[0].bounds.height;
         // Checks if the small box is too big for the big box to fit, so that it is not oversized. 
-        if (paper.project.layers[7].children[1].bounds.height > bigBoxSize*0.8){paper.project.layers[7].children[1].bounds.height=bigBoxSize*0.8; paper.project.layers[7].children[1].bounds.width=bigBoxSize*0.8;}
+        if (paper.project.layers[  5  ].children[1].bounds.height > bigBoxSize*0.8){paper.project.layers[  5  ].children[1].bounds.height=bigBoxSize*0.8; paper.project.layers[  5  ].children[1].bounds.width=bigBoxSize*0.8;}
 
 
-        var newPos = paper.project.layers[7].children[0].bounds.leftCenter.add(distanceToView.divide(dimensions).multiply(bigBoxSize));
-        paper.project.layers[7].children[1].position = newPos;
+        var newPos = paper.project.layers[  5  ].children[0].bounds.leftCenter.add(distanceToView.divide(dimensions).multiply(bigBoxSize));
+        paper.project.layers[  5  ].children[1].position = newPos;
 
-        var bigBox =  paper.project.layers[7].children[0];
-        var smallBox = paper.project.layers[7].children[1];
+        var bigBox =  paper.project.layers[  5  ].children[0];
+        var smallBox = paper.project.layers[  5  ].children[1];
         if (bigBox.bounds.leftCenter.x > smallBox.bounds.leftCenter.x){
 
             if (!((bigBox.bounds.leftCenter.x-smallBox.bounds.leftCenter.x) >= smallBox.bounds.width)){
@@ -739,9 +744,12 @@ export default function Sketch() {
     const drawGraph = () => {
 
         setNode_dict(displayGraphLayout(graph_layout, node_dict));
-
-
-        paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
+        if (new_view){
+            console.log("new_view", new_view);
+            paper.view.setCenter(new_view.center);
+            paper.view.zoom = new_view.zoom;
+        }
+        else{paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);}
         
         
         // The new active layer will be the edge layer
@@ -910,7 +918,7 @@ export default function Sketch() {
             // Hover over and display the full name
             type.onMouseEnter = function(event){
                 
-                paper.project.layers[2].removeChildren();
+                paper.project.layers[  4  ].removeChildren();
 
                 var labelHead = new Raster(labelPointer);
                 labelHead.scale(0.2);
@@ -935,14 +943,14 @@ export default function Sketch() {
                 label.position = annotationRect.position;
                 var group = new Group(annotationRect, label);
                 group.position.x = type.position.x;
-                paper.project.layers[2].addChild(group);
-                paper.project.layers[2].addChild(labelHead);
+                paper.project.layers[  4  ].addChild(group);
+                paper.project.layers[  4  ].addChild(labelHead);
 
                 document.getElementById('paper-canvas').style.cursor = "pointer";
                 
             };
             type.onMouseLeave = function(event) {
-                paper.project.layers[2].removeChildren();
+                paper.project.layers[  4  ].removeChildren();
                 document.getElementById('paper-canvas').style.cursor = "default";
             }
     }
@@ -952,7 +960,7 @@ export default function Sketch() {
         node.group.children[2].source = closeIcon;
 
         // Layer 5 is the overlay, so it will grey out other nodes to increase visibility
-        paper.project.layers[5].children[0].visible = true;
+        paper.project.layers[  6  ].children[0].visible = true;
 
         // When the close button is pressed, the IO bindings will be removed and the button will become open
         node.group.children[2].onMouseUp = function(event){
@@ -968,8 +976,8 @@ export default function Sketch() {
                 }
             };
 
-            paper.project.layers[6].removeChildren();
-            paper.project.layers[5].children[0].visible = false;
+            paper.project.layers[  7  ].removeChildren();
+            paper.project.layers[  6  ].children[0].visible = false;
         };
 
         
@@ -1006,14 +1014,14 @@ export default function Sketch() {
             arrowHead.rotate(direction-angle*(180/Math.PI));
             arrowHead.position = midpoint;
 
-            paper.project.layers[6].addChild(edge);
-            paper.project.layers[6].addChild(arrowHead);
+            paper.project.layers[  7  ].addChild(edge);
+            paper.project.layers[  7  ].addChild(arrowHead);
 
-            paper.project.layers[6].addChild(ioImage);
+            paper.project.layers[  7  ].addChild(ioImage);
 
         });
         
-        paper.project.layers[6].addChild(node.group);
+        paper.project.layers[  7  ].addChild(node.group);
     }
 
     useEffect(() =>{
