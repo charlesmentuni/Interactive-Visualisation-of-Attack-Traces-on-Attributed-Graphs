@@ -143,6 +143,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
 
 
                     if (nodeLayer.children.length + edgeLayer.children.length === faultPathRef.current.length) {
+                        followFault.current = false;
                         playing.current = false;
                         setIsPlaying(false);
                         playbackSpeed.current = 0;
@@ -169,6 +170,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
         var faultPath = faultPathRef.current;
         
         if (stageRef.current === 0){
+            followFault.current = false;
             runFault();
             return;}
         
@@ -192,12 +194,14 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
 
     const nextFault = function() {
         if (stageRef.current === faultPathRef.current.length){
+            followFault.current = false;
             return;
         }
         skip.current = true;
         animateFault();
         skip.current = false;
         if (stageRef.current === faultPathRef.current.length-1){
+            followFault.current = false;
             return;
         }
         stageRef.current += 1;
@@ -457,6 +461,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
     }}
     onClick={() => {
         playing.current = !playing.current;
+        followFault.current = false;
         setIsPlaying(!isPlaying);
         setNextDisabled(!nextDisabled);
         setPrevDisabled(!prevDisabled);

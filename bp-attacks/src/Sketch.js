@@ -719,6 +719,7 @@ export default function Sketch() {
                 labelComponent.scale(1);
                 labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
                 labelComponent.fontFamily = 'Roboto Mono';
+                
                 labelComponent.visible = true;
                 
 
@@ -998,7 +999,7 @@ export default function Sketch() {
         node.group.children[2].source = closeIcon;
 
         // Layer 5 is the overlay, so it will grey out other nodes to increase visibility
-        paper.project.layers[  6  ].children[0].visible = true;
+        paper.project.layers[6].children[0].visible = true;
 
         // When the close button is pressed, the IO bindings will be removed and the button will become open
         node.group.children[2].onMouseUp = function(event){

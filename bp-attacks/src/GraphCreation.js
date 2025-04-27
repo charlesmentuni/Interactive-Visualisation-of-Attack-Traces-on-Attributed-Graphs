@@ -23,7 +23,7 @@ export function GraphCreation() {
     
 
     const [io_dict, setIo_dict] = useState(null);
-    const processName = useRef("WF102-Pick");
+    const processName = useRef("");
     const subProcessChildren = useRef(null);
     const subProcessNodes = useRef(null);
     const subProcessGraphs = useRef({});
@@ -42,22 +42,21 @@ export function GraphCreation() {
 
 
         json.nodes.forEach((node, index) => {
-            if (node.type === "blFault"){return;}
 
-            if (node.type === "InputOutputBinding"){
+            // If the node has be abstracted away in another function then it is ignored here
+            if (node.type === "blFault" || node.type === "userForm" || node.type === "document" || node.type === "database"){return;}
+
+            // Saves the Input Output Bindings to be used to set the IO binding dictionary
+            if (node.type === "InputOutputBinding") {
                 temp_io_dict[node.uuid] = node;
                 return;
             }
-            if (node.type === "userForm"){return;}
-            if (node.type === "subProcess" || node.type === "adHocSubProcess"){
+            
+
+            if (node.type === "subProcess" || node.type === "adHocSubProcess") {
                 // Pop from dictionary
                 temp_subProcessNodes[node.uuid] = node;
                 temp_subProcessNodes[node.uuid].children = {};
-                return;
-            }
-
-            if (node.processRef && node.processRef !== processName.current){
-                temp_subProcessChildren[node.uuid] = node;
                 return;
             }
 
@@ -65,6 +64,14 @@ export function GraphCreation() {
                 processName.current = node.id;
                 return;
             }
+
+            // Removes the process node as it is not needed, since it will be the parent of everything else
+            if (node.processRef && node.processRef !== processName.current) {
+                temp_subProcessChildren[node.uuid] = node;
+                return;
+            }
+
+            
             
 
             temp_node_dict[node.uuid] = {};
