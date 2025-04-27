@@ -9,7 +9,8 @@ export default function RightSideBar({nodeCard}) {
 
     const [scriptOpened, setScriptOpened] = useState(false);
     const [assignmentsOpened, setAssignmentsOpened] = useState(false);
-
+    const [expressionOpened, setExpressionOpened] = useState(false);
+    const [dataSourceOpened, setDataSourceOpened] = useState(false);
 
     const readableTypes = {
         "eventBasedGateway": "Event-Based Gateway",
@@ -40,6 +41,11 @@ export default function RightSideBar({nodeCard}) {
         "process": "Process",
         "subProcess": "Sub-Process",
         "InputOutputBinding": "Input Output Binding",
+        "userForm": "User Form",
+        "database": "Database",
+        "document": "Document"
+
+
     }
     
 
@@ -97,9 +103,36 @@ export default function RightSideBar({nodeCard}) {
                     
                     {assignmentsOpened ? <ShowCodeBlock lang={'javascript'} code={nodeCard.assignments.toString().replaceAll(",", ",\n")}></ShowCodeBlock>: null}
                     </>: null}
-                    
+                    {nodeCard.expression ? (<>
+                        <Typography>Expression : 
+                            {expressionOpened ? <KeyboardArrowDownRounded sx={{ verticalAlign: 'middle' }} onClick={()=>{setExpressionOpened(false)}} /> :<KeyboardArrowRightRounded sx={{ verticalAlign: 'middle' }} onClick={()=>{setExpressionOpened(true)}} />}
+                        </Typography>
+                        {expressionOpened ? <ShowCodeBlock lang="javascript" code={nodeCard.expression}></ShowCodeBlock>:null}
+                    </>): null}
+
+                    {nodeCard.data_source ? (<>
+                        <Typography>{readableTypes[nodeCard.data_source.type]} Source:
+                            {dataSourceOpened ? <KeyboardArrowDownRounded sx={{ verticalAlign: 'middle' }} onClick={()=>{setDataSourceOpened(false)}} /> :<KeyboardArrowRightRounded sx={{ verticalAlign: 'middle' }} onClick={()=>{setDataSourceOpened(true)}} />}
+                        </Typography>
+                        {dataSourceOpened && <>
+                            {nodeCard.data_source.field_name ? <><Typography variant='body3' sx={{display: "inline-block", marginLeft: "40px"}}><b>Field Name:</b>  {nodeCard.data_source.field_name}</Typography></>: null}
+                            {nodeCard.data_source.data_type ? <><Typography variant='body3' sx={{display: "inline-block", marginLeft: "40px"}}><b>Data Type:</b>  {nodeCard.data_source.data_type}</Typography></>: null}
+
+                            {nodeCard.data_source.documentation ? <><Typography variant='body3' sx={{display: "inline-block", marginLeft: "40px"}}><b>Documentation:</b>  {nodeCard.data_source.documentation}</Typography></>: null}
+
+                        </>}
+                        
+                    </>): null}
+
+
+                    {nodeCard.data_type ? <><br/><Typography variant='body2'>Data Type : {nodeCard.data_type}</Typography></>: null}
                     {nodeCard.documentation ? <><br/><Typography variant='body2'>{nodeCard.documentation}</Typography></>: null}
                     {nodeCard.annotation ? <><br/><Typography variant='body2'>NOTE : {nodeCard.annotation}</Typography></>: null}
+
+                    
+
+                    <br/>
+
                 </>
             ) : (
                 <Typography variant='h4' justifySelf={'center'}>No node selected</Typography>
