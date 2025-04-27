@@ -10,13 +10,12 @@ import { Color, Point } from 'paper/dist/paper-core';
 import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from './SVGAssets';
 
 
-export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
+export default function FaultControls({subProcessOpened, setSubProcessOpened, fault, setFault}) {
 
     const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode, zoomed_node_current} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
-    const [fault, setFault] = useState(null);
     const stageRef = useRef(0);
     const faultPathRef = useRef([]);
     const elapsedTime = useRef(0);
@@ -72,7 +71,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
 
         stageRef.current = 0;
         faultPathRef.current = [];
-        elapsedTime.current =0;
+        elapsedTime.current = 0;
         playbackSpeed.current = 0;
         followFault.current =false;
         subProcessParent.current =null;
@@ -229,7 +228,8 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
             var fp = faultPath[stage].group.clone();
             var i = 0;
             
-
+            fp.children[3].visible =false;
+            
             fp.children[i].fillColor = '#d63031'; 
 
             fp.children[i].opacity = 0;
@@ -400,15 +400,15 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
         <FaultDescription fault={fault} />
 
         <Card sx={{
-    position: 'fixed', 
-    bottom: '7%', 
-    right: '0', 
-    margin: '2%', 
-    width: '30%', 
-    height:'13%',
-    backgroundColor: 'rgb(64, 64, 64)', 
-    color: '#fefefe'
-}}> 
+            position: 'fixed', 
+            bottom: '7%', 
+            right: '0', 
+            margin: '2%', 
+            width: '30%', 
+            height:'13%',
+            backgroundColor: 'rgb(64, 64, 64)', 
+            color: '#fefefe'
+        }}> 
     <CardContent>
         <FormControl fullWidth variant='outlined'  >
             <InputLabel id="demo-simple-select-label" style={{color:'#fefefe'}}>Fault</InputLabel>

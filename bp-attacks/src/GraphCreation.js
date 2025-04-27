@@ -27,6 +27,7 @@ export function GraphCreation() {
     const subProcessChildren = useRef(null);
     const subProcessNodes = useRef(null);
     const subProcessGraphs = useRef({});
+    const associated_fault_nodes = useRef([]);
     
 
     const createND = () => {
@@ -87,8 +88,14 @@ export function GraphCreation() {
 
     const getIONodes = () => {
         var temp_node_dict = node_dict;
-
+        
         json.edges.forEach((edge) => {
+
+            // A bl fault node is associated with the first node in the execution sequence as the source
+            if (edge.type === "faultFlow"){
+                associated_fault_nodes.current[edge.sourceRef] = edge.targetRef;
+            }
+
             if (!temp_node_dict[edge.sourceRef]){
                 if (!subProcessChildren.current[edge.sourceRef]){return;}
                 if (io_dict[edge.targetRef]){
@@ -209,6 +216,8 @@ export function GraphCreation() {
             if (node_dict[edge.sourceRef] && (node_dict[edge.sourceRef].type === "subProcess" || node_dict[edge.sourceRef].type === "adHocSubProcess")){
                 return;
             }
+
+
             Object.keys(subProcessNodes.current).forEach((key) => {
                 if (subProcessNodes.current[key].children[edge.sourceRef] && subProcessNodes.current[key].children[edge.targetRef]){
 
@@ -299,7 +308,7 @@ export function GraphCreation() {
     }, [ node_dict]);
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, setNew_view, new_view}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, setNew_view, new_view, associated_fault_nodes}}>
             <Sketch />
         </GraphContext.Provider>
     )

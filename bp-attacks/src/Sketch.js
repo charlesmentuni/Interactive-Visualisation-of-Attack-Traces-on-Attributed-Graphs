@@ -18,6 +18,7 @@ import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
+import faultIcon from "./symbols/faultStar.png";
 
 import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent} from './SVGAssets.js';
 import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
@@ -33,7 +34,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, new_view} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, new_view, associated_fault_nodes} = useContext(GraphContext);
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -49,12 +50,15 @@ export default function Sketch() {
     const edge_dict_ref = useRef("");
     const time_passed_zoom = useRef(0);
 
+
     const zoomed_node_current = useRef(null);
     const initial_pos = useRef(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [selectedNodeLabel, setSelectedNodeLabel] = useState(null);
     const [shiftFaults, setShiftFaults] = useState(null);
+    const [fault, setFault] = useState(null);
+
 
     const onPlay = () => {
         playing.current = !playing.current;
@@ -337,12 +341,12 @@ export default function Sketch() {
    }
 
    const closeSubProcesses = (subProcessNode) =>{
-        subProcessNode.group.children[3].source = openIcon;
+        subProcessNode.group.children[4].source = openIcon;
         subProcessNode.opened = false;
     
 
         // Functionality for open button
-        subProcessNode.group.children[3].onMouseUp = function(event){
+        subProcessNode.group.children[4].onMouseUp = function(event){
             if (!mouseDrag.current){
                 displaySubProcesses(subProcessNode);
             }
@@ -391,7 +395,7 @@ export default function Sketch() {
         
         node.opened = true;
 
-        node.group.children[3].source = closeIcon;
+        node.group.children[4].source = closeIcon;
 
         paper.project.layers[ 0 ].activate();
 
@@ -436,7 +440,7 @@ export default function Sketch() {
         node.group.children[0].fillColor = "#dfe6e9";
         shiftNodes(node);
 
-        node.group.children[3].onMouseUp = function(event){
+        node.group.children[4].onMouseUp = function(event){
             if (mouseDrag.current) {return;}
             closeSubProcesses(node); 
         };
@@ -524,8 +528,13 @@ export default function Sketch() {
         var openSubProcess = openIOBindings.clone();
         openSubProcess.position = new Point(20, height - 20);
 
+        var faultIcon = new Raster('faultIcon');
+        faultIcon.scale(0.08);
+        faultIcon.position = new Point(20, 20);
+        faultIcon.visible = false;
 
-        var task = new Group(rect, label, openIOBindings, openSubProcess);
+
+        var task = new Group(rect, label, openIOBindings,faultIcon, openSubProcess);
         task.position = new Point(200,200);
         task.visible = false;
 
@@ -603,6 +612,18 @@ export default function Sketch() {
 
             if (temp_node_dict[node.id()].type === 'intermediateCatchEvent'){
                 type = paper.project.importSVG(intermediateCatchEvent);
+                type.scale(0.4);
+                label="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'catchEvent'){
+                type = paper.project.importSVG(catchEvent);
+                type.scale(0.4);
+                label="";
+                isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'throwEvent'){
+                type = paper.project.importSVG(throwEvent);
                 type.scale(0.4);
                 label="";
                 isSVG=true;
@@ -699,8 +720,16 @@ export default function Sketch() {
                 labelComponent.bounds.bottomLeft = new Point(type.bounds.bottomLeft.x, type.bounds.bottomLeft.y+20);
                 labelComponent.fontFamily = 'Roboto Mono';
                 labelComponent.visible = true;
+                
+
+                var faultIcon = new Raster('faultIcon');
+                faultIcon.scale(0.08);
+                faultIcon.position = new Point(type.bounds.topLeft.x+20, type.bounds.topLeft.y+20);
+                faultIcon.visible = false;
             
-                type = new Group(type, labelComponent, openIOBindings);
+                type = new Group(type, labelComponent, openIOBindings, faultIcon);
+
+                
             }
             // Checks if there are io bindings and allows it to be opened
             if (temp_node_dict[node.id()].inputOutputBinding){
@@ -713,13 +742,22 @@ export default function Sketch() {
             }
 
             if (temp_node_dict[node.id()].type === "subProcess" || temp_node_dict[node.id()].type === "adHocSubProcess"){
-               type.children[3].visible = true;
-               type.children[3].onMouseUp = (event) => {
+               type.children[4].visible = true;
+               type.children[4].onMouseUp = (event) => {
                     if (!mouseDrag.current){
                         displaySubProcesses(temp_node_dict[node.id()]);
                     }
                }
             }
+             if (associated_fault_nodes.current[node.id()]){
+                type.children[3].visible =true;
+                type.children[3].onMouseUp = (event) => {
+                    if (!mouseDrag.current){
+                        setFault(associated_fault_nodes.current[node.id()]);
+                    }
+               }
+
+             }
 
             temp_node_dict[node.id()].group = type;
             
@@ -867,10 +905,12 @@ export default function Sketch() {
 
         json.edges.forEach((edge) => {
 
-            if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || edge.type === "processFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
+
+            // These nodes have already been handled elsewhere so can be skipped
+            if (io_binding_edge_types.includes(edge.type) || edge.type === "processFlow" || edge.type === "faultFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
                 return;
             }
-
+            
             temp_edge_dict[edge.id] = createEdge(node_dict[edge.sourceRef], node_dict[edge.targetRef], edge.expression ? edge.name: null);
 
         });
@@ -1049,9 +1089,10 @@ export default function Sketch() {
         <img id='openIcon' src={openIcon}  style={{display:"none"}} />
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
+        <img id='faultIcon' src={faultIcon} style={{display:"none"}} />
 
          <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current}}>
-            <FaultControls subProcessOpened={shiftFaults} setSubProcessOpened={setShiftFaults}/>
+            <FaultControls subProcessOpened={shiftFaults} setSubProcessOpened={setShiftFaults} fault={fault} setFault={setFault}/>
         </FaultContext.Provider> 
         
         </>
