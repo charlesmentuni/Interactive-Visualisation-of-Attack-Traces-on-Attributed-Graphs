@@ -95,7 +95,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened}) {
             if (temp_node_dict[node]){
                 faultPathRef.current.push(temp_node_dict[node]);
                 // Checks if sub process and if open
-                if (temp_node_dict[node].type === "subProcess" && temp_node_dict[node].opened){
+                if ((temp_node_dict[node].type === "subProcess" || temp_node_dict[node].type === "adHocSubProcess") && temp_node_dict[node].opened){
                     closeSubProcesses(temp_node_dict[node]);
                     setEdgeDictChanged(true);
                     return;

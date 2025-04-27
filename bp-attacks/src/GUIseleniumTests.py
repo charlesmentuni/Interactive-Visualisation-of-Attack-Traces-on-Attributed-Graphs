@@ -29,7 +29,7 @@ def gui_test(driver):
         file_input = driver.find_element(By.CSS_SELECTOR, "input[type='file']")
         file_input.send_keys(upload_file)  
 
-        driver.execute_script("console.log(json);")
+        driver.execute_script("console.log();")
 
         time.sleep(500)
     

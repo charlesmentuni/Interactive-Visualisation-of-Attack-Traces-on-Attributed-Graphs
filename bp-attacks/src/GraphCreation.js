@@ -12,7 +12,7 @@ export default GraphContext;
 
 export function GraphCreation() {
 
-    const {json, setJson} = useContext(UploadContext);
+    const {json, setJson, jsonFile, setJsonFile} = useContext(UploadContext);
 
     const [node_dict, setNode_dict] = useState(null);
     const [edge_dict, setEdge_dict] = useState({});
@@ -36,6 +36,9 @@ export function GraphCreation() {
         var temp_data_source_dict = {};
         var temp_subProcessNodes = {};
         var temp_subProcessChildren = {};
+        subProcessNodes.current = null;
+        subProcessChildren.current = {};
+
 
         json.nodes.forEach((node, index) => {
             if (node.type === "blFault"){return;}
@@ -45,7 +48,7 @@ export function GraphCreation() {
                 return;
             }
             if (node.type === "userForm"){return;}
-            if (node.type === "subProcess"){
+            if (node.type === "subProcess" || node.type === "adHocSubProcess"){
                 // Pop from dictionary
                 temp_subProcessNodes[node.uuid] = node;
                 temp_subProcessNodes[node.uuid].children = {};
@@ -78,6 +81,7 @@ export function GraphCreation() {
         setNode_dict(temp_node_dict);
         subProcessNodes.current = temp_subProcessNodes;
         subProcessChildren.current = temp_subProcessChildren;
+        
 
     }
 
@@ -135,6 +139,7 @@ export function GraphCreation() {
             elk : {
                 'algorithm': 'mrtree',
                 'elk.direction': 'RIGHT',
+                'elk.edgeRouting': 'ORTHOGONAL',
             },
             avoidOverlap:true,
             animate: false
@@ -198,18 +203,19 @@ export function GraphCreation() {
     }
 
     const getSubProcessEdges = () => {
-        json.edges.forEach((edge) => {
+        jsonFile.edges.forEach((edge) => {
             
-            if (node_dict[edge.sourceRef] && node_dict[edge.sourceRef].type === "subProcess"){
+            // The subprocess node should contain its children not connect to them 
+            if (node_dict[edge.sourceRef] && (node_dict[edge.sourceRef].type === "subProcess" || node_dict[edge.sourceRef].type === "adHocSubProcess")){
                 return;
             }
-
             Object.keys(subProcessNodes.current).forEach((key) => {
                 if (subProcessNodes.current[key].children[edge.sourceRef] && subProcessNodes.current[key].children[edge.targetRef]){
 
                     if (!subProcessNodes.current[key].edges){
                         subProcessNodes.current[key].edges = [];
                     }
+
                     subProcessNodes.current[key].edges.push({data: {id: edge.uuid, source: edge.sourceRef, target: edge.targetRef}});
                     return;
                 }
@@ -293,7 +299,7 @@ export function GraphCreation() {
     }, [ node_dict]);
 
     return (
-        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, subProcessNodes, subProcessChildren, setNew_view, new_view}}>
+        <GraphContext.Provider value={{node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, setJson, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, setNew_view, new_view}}>
             <Sketch />
         </GraphContext.Provider>
     )

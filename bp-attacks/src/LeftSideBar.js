@@ -10,9 +10,11 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
     const [searchOpen, setSearchOpen] = useState(false);
     const [textInput, setTextInput] = useState("");
-    const {node_dict, subProcessNodes, json, setJson, setNew_view} = useContext(GraphContext);
+    const {node_dict, subProcessNodes, jsonFile, setJson, setJsonFile, setNew_view} = useContext(GraphContext);
     const [prevGraph, setPrevGraph] = useState(null);
     const isGraphSwitched = useRef(null);
+    const [fileUploaded, setFileUploaded] = useState(false);
+
     
     const downloadAsSVG = () =>{
         var fileName = "Resulting_Graph.svg";
@@ -81,13 +83,19 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             var reader = new FileReader()
             reader.onload = () => {
                 let jsonData = JSON.parse(reader.result);
-                setPrevGraph({"json": json, "view" : paper.view});
+                let OGjsonData = JSON.parse(reader.result);
+
+                console.log(jsonFile);
+                setPrevGraph({"json": jsonFile, "view" : paper.view, "subProcessNodes": subProcessNodes.current});
                 setJson(jsonData);
+                setJsonFile(OGjsonData);
                 setNew_view(null);
 
                 paper.projects.forEach((project) => {
                     project.remove();
                 });
+                setFileUploaded(true);
+
             }
             reader.readAsText(event.target.files[0]);
         }
@@ -95,8 +103,10 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
         
     }
     const switchGraphs = () => {
+
         setJson(prevGraph.json);
-        setPrevGraph({"json": json, "view" : paper.view});
+        setJsonFile(prevGraph.json);
+        setPrevGraph({"json": jsonFile, "view" : paper.view});
         setNew_view(prevGraph.view);
 
         paper.projects.forEach((project) => {
@@ -162,7 +172,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             <UploadFileRounded/>
         </Button>
 
-        <Button 
+        <Button disabled={!fileUploaded}
             variant="contained"  
             sx={{
                 height: '8vh',

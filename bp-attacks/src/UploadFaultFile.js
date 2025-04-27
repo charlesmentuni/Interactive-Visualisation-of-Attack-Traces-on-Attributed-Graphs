@@ -10,7 +10,7 @@ export default UploadContext;
 export function UploadFaultFile() {
 
     const [json, setJson] = useState(null);
-
+    const [jsonFile, setJsonFile] = useState(null);
 
      /* useEffect(()=>{
         setJson(wf102);
@@ -21,8 +21,10 @@ export function UploadFaultFile() {
         if (event.target.files[0].type !== "application/json"){return;}
         var reader = new FileReader()
         reader.onload = () => {
-            let jsonData = JSON.parse(reader.result);
+            var jsonData = JSON.parse(reader.result);
+            var OGjsonData = JSON.parse(reader.result);  
             setJson(jsonData);
+            setJsonFile(OGjsonData);
         }
         reader.readAsText(event.target.files[0]);
         
@@ -30,10 +32,10 @@ export function UploadFaultFile() {
 
     return (
         <>
-            {json ? 
+            {json && jsonFile? 
             <>
                 <canvas id='paper-canvas' width={window.innerWidth} height={window.innerHeight} style={{'width' : window.innerWidth, 'height':window.innerHeight}}  />
-                <UploadContext.Provider value={{json, setJson}}>
+                <UploadContext.Provider value={{json, setJson, jsonFile, setJsonFile}}>
                     <GraphCreation />
                 </UploadContext.Provider>
             </> : 

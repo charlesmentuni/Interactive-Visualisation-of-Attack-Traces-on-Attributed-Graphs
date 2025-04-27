@@ -33,7 +33,7 @@ export const FaultContext = createContext();
 export default function Sketch() {
     
    
-    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, subProcessNodes, subProcessChildren, new_view} = useContext(GraphContext);
+    const {node_dict, setNode_dict, edge_dict, setEdge_dict, graph_layout, fault_dict, json, jsonFile,setJsonFile, subProcessNodes, subProcessChildren, new_view} = useContext(GraphContext);
 
     // Contains dictionary of node information that has just been clicked on
     const [nodeCard, setNodeCard] = useState(null);
@@ -125,9 +125,8 @@ export default function Sketch() {
         const nodeLayer  = paper.project.activeLayer;
         nodeLayer.activate();
         
+
         drawGraph();
-        
-        
 
         // Add layers for fault edges and nodes
         paper.project.addLayer(new Layer());
@@ -146,6 +145,7 @@ export default function Sketch() {
         // Add Layer for input output bindings
         paper.project.addLayer(new Layer());
         paper.project.layers[  6  ].name = "ioBindingCoverLayer";
+
         var background = new Path.Rectangle(paper.view.bounds.topLeft, paper.view.size);
         background.fillColor = 'black';
         background.opacity = 0.75;
@@ -205,18 +205,7 @@ export default function Sketch() {
                 placeBigBox();
                 placeSmallBox();
             }
-            // RECENTER
-            /* if (event.key === 'r'){
-                paper.view.zoom = 1;
-                paper.view.setCenter(graph_layout.nodes()[0].position().x*spacing, graph_layout.nodes()[0].position().y*spacing);
-
-                //let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
-                //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.3).x, new_pos.multiply(0.2).y));  
-                placeBigBox();
-                placeSmallBox();                     
-            
-                
-            } */
+           
         }
 
 
@@ -251,15 +240,16 @@ export default function Sketch() {
         paper.project.layers[  5  ].activate();
         const width = 100;
         const height = 100;
-    
-        var bigBox = new Path.Rectangle(paper.view.center, new Size(width, height));
+        var new_zoom = new_view ? new_view.zoom : 1;
+        console.log(new_zoom);
+        var bigBox = new Path.Rectangle(paper.view.center, new Size(width / new_zoom, height / new_zoom));
         bigBox.strokeColor = 'black';
-        bigBox.strokeWidth = 2;
+        bigBox.strokeWidth = 2 / new_zoom;
         bigBox.fillColor = 'white';
-        var raster = bigBox.rasterize();
-        bigBox.remove();
+        //var raster = bigBox.rasterize();
+        //bigBox.remove();
 
-        var smallBox = new Path.Rectangle(paper.view.center, new Size(10, 10));
+        var smallBox = new Path.Rectangle(paper.view.center, new Size(10/new_zoom, 10/new_zoom));
         smallBox.strokeWidth =0;
         smallBox.fillColor = 'black';
 
@@ -274,8 +264,14 @@ export default function Sketch() {
 
    const placeBigBox = () =>{
         let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
-        //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));                       
-        paper.project.layers[  5  ].children[0].bounds.topLeft = paper.view.bounds.topLeft.add(100 / paper.view.zoom, 20 / paper.view.zoom);                       
+        //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));      
+       /*  if (new_view){
+            paper.project.layers[  5  ].children[0].bounds.topLeft = new_view.bounds.topLeft.add(100 / new_view.zoom, 20 / new_view.zoom);
+            return;
+        }    */              
+        paper.project.layers[  5  ].children[0].bounds.topLeft = paper.view.bounds.topLeft.add(100 / paper.view.zoom, 20 / paper.view.zoom); 
+        paper.project.layers[  5  ].children[0].strokeWidth = 2 / paper.view.zoom;
+                      
 
    }
 
@@ -449,6 +445,8 @@ export default function Sketch() {
     }
 
     const boundsCheck = (subProcessNode, node, direction) => {
+        console.log(node);
+        console.log(subProcessNode);
         if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
             node.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
         }
@@ -545,7 +543,7 @@ export default function Sketch() {
             let y = Math.round((node.position().y+padding.y)/tolerance)*tolerance;
 
             var numChars = 15;
-            if (temp_node_dict[node.id()].type === "subProcess"){numChars=20;}
+            if (temp_node_dict[node.id()].type === "subProcess" || temp_node_dict[node.id()].type === "adHocSubProcess"){numChars=20;}
             if (label){
                 
                 if (label.length > numChars){
@@ -714,7 +712,7 @@ export default function Sketch() {
                 };
             }
 
-            if (temp_node_dict[node.id()].type === "subProcess"){
+            if (temp_node_dict[node.id()].type === "subProcess" || temp_node_dict[node.id()].type === "adHocSubProcess"){
                type.children[3].visible = true;
                type.children[3].onMouseUp = (event) => {
                     if (!mouseDrag.current){
@@ -745,7 +743,6 @@ export default function Sketch() {
 
         setNode_dict(displayGraphLayout(graph_layout, node_dict));
         if (new_view){
-            console.log("new_view", new_view);
             paper.view.setCenter(new_view.center);
             paper.view.zoom = new_view.zoom;
         }
@@ -867,6 +864,7 @@ export default function Sketch() {
         // create edges
         paper.project.activeLayer.name = "edgeLayer";
         var temp_edge_dict = {};
+
         json.edges.forEach((edge) => {
 
             if (io_binding_edge_types.includes(edge.type) || edge.type === "faultFlow" || edge.type === "processFlow" || !node_dict[edge.sourceRef] || !node_dict[edge.targetRef]){
