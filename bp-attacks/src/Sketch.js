@@ -9,7 +9,7 @@ import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 import faultIcon from "./symbols/faultStar.png";
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent, miniMap, miniMapSVG} from './symbols/SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent, miniMap, miniMapSVG, taskSVG} from './symbols/SVGAssets.js';
 import { io_binding_edge_types } from './blmodel.js';
 
 import RightSideBar from './sidebars/RightSideBar.js';
@@ -53,7 +53,7 @@ export default function Sketch() {
     }      
 
     useEffect(() => {
-        // This snippet of code was taken from https://codepen.io/hichem147/pen/dExxNK, as it quickly implements zooming for the project
+        // The function handleMouseWheel was taken from https://codepen.io/hichem147/pen/dExxNK and modified for this project.
         const handleMouseWheel = (event) => {
             var newZoom = paper.view.zoom; 
             var oldZoom = paper.view.zoom;
@@ -678,6 +678,12 @@ export default function Sketch() {
                 type.scale(0.4);
                 label="";
                 isSVG=true;
+            }
+            if (temp_node_dict[node.id()].type === 'task'){
+                type = paper.project.importSVG(taskSVG);
+                type.scale(0.4);
+                isSVG=true;
+
             }
 
             if (temp_node_dict[node.id()].type === 'userTask'){

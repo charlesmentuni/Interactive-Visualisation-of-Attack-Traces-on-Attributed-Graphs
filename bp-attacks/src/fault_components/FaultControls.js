@@ -6,7 +6,7 @@ import FaultDescription from './FaultDescription';
 import paper from 'paper';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from '../symbols/SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault, subProcessFault } from '../symbols/SVGAssets';
 
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened, fault, setFault}) {
@@ -286,6 +286,14 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
+            if (faultPath[stage].type === 'subProcess' || faultPath[stage].type === 'adHocSubProcess'){
+                var importedSVG = paper.project.importSVG(subProcessFault);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=15;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            
 
             addMouseNodeInteraction(fp, faultPath[stage], fp.position);
             
