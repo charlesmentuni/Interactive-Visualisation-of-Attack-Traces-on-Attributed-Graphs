@@ -11,7 +11,7 @@ import re
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from createBlFaultData import CreateBLModel
 import matplotlib.pyplot as plt
-
+import os
 
 import numpy as np
 
@@ -22,7 +22,7 @@ def performance_test(driver,nodeNum):
 
     # Wait until an element is present (e.g., an element with id 'content')
     try:
-        upload_file = "/Users/charlesment/Dissertation-Main-Branch/Interactive-Visualisation-of-Attack-Traces-on-Attributed-Graphs/bp-attacks/src/wf111.json"
+        upload_file =os.path.abspath("./bp-attacks/src/testing/wf111.json")
 
         file_input = driver.find_element(By.CSS_SELECTOR, "input[type='file']")
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
             tests[int(i/10)-1] = [float(nodesNum), float(timeTaken)]
     
 
-    f = open("bp-attacks/src/test.txt", "w")
+    f = open("./bp-attacks/src/test.txt", "w")
     f.write(str(tests))
     f.close()
     

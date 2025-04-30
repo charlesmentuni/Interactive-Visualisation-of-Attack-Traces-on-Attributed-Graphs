@@ -162,7 +162,7 @@ class CreateBLModel:
 
         model = bl.BLModel(edges=self.edges, nodes=self.nodes)
 
-        with open('bp-attacks/src/wf111.json', 'w', encoding='utf-8') as f:
+        with open('./bp-attacks/src/testing/wf111.json', 'w', encoding='utf-8') as f:
             json.dump(json.loads(model.json(exclude_none=True)), f, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":

@@ -23,7 +23,3 @@ yarn-debug.log*
 yarn-error.log*
 
 # local files
-/src/wf102.json
-/src/blmodel.py
-/src/blmodel.js
-/src/createBlFaultData.py
