@@ -1155,7 +1155,7 @@ export default function Sketch() {
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />
         <img id='faultIcon' src={faultIcon} style={{display:"none"}} />
 
-         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current}}>
+         <FaultContext.Provider value={{fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, setNodeCard, animateZoomToNode, zoomed_node_current, jsonFile}}>
             <FaultControls subProcessOpened={shiftFaults} setSubProcessOpened={setShiftFaults} fault={fault} setFault={setFault}/>
         </FaultContext.Provider> 
         

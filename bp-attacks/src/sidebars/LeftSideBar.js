@@ -89,6 +89,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
                 setJson(jsonData);
                 setJsonFile(OGjsonData);
                 setNew_view(null);
+                
 
                 paper.projects.forEach((project) => {
                     project.remove();
