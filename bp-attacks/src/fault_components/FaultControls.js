@@ -11,7 +11,7 @@ import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFa
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened, fault, setFault}) {
 
-    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode, zoomed_node_current} = useContext(FaultContext);
+    const { fault_dict, node_dict, edge_dict, addMouseNodeInteraction, closeSubProcesses, subProcessNodes, displaySubProcesses, animateZoomToNode, zoomed_node_current, jsonFile} = useContext(FaultContext);
 
     const [prevDisabled, setPrevDisabled] = useState(false);
     const [nextDisabled, setNextDisabled] = useState(false);
@@ -477,6 +477,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
 
     useEffect(()=>{if (fault){ runFault()}}, [fault]);
 
+    useEffect(() => {setFault(null)}, [jsonFile]);
     return (
         <>
         <FaultDescription fault={fault} />

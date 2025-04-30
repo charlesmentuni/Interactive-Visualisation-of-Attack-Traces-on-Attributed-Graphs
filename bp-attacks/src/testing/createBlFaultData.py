@@ -67,7 +67,7 @@ class CreateBLModel:
         for i in range(10):
             execution_path = []
             nodeChoice = rd.choice(self.nodes)
-            while nodeChoice.type == "InputOutputBinding":
+            while nodeChoice.type == "InputOutputBinding" or nodeChoice.processRef != None or nodeChoice.type == bl.FlowNodeTypeEnum.PROCESS:
                 nodeChoice = rd.choice(self.nodes)
             prevNode = nodeChoice.uuid
             processRef = None
