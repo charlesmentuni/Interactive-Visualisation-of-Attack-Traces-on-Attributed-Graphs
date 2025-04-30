@@ -4,7 +4,6 @@ import {useContext, useEffect, useState, useRef} from 'react';
 import {FaultContext} from '../Sketch'
 import FaultDescription from './FaultDescription';
 import paper from 'paper';
-import { gateway_types, event_types } from '../blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
 import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from '../symbols/SVGAssets';

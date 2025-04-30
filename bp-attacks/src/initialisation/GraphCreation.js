@@ -1,6 +1,5 @@
 import {createContext, useContext, useState, useEffect, useRef} from 'react';
 import Sketch from '../Sketch';
-//import json from './wf102.json';
 import { data_source_types, io_binding_edge_types } from '../blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";

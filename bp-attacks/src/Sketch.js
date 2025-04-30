@@ -1,10 +1,6 @@
 import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 import paper from 'paper';
-import ReadBP from './sidebars/CodeBlock.js';
-//import json from './wf102.json';
 import { useEffect, useState, useRef, useContext, createContext } from 'react';
-import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
-import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 
 import GraphContext from './initialisation/GraphCreation.js';
 
