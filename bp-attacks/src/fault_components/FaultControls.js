@@ -6,7 +6,7 @@ import FaultDescription from './FaultDescription';
 import paper from 'paper';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault, subProcessFault } from '../symbols/SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault, subProcessFault, complexGatewayFault, eventBasedGateway, eventBasedGatewayFault, parallelGateway, parallelGatewayFault, inclusiveGatewayFault, manualTaskFault, businessRulesTask, sendTaskFault, taskFault, receiveTaskFault } from '../symbols/SVGAssets';
 
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened, fault, setFault}) {
@@ -270,6 +270,30 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
                 importedSVG.opacity = 0;
                 fp.children[0].replaceWith(importedSVG);
             }
+            if (faultPath[stage].type === 'complexGateway'){
+                var importedSVG = paper.project.importSVG(complexGatewayFault);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'eventBasedGateway'){
+                var importedSVG = paper.project.importSVG(eventBasedGatewayFault);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'inclusiveGateway'){
+                var importedSVG = paper.project.importSVG(inclusiveGatewayFault);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'parallelGateway'){
+                var importedSVG = paper.project.importSVG(parallelGatewayFault);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
             if (faultPath[stage].type === 'serviceTask'){
                 var importedSVG = paper.project.importSVG(serviceTaskFaultSVG);
                 importedSVG.scale(0.4);
@@ -280,6 +304,46 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
             }
             if (faultPath[stage].type === 'userTask'){
                 var importedSVG = paper.project.importSVG(userTaskFaultSVG);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'manualTask'){
+                var importedSVG = paper.project.importSVG(manualTaskFault);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'businessRulesTask'){
+                var importedSVG = paper.project.importSVG(businessRulesTask);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'sendTask'){
+                var importedSVG = paper.project.importSVG(sendTaskFault);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'task'){
+                var importedSVG = paper.project.importSVG(taskFault);
+                importedSVG.scale(0.4);
+                importedSVG.position = fp.children[0].position;
+                importedSVG.position.y -=10;
+                importedSVG.opacity = 0;
+                fp.children[0].replaceWith(importedSVG);
+            }
+            if (faultPath[stage].type === 'receiveTask'){
+                var importedSVG = paper.project.importSVG(receiveTaskFault);
                 importedSVG.scale(0.4);
                 importedSVG.position = fp.children[0].position;
                 importedSVG.position.y -=10;

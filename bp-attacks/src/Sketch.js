@@ -9,7 +9,7 @@ import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 import faultIcon from "./symbols/faultStar.png";
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent, miniMap, miniMapSVG, taskSVG} from './symbols/SVGAssets.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent, miniMap, miniMapSVG, taskSVG, boundaryEvent} from './symbols/SVGAssets.js';
 import { io_binding_edge_types } from './blmodel.js';
 
 import RightSideBar from './sidebars/RightSideBar.js';
@@ -652,6 +652,14 @@ export default function Sketch() {
                 type.scale(0.5);
                 label ="";
                 isSVG=true;
+            }
+
+            if (temp_node_dict[node.id()].type === 'boundaryEvent'){
+                type = paper.project.importSVG(boundaryEvent);
+                type.scale(0.4);
+                label="";
+                isSVG=true;
+
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
