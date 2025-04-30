@@ -659,7 +659,6 @@ export default function Sketch() {
                 type.scale(0.4);
                 label="";
                 isSVG=true;
-
             }
 
             if (temp_node_dict[node.id()].type === 'intermediateThrowEvent'){
