@@ -1,0 +1,2275 @@
+{
+    "nodes": [
+        {
+            "uuid": "af45bd29-7769-465d-b757-f127901a973b",
+            "id": "WF102-Pick",
+            "name": "WF102-Pick",
+            "type": "process",
+            "annotation": "",
+            "multiInstance": false
+        },
+        {
+            "uuid": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "id": "Activity_01489b9",
+            "name": "Initialization and set-up",
+            "type": "subProcess",
+            "annotation": "",
+            "multiInstance": false
+        },
+        {
+            "uuid": "b9565245-6775-445c-8320-355bac057946",
+            "id": "Event_0lh4by8",
+            "name": "Start set-up",
+            "type": "startEvent",
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "uuid": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "id": "Activity_1eh1l2j",
+            "name": "Update workId startWorkDate in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "id": "3671e5df-f4b9-415a-9e61-48464bf706a8",
+            "uuid": "7b9d3876-4dc0-457a-ad78-5c809c34c0a5",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "235b4045-9952-4865-8d26-8e01af14fce6",
+            "uuid": "c5f8de83-26de-48b3-a652-8c9441cd6a51",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update startWorkDate\nidVal = job.prop(\"id\");\nnewTS = new Date();\nformattedTS = newTS.toISOString().slice(0,-5)+\"Z\";  // slice removes milliseconds and adds back the Z\nrawNode = S(\"{\"id\": \" + idVal + \",\"startWorkDate\": \"\" + formattedTS + \"\", \"endWorkDate\": null}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "newTS = Date()",
+                "formattedTS = newTS.toISOString.0+Z",
+                "rawNode = [id'='idVal, startWorkDate'='formattedTS, endWorkDate'=']",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "f0e1f6b0-5106-457d-8aeb-bf8ab8531f9f",
+            "uuid": "047c520a-feff-4013-89c9-6f40bbdfb713",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateStartWorkDate/",
+            "data_type": "string"
+        },
+        {
+            "id": "82398eb4-ba1f-4871-b05e-b5af6da38e26",
+            "uuid": "0952cad4-6cc9-423c-8477-b6ca7a6cbed8",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "bbe2e693-d180-446b-8748-59c3717e6e1f",
+            "uuid": "236d28e5-920c-4184-b95e-f191fd94f815",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "id": "Activity_1urx9cg",
+            "name": "Update workId status in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "id": "59f637f4-ffa3-4178-9605-ba7af4127f3b",
+            "uuid": "c9e85704-9f9a-4246-8d86-52652650fe4e",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "7ad0a595-9519-4b59-a89a-f8d2a834d66a",
+            "uuid": "867c1638-6099-45cb-ac80-656eaae961c2",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update status\nidVal = job.prop(\"id\");\nrawNode = S(\"{\"id\": \" + idVal + \",\"status\": \"\" + jobStatus + \"\"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "rawNode = [id'='idVal, status'='jobStatus]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "fc634f3e-f09f-4bce-8c96-b06068df7ad1",
+            "uuid": "a023fdb3-7a4f-438d-8488-82b17a283664",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateStatus/",
+            "data_type": "string"
+        },
+        {
+            "id": "c989e3aa-ea6a-44d5-97a9-d983270da027",
+            "uuid": "0fe6a9fe-ca63-4331-9ae6-1c3a116eb31c",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "731d22d1-da70-405a-b752-c35adda9f5e1",
+            "uuid": "bc17ffc0-15d8-4956-ba36-47cafb8418a4",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "23e73a77-5f1a-4bc3-a67e-80a593313bd5",
+            "id": "Activity_1lmd77h",
+            "name": "Initialization and job clarification",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "// Unpack vars and set up jobStatus\n//\nexecution.setVariable(\"action\", \"pick\");\n//\n// set vars for start and end timestamps\nts= new Date();\nformattedTS = ts.toISOString();\nexecution.setVariable(\"startWorkDate\", formattedTS);\njob.prop(\"startWorkDate\", execution.getVariable(\"startWorkDate\"));\nexecution.setVariable(\"endWorkDate\", null);\ne = execution.getVariable(\"endWorkDate\");\nif (typeof(e)==\"string\") {    // only update endWorkDate if it\"s not null; otherwise we get indeterminacy error\n job.prop(\"endWorkDate\", e);  // timestamps are saved in the JSON as strings\n}\n//\nexecution.setVariable(\"messageCount\", 0);  // number of times the DMN has been evaluated \n//\n// Unpack desiredMsg var.  This is the msg to be sent back to the calling workflow when this job is completed\ndesiredMsg = job.prop(\"desiredMsg\").toString();\ndesiredMsg = desiredMsg.slice(1, -1);\nexecution.setVariable(\"desiredMsg\", desiredMsg);\n//\n// Initialize comm vars\nexecution.setVariable(\"materialOpOrder\", 1);\nexecution.setVariable(\"quantityPickPut\", -1);\n//\n// Initialize location-related vars\nexecution.setVariable(\"goToLocation\", \"\");\n//\n// Initialize vars for DMN comm and reference\nexecution.setVariable(\"recordItemStatus\", false);  // when true, workflow must record results of the current pick\nexecution.setVariable(\"assignee\", \"\");  // user who claims the job\nexecution.setVariable(\"original_assignee\", \"\");  // to detect any changes in assignee\nexecution.setVariable(\"relinquishJob\", false);\n//\n// initialize internal vars\nexecution.setVariable(\"jobStatus\", \"Unclaimed\");\nid = job.prop(\"id\");\norderId = id.prop(\"orderId\").value();\nworkId = id.prop(\"workId\").value();\npriority = job.prop(\"priority\").value();\nexecution.setVariable(\"priority\", priority);\nexecution.setVariable(\"workId\", workId);\nexecution.setVariable(\"orderId\", orderId);\n//\nbk = execution.getProcessBusinessKey();\nexecution.setVariable(\"bk\", bk);\n// must remove \"\" around calling_bk\ncalling_bk = job.prop(\"calling_bk\").toString();\ncalling_bk = calling_bk.slice(1, -1);\nexecution.setVariable(\"calling_bk\", calling_bk);\n// must remove \"\" around materialListId\nmlId = job.prop(\"materialListId\").toString();\nmlId = mlId.slice(1, -1);\nexecution.setVariable(\"materialListId\", mlId);\n//\n//print(\"        An instance of WF102 has been initiated to cover pick job\", workId, \"of order\", orderId, \"with priority\", priority);\njobType = job.prop(\"workSeqType\").value();\nexecution.setVariable(\"jobType\", jobType);",
+            "assignments": [
+                "ENV.action = \"pick\"",
+                "ts = Date()",
+                "formattedTS = ts.toISOString",
+                "ENV.startWorkDate = formattedTS",
+                "job.startWorkDate = ENV.startWorkDate",
+                "ENV.endWorkDate = null",
+                "e = ENV.endWorkDate",
+                "ENV.messageCount = 0",
+                "desiredMsg = job.desiredMsg.toString",
+                "desiredMsg = desiredMsg",
+                "ENV.desiredMsg = desiredMsg",
+                "ENV.materialOpOrder = 1",
+                "ENV.quantityPickPut = -1",
+                "ENV.goToLocation = \"\"",
+                "ENV.recordItemStatus = false",
+                "ENV.assignee = \"\"",
+                "ENV.original_assignee = \"\"",
+                "ENV.relinquishJob = false",
+                "ENV.jobStatus = \"Unclaimed\"",
+                "id = job.id",
+                "orderId = id.orderId",
+                "workId = id.workId",
+                "priority = job.priority",
+                "ENV.priority = priority",
+                "ENV.workId = workId",
+                "ENV.orderId = orderId",
+                "bk = ENV.getProcessBusinessKey",
+                "ENV.bk = bk",
+                "calling_bk = job.calling_bk.toString",
+                "calling_bk = calling_bk",
+                "ENV.calling_bk = calling_bk",
+                "mlId = job.materialListId.toString",
+                "mlId = mlId",
+                "ENV.materialListId = mlId",
+                "jobType = job.workSeqType",
+                "ENV.jobType = jobType"
+            ],
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "uuid": "13883a72-1ebc-4d82-b514-e028c754586a",
+            "id": "Event_1g0ntsn",
+            "name": "Set-up complete",
+            "type": "endEvent",
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "uuid": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "id": "Activity_0bqj4ga",
+            "name": "Get material list for this job",
+            "type": "callActivity",
+            "calledElement": "WF_function_getMaterialListData",
+            "annotation": "",
+            "processRef": "Activity_01489b9",
+            "multiInstance": false
+        },
+        {
+            "id": "a6b11061-a049-4286-91a0-2601f8a807ae",
+            "uuid": "da50e32b-8329-46a3-9af4-67d1121461fb",
+            "name": "materialList",
+            "type": "InputOutputBinding",
+            "mappedTo": "materialList",
+            "data_type": "string"
+        },
+        {
+            "id": "dff300e4-cb88-44b7-8d48-09fbcdb5e717",
+            "uuid": "78042c04-7697-4620-9fd5-6f59828174e7",
+            "name": "maxOpOrder",
+            "type": "InputOutputBinding",
+            "mappedTo": "maxOpOrder",
+            "data_type": "string"
+        },
+        {
+            "id": "0443f4de-e662-4c4d-9c13-67db7dcecb30",
+            "uuid": "25e5612b-b3a6-4ad7-856c-ef32a1c46cc7",
+            "name": "materialListId",
+            "type": "InputOutputBinding",
+            "mappedTo": "materialListId",
+            "data_type": "string"
+        },
+        {
+            "id": "545b8001-7a76-4da0-8bda-c4bc6f78d12f",
+            "uuid": "9ef3a2c4-1daf-4704-8cb9-8b3b976d770f",
+            "name": "scenarioId",
+            "type": "InputOutputBinding",
+            "mappedTo": "scenarioId",
+            "data_type": "string"
+        },
+        {
+            "id": "4f767cf9-e2ce-4c40-bd4e-1eaaca3e09bd",
+            "uuid": "05f552c7-cbc5-49eb-9244-b1a065c73614",
+            "name": "dbEndpoint",
+            "type": "InputOutputBinding",
+            "mappedTo": "dbEndpoint",
+            "data_type": "string"
+        },
+        {
+            "id": "937fc25f-aefe-4d92-8fa0-37e01658a84a",
+            "uuid": "c2763069-cd73-4d04-ad1a-d38acdb5d0ae",
+            "name": "materialListStatusCode",
+            "type": "InputOutputBinding",
+            "mappedTo": "statusCode",
+            "data_type": "string"
+        },
+        {
+            "uuid": "79c2c294-e65d-4ec4-b235-47b20ca12737",
+            "id": "Event_0ws92ns",
+            "name": "Start",
+            "type": "startEvent",
+            "annotation": "\n\nInput parameters, sent from the Order workflow:\njob (workId data),\nscenarioId (integer>0),\ndbEndpoint,\ncamundaEndpoint",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+            "id": "Event_175wujn",
+            "name": "jobRelinquished",
+            "type": "intermediateCatchEvent",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "eventRef": "jobRelinquished",
+            "multiInstance": false
+        },
+        {
+            "uuid": "2c9d7b0e-57ab-4962-87e8-6b746d04d1a4",
+            "id": "Event_1koekgi",
+            "name": "Process exit",
+            "type": "endEvent",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "a7ff8777-4633-4b21-9a0d-499b3e2e60ec",
+            "id": "Activity_0jhyd6x",
+            "name": "Update job status and assignee",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "jobStatus = \"Claimed\";\nassignee = execution.getVariable(\"assignee\");\nexecution.setVariable(\"jobStatus\", jobStatus);\njob.prop(\"status\", jobStatus);\njob.prop(\"assignee\", assignee);\nexecution.setVariable(\"job\", job);\nexecution.setVariable(\"original_assignee\", assignee);",
+            "assignments": [
+                "jobStatus = Claimed",
+                "assignee = ENV.assignee",
+                "ENV.jobStatus = jobStatus",
+                "job.status = jobStatus",
+                "job.assignee = assignee",
+                "ENV.job = job",
+                "ENV.original_assignee = assignee"
+            ],
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "id": "Activity_0bogetd",
+            "name": "Update workId status in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "id": "18c505d7-759b-4e9b-858b-95a7cb87fd88",
+            "uuid": "2d13c26a-d9e8-48c1-a83e-03a6f475d0b9",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "1514d776-8218-4189-8d1a-b5910b26732a",
+            "uuid": "d9764c7d-b5f7-4c16-bb60-e3074994f35e",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update status\nidVal = job.prop(\"id\");\nrawNode = S(\"{\"id\": \" + idVal + \",\"status\": \"\" + jobStatus + \"\"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "rawNode = [id'='idVal, status'='jobStatus]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "0326506f-d4f7-4fba-abbe-9b5ae3b0bc10",
+            "uuid": "8d125330-52ef-490e-8f7c-ef29ad796928",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateStatus/",
+            "data_type": "string"
+        },
+        {
+            "id": "9e8e6127-715d-4ac7-9952-1ddce9ce0ae9",
+            "uuid": "92146a83-39f6-4bd9-9219-d7573cf127ad",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "fb8d2401-0d00-4bb8-aacf-453668c4d0fc",
+            "uuid": "ebb04571-ab11-4d7a-a5a3-2432e8883142",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+            "id": "Gateway_0hlr8fx",
+            "name": "Relinquished?",
+            "type": "exclusiveGateway",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "id": "Activity_126yn70",
+            "name": "Claim ${jobType}s for order ${orderId} (${maxOpOrder} location(s), priority ${priority})",
+            "type": "userTask",
+            "annotation": "\n\nPublish job to users and wait for it to be claimed (in var \"assignee\")",
+            "documentation": "Creates a user task allowing a worker to claim this job.  The user who claims the task will be recorded as \"assignee\" and the radio-button selection as radioSelection_claimJob",
+            "processRef": "WF102-Pick",
+            "userFormRef": "form1a_jobPosting_PickStow",
+            "multiInstance": false
+        },
+        {
+            "id": "b639c63d-729d-46cc-806a-1d72a2951a07",
+            "uuid": "b6086365-c810-4f7d-9b51-5ae1d38a61fc",
+            "name": "workId",
+            "type": "InputOutputBinding",
+            "expression": "${workId}",
+            "data_type": "string"
+        },
+        {
+            "id": "2224c8c1-e3f3-4760-961c-97c544f8c94a",
+            "uuid": "b5b2c7be-1350-4170-9de3-ced3c631c408",
+            "name": "jobType",
+            "type": "InputOutputBinding",
+            "expression": "${jobType}",
+            "data_type": "string"
+        },
+        {
+            "id": "478442c5-ee94-46f0-80d0-593ef6710c13",
+            "uuid": "87fafa9a-a746-4abf-91e1-a0dde75cbcb4",
+            "name": "priority",
+            "type": "InputOutputBinding",
+            "expression": "${priority}",
+            "data_type": "string"
+        },
+        {
+            "id": "171ea5e4-dc1a-4de6-bc9d-f63e9549334a",
+            "uuid": "f33d4a0e-c4a1-4f0b-9b29-d9160691e883",
+            "name": "orderId",
+            "type": "InputOutputBinding",
+            "expression": "${orderId}",
+            "data_type": "string"
+        },
+        {
+            "id": "11a86631-c7d2-49a5-992a-2ba575be572b",
+            "uuid": "81f0d459-c52b-4b5d-8f32-1d0d7e166546",
+            "name": "action",
+            "type": "InputOutputBinding",
+            "expression": "${action}",
+            "data_type": "string"
+        },
+        {
+            "id": "fd981f62-303c-453e-be4b-d7f91929982b",
+            "uuid": "62c54f9f-15b7-452a-93fa-2f66fa9973d6",
+            "name": "maxOpOrder",
+            "type": "InputOutputBinding",
+            "expression": "${maxOpOrder}",
+            "data_type": "string"
+        },
+        {
+            "id": "d89db272-5a7c-4d42-bc90-f30d0675c3ad",
+            "uuid": "cd383034-fa4e-413e-8c7c-72164984283f",
+            "name": "relinquishJob",
+            "type": "InputOutputBinding",
+            "expression": "${relinquishJob}",
+            "data_type": "boolean",
+            "data_source": {
+                "id": "36fa5458-cbb3-4407-a639-46426394664c",
+                "uuid": "36fa5458-cbb3-4407-a639-46426394664c",
+                "name": "form1a_jobPosting_PickStow",
+                "type": "userForm",
+                "field_id": "Field_0406rey",
+                "field_name": "relinquishJob",
+                "data_type": "checkbox",
+                "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+            }
+        },
+        {
+            "uuid": "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+            "id": "Activity_0btf0i4",
+            "name": "Set up form info for current item (pick)",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "// Set up info for a Pick location\n// This script sets up information for a generic pick/stow form, so\n// we refer the worker to the item\"s origin (pick) location.\n\nmoo = execution.getVariable(\"materialOpOrder\");  // index of current item within material list\nml = execution.getVariable(\"materialList\");\nml_next = ml.elements().get(moo-1);  // materialOpOrder starts from 1, but javascript indexes from 0\n\n// Set up location\n// There are several location options within the material list\ngoToLocation = ml_next.prop(\"originLocationId\").toString();  // for a pick, items begin at origin location\n//goToLocation = ml_next.prop(\"currentLocationId\").toString();\n//goToLocation = ml_next.prop(\"destinationLocationId\").toString();\n// process goToLocation and save to execution layer\ngoToLocation = goToLocation.slice(1, -1);  // remove \"\" in string\nexecution.setVariable(\"goToLocation\", goToLocation);\n\n// Set up item type and quantity\nmmaster = ml_next.prop(\"materialMaster\");\nmmasterId = mmaster.prop(\"id\");\nmaterialNumber = mmasterId.prop(\"materialNumber\").toString();\nmaterialName = mmaster.prop(\"materialName\").toString();\nmaterialDescription = mmaster.prop(\"materialDescription\").toString();\nplannedQuantity = ml_next.prop(\"plannedQuantity\").value();\n//\nexecution.setVariable(\"materialNumber\", materialNumber);\nexecution.setVariable(\"materialName\", materialName);\nexecution.setVariable(\"materialDescription\", materialDescription);\nexecution.setVariable(\"plannedQuantity\", plannedQuantity);\nexecution.setVariable(\"quantityPickPut\", 0);",
+            "assignments": [
+                "moo = ENV.materialOpOrder",
+                "ml = ENV.materialList",
+                "ml_next = ml.elements.get",
+                "goToLocation = ml_next.originLocationId.toString",
+                "goToLocation = goToLocation",
+                "ENV.goToLocation = goToLocation",
+                "mmaster = ml_next.materialMaster",
+                "mmasterId = mmaster.id",
+                "materialNumber = mmasterId.materialNumber.toString",
+                "materialName = mmaster.materialName.toString",
+                "materialDescription = mmaster.materialDescription.toString",
+                "plannedQuantity = ml_next.plannedQuantity",
+                "ENV.materialNumber = materialNumber",
+                "ENV.materialName = materialName",
+                "ENV.materialDescription = materialDescription",
+                "ENV.plannedQuantity = plannedQuantity",
+                "ENV.quantityPickPut = 0"
+            ],
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+            "id": "Gateway_0eh1fe1",
+            "name": "Relinquished?",
+            "type": "exclusiveGateway",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "1694adef-ec56-44dd-8029-18b399b89421",
+            "id": "Event_03j1xqa",
+            "name": "Go to jobRelinquished",
+            "type": "intermediateThrowEvent",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "eventRef": "jobRelinquished",
+            "multiInstance": false
+        },
+        {
+            "uuid": "36ee2e0a-1496-40db-aa13-ff139b32c0c9",
+            "id": "Activity_0mkar12",
+            "name": "Record user data and increment material OpOrder",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "// Save user pick/put quantity into material list\nmTemp = execution.getVariable(\"materialList\");\nmoo = execution.getVariable(\"materialOpOrder\");\nquantityPickPut = execution.getVariable(\"quantityPickPut\");\nmTemp.elements().get(moo-1).prop(\"verifiedQuantity\", quantityPickPut);\nexecution.setVariable(\"materialList\", S(JSON.stringify(JSON.parse(mTemp))));\n\n// Increment materialOpOrder and check whether all items have been completed\nmaxOpOrder = execution.getVariable(\"maxOpOrder\");\nif (moo < maxOpOrder) {\n\t// there are remaining picks or stows to be done, at other locations\n\tmoo += 1;\n\texecution.setVariable(\"materialOpOrder\", moo);\n} else {\n\t// all items have been picked or stowed\n\texecution.setVariable(\"jobStatus\", \"Pick/Stow complete\");\n}",
+            "assignments": [
+                "mTemp = ENV.materialList",
+                "moo = ENV.materialOpOrder",
+                "quantityPickPut = ENV.quantityPickPut",
+                "mTemp.elements.get.verifiedQuantity = quantityPickPut",
+                "ENV.materialList = JSON.stringify.JSON.parse.mTemp",
+                "maxOpOrder = ENV.maxOpOrder"
+            ],
+            "annotation": "\n\n** TO DO ** Save quantityPickPut into verifiedQuantity field of the ml element of the materialList",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "e3fba6a2-817a-47ea-a25a-ff0c7a770253",
+            "id": "Gateway_1o0jgtw",
+            "name": "Done with pick/stow?",
+            "type": "exclusiveGateway",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "id": "Activity_18lbg8b",
+            "name": "${assignee}: ${action} step ${materialOpOrder} of ${maxOpOrder} for order ${orderId}",
+            "type": "userTask",
+            "annotation": "",
+            "documentation": "Creates a user task allowing a worker to claim this job.  The user who claims the task will be recorded as \"assignee\" and the radio-button selection as radioSelection_claimJob",
+            "processRef": "WF102-Pick",
+            "userFormRef": "form2a_pickAtOneLocation",
+            "multiInstance": false
+        },
+        {
+            "id": "11f05dbc-ecef-49ab-931e-6416016f01a6",
+            "uuid": "5c506919-82da-4f37-88ef-047e54333030",
+            "name": "workId",
+            "type": "InputOutputBinding",
+            "expression": "${workId}",
+            "data_type": "string"
+        },
+        {
+            "id": "30ae52f9-0918-475d-b359-b5a107be8a3d",
+            "uuid": "4545c495-3c7e-4e4d-a01c-0c27801d1fe4",
+            "name": "jobType",
+            "type": "InputOutputBinding",
+            "expression": "${jobType}",
+            "data_type": "string"
+        },
+        {
+            "id": "a11ad6ae-ee7a-41b4-b33f-d7a60a46d012",
+            "uuid": "495796de-eae5-4b4b-9d09-00481d488e0b",
+            "name": "priority",
+            "type": "InputOutputBinding",
+            "expression": "${priority}",
+            "data_type": "string"
+        },
+        {
+            "id": "02f1e417-4eea-45c9-b356-83fa877d43df",
+            "uuid": "19a9bb63-9a22-4216-9389-3fd77930561d",
+            "name": "orderId",
+            "type": "InputOutputBinding",
+            "expression": "${orderId}",
+            "data_type": "string"
+        },
+        {
+            "id": "b956aa9e-eac9-42d0-a5cc-ee321d7c72ae",
+            "uuid": "fccec91e-36a6-4844-a752-ca22f417333b",
+            "name": "action",
+            "type": "InputOutputBinding",
+            "expression": "${action}",
+            "data_type": "string"
+        },
+        {
+            "id": "4e7595ff-4caf-4929-9d81-abcf80d32fd1",
+            "uuid": "aa431c39-1d47-4a3c-8de7-2f4716b42d35",
+            "name": "maxOpOrder",
+            "type": "InputOutputBinding",
+            "expression": "${maxOpOrder}",
+            "data_type": "string"
+        },
+        {
+            "id": "753836a4-e85a-4ee2-8e22-bcea0d10d9e2",
+            "uuid": "01803f66-21b8-4e19-9afe-075cb560787a",
+            "name": "goToLocation",
+            "type": "InputOutputBinding",
+            "expression": "${goToLocation}",
+            "data_type": "string"
+        },
+        {
+            "id": "7f5c5a89-cf28-491f-8a3b-83e6470173b1",
+            "uuid": "42483091-1c18-477d-bdfa-9fb76e0f796c",
+            "name": "materialNumber",
+            "type": "InputOutputBinding",
+            "expression": "${materialNumber}",
+            "data_type": "string"
+        },
+        {
+            "id": "8b06d1f6-dbd7-47c6-9155-2fa8841e5c8d",
+            "uuid": "12d3db79-93a3-41ce-a381-768439b3d85e",
+            "name": "materialName",
+            "type": "InputOutputBinding",
+            "expression": "${materialName}",
+            "data_type": "string"
+        },
+        {
+            "id": "019fff61-1b7f-49b7-9e75-ee425426cda0",
+            "uuid": "870a1f6c-585d-446e-97a3-8c3a17b500f8",
+            "name": "materialDescription",
+            "type": "InputOutputBinding",
+            "expression": "${materialDescription}",
+            "data_type": "string"
+        },
+        {
+            "id": "ed520dd3-3420-4a93-80e2-e248b4c35f0f",
+            "uuid": "bfbd9bff-4ccc-4d22-8a46-28aa9333b3da",
+            "name": "plannedQuantity",
+            "type": "InputOutputBinding",
+            "expression": "${plannedQuantity}",
+            "data_type": "string"
+        },
+        {
+            "id": "ec6e89bc-4aa3-4fc3-8f7d-5e6ab20b1c9f",
+            "uuid": "e4379b92-2559-4b31-b2c2-7d952f72d05d",
+            "name": "materialOpOrder",
+            "type": "InputOutputBinding",
+            "expression": "${materialOpOrder}",
+            "data_type": "string"
+        },
+        {
+            "id": "4751aaad-3c17-4b58-b17f-30310f9343cb",
+            "uuid": "88fd98cc-85b5-486f-ab90-5b01c13e7080",
+            "name": "relinquishJob",
+            "type": "InputOutputBinding",
+            "expression": "${relinquishJob}",
+            "data_type": "boolean",
+            "data_source": {
+                "id": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+                "uuid": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+                "name": "form2a_pickAtOneLocation",
+                "type": "userForm",
+                "field_id": "Field_0ft8mix",
+                "field_name": "relinquishJob",
+                "data_type": "checkbox",
+                "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+            }
+        },
+        {
+            "id": "41a470dd-09f5-43dc-ad7d-8f0961e41a81",
+            "uuid": "5d909c57-b032-404f-b81e-16afd0f03554",
+            "name": "quantityPickPut",
+            "type": "InputOutputBinding",
+            "expression": "${quantityPickPut}",
+            "data_type": "number",
+            "data_source": {
+                "id": "e20abdbf-50a5-4fb4-b7b0-ecc92c7f6aa2",
+                "uuid": "e20abdbf-50a5-4fb4-b7b0-ecc92c7f6aa2",
+                "name": "form2a_pickAtOneLocation",
+                "type": "userForm",
+                "field_id": "Field_1l22dp5",
+                "field_name": "quantityPickPut",
+                "data_type": "number",
+                "expression": "0 <= quantityPickPut <= 99",
+                "documentation": "Target {{action}} quantity is {{plannedQuantity}}"
+            }
+        },
+        {
+            "uuid": "03fa48c7-36ac-4f8e-bf95-ea067b6979b2",
+            "id": "Activity_1rnvxs0",
+            "name": "Set up form info for group transfer (picks)",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "// Set up info for a Pick transfer, which involves moving all items\n// to the destination location (which is the same for all items)\n\nmoo = execution.getVariable(\"materialOpOrder\");  // index of final item within material list\nml = execution.getVariable(\"materialList\");\nml_next = ml.elements().get(moo-1);  // materialOpOrder starts from 1, but javascript indexes from 0\n\n// Set up location\n// There are several location options within the material list\n//goToLocation = ml_next.prop(\"originLocationId\").toString();  // for a pick, items begin at origin location\n//goToLocation = ml_next.prop(\"currentLocationId\").toString();\ngoToLocation = ml_next.prop(\"destinationLocationId\").toString();\n// process goToLocation and save to execution layer\ngoToLocation = goToLocation.slice(1, -1);  // remove \"\" in string\nexecution.setVariable(\"goToLocation\", goToLocation);",
+            "assignments": [
+                "moo = ENV.materialOpOrder",
+                "ml = ENV.materialList",
+                "ml_next = ml.elements.get",
+                "goToLocation = ml_next.destinationLocationId.toString",
+                "goToLocation = goToLocation",
+                "ENV.goToLocation = goToLocation"
+            ],
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "id": "Activity_00etodw",
+            "name": "${assignee}: transfer picks from order ${orderId} to Packaging",
+            "type": "userTask",
+            "annotation": "",
+            "documentation": "Creates a user task allowing a worker to claim this job.  The user who claims the task will be recorded as \"assignee\" and the radio-button selection as radioSelection_claimJob",
+            "processRef": "WF102-Pick",
+            "userFormRef": "form3_groupTransfer",
+            "multiInstance": false
+        },
+        {
+            "id": "a78e302f-fc10-44ec-a6be-7a7c06f8e16f",
+            "uuid": "e8a21a53-a067-4acf-8daa-1b530c19ff27",
+            "name": "workId",
+            "type": "InputOutputBinding",
+            "expression": "${workId}",
+            "data_type": "string"
+        },
+        {
+            "id": "c7aa8b58-b8fb-4a01-b999-b23842e032bf",
+            "uuid": "7df21b4f-8096-4aea-bb4b-3d4c300a8bc9",
+            "name": "jobType",
+            "type": "InputOutputBinding",
+            "expression": "${jobType}",
+            "data_type": "string"
+        },
+        {
+            "id": "905d733d-cc65-45a7-9a80-7e7f35c9c95d",
+            "uuid": "5ae3b4cd-7b81-4dde-89a1-7fb195578e60",
+            "name": "priority",
+            "type": "InputOutputBinding",
+            "expression": "${priority}",
+            "data_type": "string"
+        },
+        {
+            "id": "b372fc58-256e-46cd-80d4-b7a1ff1994ba",
+            "uuid": "0e47d19e-2e73-4027-a0c6-ae3f44eef034",
+            "name": "orderId",
+            "type": "InputOutputBinding",
+            "expression": "${orderId}",
+            "data_type": "string"
+        },
+        {
+            "id": "9c702b51-7cc2-431b-a103-1b8f9795a449",
+            "uuid": "17ea51a5-2230-49b1-b505-8dd61da381d9",
+            "name": "action",
+            "type": "InputOutputBinding",
+            "expression": "${action}",
+            "data_type": "string"
+        },
+        {
+            "id": "f4b87c5d-6012-41b5-a261-4afe26f58fb6",
+            "uuid": "ef1fd7a5-1f6d-47cc-aa12-5559ee29b15f",
+            "name": "maxOpOrder",
+            "type": "InputOutputBinding",
+            "expression": "${maxOpOrder}",
+            "data_type": "string"
+        },
+        {
+            "id": "bee79d93-c18c-4b12-84e4-6af5e67fd7e5",
+            "uuid": "a31f77d1-f82d-4e71-b435-775191d32184",
+            "name": "goToLocation",
+            "type": "InputOutputBinding",
+            "expression": "${goToLocation}",
+            "data_type": "string"
+        },
+        {
+            "id": "8244985a-f0cc-44d3-bbbe-4e4c376f6f08",
+            "uuid": "5cbfbf7a-b637-4266-b585-c72b4d9c62c2",
+            "name": "materialList",
+            "type": "InputOutputBinding",
+            "expression": "${materialList}",
+            "data_type": "string"
+        },
+        {
+            "uuid": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "id": "Activity_1g10din",
+            "name": "Update assignee in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "id": "8b07ab84-c35d-4721-9809-0995282021b7",
+            "uuid": "b02f11ff-4d92-4270-87fe-e7979adf6b34",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "12f6acc8-8dbe-429f-9647-93b800007569",
+            "uuid": "588431cf-73fe-489c-b669-dfff13a3fc07",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update assignee\nidVal = job.prop(\"id\");\nrawNode = S(\"{\"id\": \" + idVal + \",\"assignedTo\": \"\" + assignee + \"\"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "rawNode = [id'='idVal, assignedTo'='assignee]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "c95f84db-eaf8-475e-951f-24a59a657fda",
+            "uuid": "63869483-344a-4bd8-9645-689d9d400e32",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateAssignedTo/",
+            "data_type": "string"
+        },
+        {
+            "id": "cff40948-2b71-4787-ad21-50ead2b7b3a5",
+            "uuid": "b2e859ff-ff7b-4a02-a69a-bb6a3b03a2ba",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "4aa068e7-cf8d-4d89-bcf1-1692076669e4",
+            "uuid": "c0a607d5-227c-4bde-b96e-c2f630069823",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "ad8b781c-e1d9-43be-a6a2-e931c374dd58",
+            "id": "Activity_1ij231b",
+            "name": "Update internal job data",
+            "type": "scriptTask",
+            "scriptFormat": "Javascript",
+            "script": "// update job status\njobStatus = \"Completed\";\njob.prop(\"status\", jobStatus);\nexecution.setVariable(\"jobStatus\", jobStatus);\n// set completion timestamp\nts= new Date();\nformattedTS = ts.toISOString();\nexecution.setVariable(\"endWorkDate\", formattedTS);\njob.prop(\"endWorkDate\", execution.getVariable(\"endWorkDate\"));\n// update job variable\nexecution.setVariable(\"job\", job);",
+            "assignments": [
+                "jobStatus = Completed",
+                "job.status = jobStatus",
+                "ENV.jobStatus = jobStatus",
+                "ts = Date()",
+                "formattedTS = ts.toISOString",
+                "ENV.endWorkDate = formattedTS",
+                "job.endWorkDate = ENV.endWorkDate",
+                "ENV.job = job"
+            ],
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "id": "Activity_1yuhqew",
+            "name": "Update workId endWorkDate in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "id": "6ea35e64-3d70-420e-9100-efa1d3b3e83f",
+            "uuid": "4cb2b6e6-9c1b-4d36-a94a-9b843ce7293d",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "844efc04-6f96-400b-8754-c462ac7a2b35",
+            "uuid": "98dd54d5-d8a6-4797-b3a1-ca0c5b6bda12",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update endWorkDate\nidVal = job.prop(\"id\");\nnewTS = new Date();\nformattedTS = newTS.toISOString().slice(0,-5)+\"Z\";  // slice removes milliseconds and adds back the Z\nrawNode = S(\"{\"id\": \" + idVal + \",\"endWorkDate\": \"\" + formattedTS + \"\", \"startWorkDate\": null}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "newTS = Date()",
+                "formattedTS = newTS.toISOString.0+Z",
+                "rawNode = [id'='idVal, endWorkDate'='formattedTS, startWorkDate'=']",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "2ce1909d-6713-431a-9c7e-fecd7eb7a4fa",
+            "uuid": "9e3ee6ae-90ec-4992-a9d2-5427eab1447e",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateEndWorkDate/",
+            "data_type": "string"
+        },
+        {
+            "id": "edf011f5-4f3e-4ade-90bb-0d208ae1acca",
+            "uuid": "05b23136-ca2a-4e9b-92c6-84401e0104aa",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "b9d6c4a6-9795-4350-9438-d5d7fdfaa7b5",
+            "uuid": "ebc12c1f-ca04-4ec8-8744-bcbcf40c1aa1",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "id": "Activity_0uamf40",
+            "name": "Update workId status in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "id": "a45f3f00-e041-4a0a-8034-31250c8036a4",
+            "uuid": "c0c9af68-445d-4300-8c9c-50726930983f",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "d94a36b7-6c94-4b22-bde7-54d6e4e7e4c4",
+            "uuid": "7e6d99ee-c492-4003-bd06-c5ca362c0357",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update status\nidVal = job.prop(\"id\");\nrawNode = S(\"{\"id\": \" + idVal + \",\"status\": \"\" + jobStatus + \"\"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = job.id",
+                "rawNode = [id'='idVal, status'='jobStatus]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "749ca940-94d9-47ce-ac64-a261549f87c2",
+            "uuid": "2c9c4e44-2934-4a37-a562-803fcc9926a5",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_id/updateStatus/",
+            "data_type": "string"
+        },
+        {
+            "id": "1499397d-62c0-440c-bfcd-44fd3b29335d",
+            "uuid": "2586906b-eee6-4cd6-87df-55a18bdf85a8",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "cd11b635-6051-47d8-9aba-a66dde326da4",
+            "uuid": "f77f9a61-57a7-4814-aed1-2fd00651eed5",
+            "name": "orderUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "b03801d2-d57d-458b-ad7b-e4f3b4cb0b0c",
+            "id": "Activity_0oqrchu",
+            "name": "Send completion message back to originating order",
+            "type": "sendTask",
+            "expression": "${execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(desiredMsg).processInstanceBusinessKey(calling_bk).correlate()}",
+            "annotation": "",
+            "processRef": "WF102-Pick",
+            "multiInstance": false
+        },
+        {
+            "uuid": "ed6c601a-4d01-44cc-8607-40c00212104e",
+            "id": "Activity_0w4m1sd",
+            "name": "Update the material list with actual quantities (item-by-item, sequentially)",
+            "type": "subProcess",
+            "annotation": "",
+            "multiInstance": true,
+            "multiExpression": {
+                "isSequential": "true",
+                "collection": "${materialList.elements()}",
+                "elementVariable": "item"
+            }
+        },
+        {
+            "uuid": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "id": "Activity_1eyjv32",
+            "name": "Update item verifiedQuantity in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "Activity_0w4m1sd",
+            "multiInstance": false
+        },
+        {
+            "id": "cb59b3c3-14dd-46c4-a0a5-e6c4b17958eb",
+            "uuid": "c56e0d6c-8679-47af-b9d6-9c806683b27e",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "b9839d8f-9522-4430-9560-4ad9b58b1ceb",
+            "uuid": "c6887007-77a1-460c-b1b9-44469d73f34a",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to update verifiedQuantity\nidVal = item.prop(\"id\");\nvq = item.prop(\"verifiedQuantity\").value();\nrawNode = S(\"{\"id\": \" + idVal + \",\"verifiedQuantity\": \" + vq + \"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = item.id",
+                "vq = item.verifiedQuantity",
+                "rawNode = [id'='idVal, verifiedQuantity'='vq]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "1a4f91a1-90bb-4856-8ece-b9c60b21d6f7",
+            "uuid": "36c01648-62a4-48ae-8c46-e93476c98a42",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_material_list/updateVerifiedQuantity/",
+            "data_type": "string"
+        },
+        {
+            "id": "d8cbf89e-0953-45eb-b0e2-3537ee175bb7",
+            "uuid": "52b9093d-c3a5-4eae-a8c4-bbdcd59fa4ad",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "8b2faca7-86ef-40a3-a711-15743b94897d",
+            "uuid": "feb5e6e2-0ead-4a2a-8309-7e0e76c7d4a9",
+            "name": "mlUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "uuid": "ee22c10b-5e4b-4f4a-8443-b21a803dbbdb",
+            "id": "Event_0igdpnl",
+            "name": "End item",
+            "type": "endEvent",
+            "annotation": "",
+            "processRef": "Activity_0w4m1sd",
+            "multiInstance": false
+        },
+        {
+            "uuid": "75941ce2-4398-47a0-847e-80f3995156bd",
+            "id": "Event_0g7o2oy",
+            "name": "Start item",
+            "type": "startEvent",
+            "annotation": "",
+            "processRef": "Activity_0w4m1sd",
+            "multiInstance": false
+        },
+        {
+            "uuid": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "id": "Activity_0kg5h0h",
+            "name": "Update item currentLocationId in database",
+            "type": "serviceTask",
+            "annotation": "",
+            "processRef": "Activity_0w4m1sd",
+            "multiInstance": false
+        },
+        {
+            "id": "6e739852-8996-43fa-86e2-fc6af7783b39",
+            "uuid": "6242002a-7e97-4d50-be69-48e0c5c18c9d",
+            "name": "headers",
+            "type": "InputOutputBinding",
+            "data_type": "string"
+        },
+        {
+            "id": "0ee609f9-31a6-4e51-8a5b-9c9ffbbcc993",
+            "uuid": "c9d4875c-77bf-411a-b987-49d803ca960a",
+            "name": "payload",
+            "type": "InputOutputBinding",
+            "script": "// create JSON payload to set currentLocationId to destinationLocationId\nidVal = item.prop(\"id\");\ncl = item.prop(\"destinationLocationId\").value();\nrawNode = S(\"{\"id\": \" + idVal + \",\"currentLocationId\": \"\" + cl + \"\"}\");\njsonNode_out = rawNode.toString().replace(\"\\\"\", \"\"\");\n//print(jsonNode_out);\njsonNode_out",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "idVal = item.id",
+                "cl = item.destinationLocationId",
+                "rawNode = [id'='idVal, currentLocationId'='cl]",
+                "jsonNode_out = rawNode.toString",
+                "jsonNode_out = jsonNode_out"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "7d09bf53-2158-4254-9caf-8ec81051e630",
+            "uuid": "00a83270-b2af-44f0-ab9d-419f7c5a92fd",
+            "name": "url",
+            "type": "InputOutputBinding",
+            "expression": "${dbEndpoint}/work_material_list/updateCurrentLocationId/",
+            "data_type": "string"
+        },
+        {
+            "id": "b281902f-ecd8-464f-8ae7-45b856d48d3b",
+            "uuid": "0484dfb0-99b5-4e44-bdfb-86246d64a391",
+            "name": "method",
+            "type": "InputOutputBinding",
+            "expression": "PATCH",
+            "data_type": "string"
+        },
+        {
+            "id": "48759f05-d474-4436-a2d4-9eab81711b3d",
+            "uuid": "8cda905f-9e1e-43cf-a777-1ac07dea24e1",
+            "name": "mlUpdateResponse",
+            "type": "InputOutputBinding",
+            "script": "//print(\"Response:\", response);\nS(response);",
+            "scriptFormat": "Javascript",
+            "assignments": [
+                "response = response"
+            ],
+            "data_type": "string"
+        },
+        {
+            "id": "36fa5458-cbb3-4407-a639-46426394664c",
+            "uuid": "36fa5458-cbb3-4407-a639-46426394664c",
+            "name": "form1a_jobPosting_PickStow",
+            "type": "userForm",
+            "field_id": "Field_0406rey",
+            "field_name": "relinquishJob",
+            "data_type": "checkbox",
+            "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+        },
+        {
+            "id": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+            "uuid": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+            "name": "form2a_pickAtOneLocation",
+            "type": "userForm",
+            "field_id": "Field_0ft8mix",
+            "field_name": "relinquishJob",
+            "data_type": "checkbox",
+            "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+        },
+        {
+            "id": "e20abdbf-50a5-4fb4-b7b0-ecc92c7f6aa2",
+            "uuid": "e20abdbf-50a5-4fb4-b7b0-ecc92c7f6aa2",
+            "name": "form2a_pickAtOneLocation",
+            "type": "userForm",
+            "field_id": "Field_1l22dp5",
+            "field_name": "quantityPickPut",
+            "data_type": "number",
+            "expression": "0 <= quantityPickPut <= 99",
+            "documentation": "Target {{action}} quantity is {{plannedQuantity}}"
+        },
+        {
+            "uuid": "8b9078ba-6d4b-481f-9fbe-c3727f50b356",
+            "type": "blFault",
+            "fault_type": "Dead end",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "958c4096-8b81-49ec-bad8-6d74e353157e",
+                "Flow_143hwtt",
+                "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+                "Flow_1y0vmgg"
+            ],
+            "description": "A sequence flow involving an expression which when evaluated to true results in an endless loop involving one or more activities.",
+            "expressions": [
+                "${relinquishJob}"
+            ],
+            "fault_examples": [
+                "When ${relinquishJob} evaluates to true, workflow activity Activity_126yn70 [Claim ${jobType}s for order ${orderId} (${maxOpOrder} location(s), priority ${priority})] in workflow WF102-Pick is executed again."
+            ],
+            "data_output": {
+                "id": "d89db272-5a7c-4d42-bc90-f30d0675c3ad",
+                "uuid": "cd383034-fa4e-413e-8c7c-72164984283f",
+                "name": "relinquishJob",
+                "type": "InputOutputBinding",
+                "expression": "${relinquishJob}",
+                "data_type": "boolean",
+                "data_source": {
+                    "id": "36fa5458-cbb3-4407-a639-46426394664c",
+                    "uuid": "36fa5458-cbb3-4407-a639-46426394664c",
+                    "name": "form1a_jobPosting_PickStow",
+                    "type": "userForm",
+                    "field_id": "Field_0406rey",
+                    "field_name": "relinquishJob",
+                    "data_type": "checkbox",
+                    "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+                }
+            }
+        },
+        {
+            "uuid": "c4b21329-98fa-458b-8747-116259e39eea",
+            "type": "blFault",
+            "fault_type": "Dead end",
+            "fault_category": "Execution sequence",
+            "processRef": "N/A",
+            "severity": "high",
+            "execution_path": [
+                "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+                "Flow_14ksze7",
+                "958c4096-8b81-49ec-bad8-6d74e353157e",
+                "Flow_143hwtt",
+                "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+                "Flow_18dd5oq",
+                "a7ff8777-4633-4b21-9a0d-499b3e2e60ec",
+                "Flow_1nmo7cl",
+                "2fdb603a-6448-4ba9-8443-bfab469665d0",
+                "Flow_0m55p27",
+                "8695b0ed-33bd-457f-8aaa-778ffab58067",
+                "Flow_1oo4bjv",
+                "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+                "Flow_0dw87p1",
+                "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+                "Flow_1elmwwo",
+                "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+                "Flow_1kflpiw",
+                "1694adef-ec56-44dd-8029-18b399b89421",
+                "a243b619-7db1-4cea-a54e-06f7553a6af9",
+                "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+                "Flow_1hp2c7f"
+            ],
+            "description": "A sequence flow involving an expression which when evaluated to true results in an endless loop involving one or more activities."
+        },
+        {
+            "uuid": "2199d282-1c27-4e53-81c6-e32d12fc4679",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "2fdb603a-6448-4ba9-8443-bfab469665d0"
+            ],
+            "fault_examples": [
+                "When service task Activity_0bogetd (Update workId status in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "33611073-e9c5-42c4-b039-f8148057fa94",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "8695b0ed-33bd-457f-8aaa-778ffab58067"
+            ],
+            "fault_examples": [
+                "When service task Activity_1g10din (Update assignee in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "f310ace0-841b-457a-b79a-6940cba3737f",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "6a894536-fb73-4789-ae90-85dbee7bcc6f"
+            ],
+            "fault_examples": [
+                "When service task Activity_1yuhqew (Update workId endWorkDate in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "1bc8847e-73c9-410a-b07f-79bff86bbfde",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6"
+            ],
+            "fault_examples": [
+                "When service task Activity_0uamf40 (Update workId status in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "833de6ca-b79d-4f1d-ba3b-4d63dc594b8b",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "Activity_0w4m1sd",
+            "severity": "high",
+            "execution_path": [
+                "9d48a60a-e63b-424e-a683-5284f9d434a3"
+            ],
+            "fault_examples": [
+                "When service task Activity_1eyjv32 (Update item verifiedQuantity in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "mlUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "dafa53c9-2703-46b1-975e-cb0dcd184caa",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "Activity_0w4m1sd",
+            "severity": "high",
+            "execution_path": [
+                "459ac8d4-1243-47b4-ae56-5c5c9456f516"
+            ],
+            "fault_examples": [
+                "When service task Activity_0kg5h0h (Update item currentLocationId in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "mlUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "5810bb32-312d-4714-bb86-384d4447dfb7",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "Activity_01489b9",
+            "severity": "high",
+            "execution_path": [
+                "4264af7a-9a5e-48f7-affb-59ca4afec334"
+            ],
+            "fault_examples": [
+                "When service task Activity_1urx9cg (Update workId status in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "671be51e-2825-4ac6-97fe-daaf1535022d",
+            "type": "blFault",
+            "fault_type": "One-way function",
+            "fault_category": "Execution sequence",
+            "processRef": "Activity_01489b9",
+            "severity": "high",
+            "execution_path": [
+                "e189ea13-a169-4767-b3dd-26cac874dfe7"
+            ],
+            "fault_examples": [
+                "When service task Activity_1eh1l2j (Update workId startWorkDate in database) calls a Web service, service invocation exceptions and returned status code are not handled in either a boundary event or a gateway."
+            ],
+            "description": "Service tasks that invoke Web services may fail for several reasons, e.g., service not available, invalid inputs, or failed operations. Not accounting for such errors may result in unpredictable results, including non-reversible actions, no process termination, or crashes.",
+            "expressions": [
+                "orderUpdateResponse"
+            ]
+        },
+        {
+            "uuid": "d6fcafba-44e4-47b1-b638-7c9b09ab25b1",
+            "type": "blFault",
+            "fault_type": "No execution",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "low",
+            "execution_path": [
+                "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a"
+            ],
+            "fault_examples": [
+                "intermediateCatchEvent Event_175wujn (jobRelinquished) does not have a corresponding intermediateThrowEvent."
+            ],
+            "description": "One or more activities are included in the workflow definition but none of them is part of an execution sequence. This situation may result in inconsistent data updates, loss of provenance, or even no process termination."
+        },
+        {
+            "uuid": "657ab6ef-8091-41cd-992c-771cf87dc308",
+            "type": "blFault",
+            "fault_type": "Dead end",
+            "fault_category": "Execution sequence",
+            "processRef": "WF102-Pick",
+            "severity": "high",
+            "execution_path": [
+                "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+                "Flow_1hp2c7f",
+                "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+                "Flow_14ksze7",
+                "958c4096-8b81-49ec-bad8-6d74e353157e",
+                "Flow_143hwtt",
+                "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+                "Flow_18dd5oq",
+                "a7ff8777-4633-4b21-9a0d-499b3e2e60ec",
+                "Flow_1nmo7cl",
+                "2fdb603a-6448-4ba9-8443-bfab469665d0",
+                "Flow_0m55p27",
+                "8695b0ed-33bd-457f-8aaa-778ffab58067",
+                "Flow_1oo4bjv",
+                "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+                "Flow_0dw87p1",
+                "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+                "Flow_1elmwwo",
+                "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+                "Flow_1kflpiw",
+                "1694adef-ec56-44dd-8029-18b399b89421"
+            ],
+            "description": "A sequence flow involving an expression which when evaluated to true results in an endless loop involving one or more activities.",
+            "expressions": [
+                "${relinquishJob}"
+            ],
+            "fault_examples": [
+                "When ${relinquishJob} evaluates to true, workflow activity Event_03j1xqa [Go to jobRelinquished] in workflow WF102-Pick is executed again."
+            ],
+            "data_output": {
+                "id": "4751aaad-3c17-4b58-b17f-30310f9343cb",
+                "uuid": "88fd98cc-85b5-486f-ab90-5b01c13e7080",
+                "name": "relinquishJob",
+                "type": "InputOutputBinding",
+                "expression": "${relinquishJob}",
+                "data_type": "boolean",
+                "data_source": {
+                    "id": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+                    "uuid": "3e912d15-6265-45e9-a5de-02bca9abdba4",
+                    "name": "form2a_pickAtOneLocation",
+                    "type": "userForm",
+                    "field_id": "Field_0ft8mix",
+                    "field_name": "relinquishJob",
+                    "data_type": "checkbox",
+                    "documentation": "If you will be unable to complete this job, you may return it to unclaimed status by checking this box then clicking Continue"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "07739665-80a0-4506-9e13-e96f6b3db187",
+            "type": "processFlow",
+            "sourceRef": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "targetRef": "b9565245-6775-445c-8320-355bac057946"
+        },
+        {
+            "id": "0cb8bfe7-f368-40a5-b7cc-9484850e82dd",
+            "type": "inputParameter",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "7b9d3876-4dc0-457a-ad78-5c809c34c0a5"
+        },
+        {
+            "id": "ab3a9034-f21a-47f0-bb59-ff1f519182ae",
+            "type": "inputParameter",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "c5f8de83-26de-48b3-a652-8c9441cd6a51"
+        },
+        {
+            "id": "e9047c1b-9beb-4044-892f-3e4781095ce9",
+            "type": "inputParameter",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "047c520a-feff-4013-89c9-6f40bbdfb713"
+        },
+        {
+            "id": "6d62d5e4-9758-47d3-87ec-0d95638bee7b",
+            "type": "inputParameter",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "0952cad4-6cc9-423c-8477-b6ca7a6cbed8"
+        },
+        {
+            "id": "10263d79-0b15-46b9-80f0-2736c17ad5d3",
+            "type": "outputParameter",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "236d28e5-920c-4184-b95e-f191fd94f815"
+        },
+        {
+            "id": "0c4bd4d1-127e-4661-a3a0-d3e6c24d7870",
+            "type": "inputParameter",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "c9e85704-9f9a-4246-8d86-52652650fe4e"
+        },
+        {
+            "id": "8d68e740-4c5a-4050-a750-460ce280f46b",
+            "type": "inputParameter",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "867c1638-6099-45cb-ac80-656eaae961c2"
+        },
+        {
+            "id": "1f5860a5-c796-49c5-8229-02b8d661ba5c",
+            "type": "inputParameter",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "a023fdb3-7a4f-438d-8488-82b17a283664"
+        },
+        {
+            "id": "5592c74e-8cca-4717-854b-ef850c8d821c",
+            "type": "inputParameter",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "0fe6a9fe-ca63-4331-9ae6-1c3a116eb31c"
+        },
+        {
+            "id": "3fd4d752-31f5-4ff0-8cc8-3ad2c9488d39",
+            "type": "outputParameter",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "bc17ffc0-15d8-4956-ba36-47cafb8418a4"
+        },
+        {
+            "id": "Flow_0yuea4u",
+            "name": "Flow_0yuea4u",
+            "type": "sequenceFlow",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "annotation": ""
+        },
+        {
+            "id": "714e40e3-d956-4298-8a07-e50787416d9b",
+            "type": "outputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "da50e32b-8329-46a3-9af4-67d1121461fb"
+        },
+        {
+            "id": "6eda8e43-78eb-4155-8d15-bc45a1e2e1cf",
+            "type": "outputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "78042c04-7697-4620-9fd5-6f59828174e7"
+        },
+        {
+            "id": "b570fee8-72b0-4247-8b1e-cd780287b92f",
+            "type": "inputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "25e5612b-b3a6-4ad7-856c-ef32a1c46cc7"
+        },
+        {
+            "id": "ee996289-11e8-4a7e-be84-46d3e991a591",
+            "type": "inputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "9ef3a2c4-1daf-4704-8cb9-8b3b976d770f"
+        },
+        {
+            "id": "34e9ebe8-2ea3-455d-9dab-c9d1d3a56f7b",
+            "type": "inputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "05f552c7-cbc5-49eb-9244-b1a065c73614"
+        },
+        {
+            "id": "ce32edc3-0698-40e5-837f-26aef6db9055",
+            "type": "outputParameter",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "c2763069-cd73-4d04-ad1a-d38acdb5d0ae"
+        },
+        {
+            "id": "Flow_0d470ss",
+            "name": "Flow_0d470ss",
+            "type": "sequenceFlow",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_144tm5i",
+            "name": "Flow_144tm5i",
+            "type": "sequenceFlow",
+            "sourceRef": "f037eb59-1c38-441e-9a52-18802e2251aa",
+            "targetRef": "13883a72-1ebc-4d82-b514-e028c754586a",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_12y6emk",
+            "name": "Flow_12y6emk",
+            "type": "sequenceFlow",
+            "sourceRef": "23e73a77-5f1a-4bc3-a67e-80a593313bd5",
+            "targetRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1y5ztex",
+            "name": "Flow_1y5ztex",
+            "type": "sequenceFlow",
+            "sourceRef": "b9565245-6775-445c-8320-355bac057946",
+            "targetRef": "23e73a77-5f1a-4bc3-a67e-80a593313bd5",
+            "annotation": ""
+        },
+        {
+            "id": "8c4b135e-c70a-45e4-8cf0-a2dc95424582",
+            "type": "processFlow",
+            "sourceRef": "af45bd29-7769-465d-b757-f127901a973b",
+            "targetRef": "79c2c294-e65d-4ec4-b235-47b20ca12737"
+        },
+        {
+            "id": "Flow_188xgkl",
+            "name": "Flow_188xgkl",
+            "type": "sequenceFlow",
+            "sourceRef": "79c2c294-e65d-4ec4-b235-47b20ca12737",
+            "targetRef": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1hp2c7f",
+            "name": "Flow_1hp2c7f",
+            "type": "sequenceFlow",
+            "sourceRef": "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+            "targetRef": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "annotation": ""
+        },
+        {
+            "id": "6db885f1-23da-48ba-8104-c20a262e9c3b",
+            "type": "inputParameter",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "2d13c26a-d9e8-48c1-a83e-03a6f475d0b9"
+        },
+        {
+            "id": "967c9d6e-6315-431b-9c01-9e6e589f56a6",
+            "type": "inputParameter",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "d9764c7d-b5f7-4c16-bb60-e3074994f35e"
+        },
+        {
+            "id": "d5ab2af6-1122-47be-85bb-ec3eecefe329",
+            "type": "inputParameter",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "8d125330-52ef-490e-8f7c-ef29ad796928"
+        },
+        {
+            "id": "5bf01a66-b380-4a3e-aee3-0b2065620b89",
+            "type": "inputParameter",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "92146a83-39f6-4bd9-9219-d7573cf127ad"
+        },
+        {
+            "id": "cd3d8033-8536-4fbd-926a-03d9e95bd665",
+            "type": "outputParameter",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "ebb04571-ab11-4d7a-a5a3-2432e8883142"
+        },
+        {
+            "id": "a139cc05-071f-4893-95a5-0f5489c85f65",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "b6086365-c810-4f7d-9b51-5ae1d38a61fc"
+        },
+        {
+            "id": "3df5b1ad-7ebd-4ec1-8ee7-573c0961ac4d",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "b5b2c7be-1350-4170-9de3-ced3c631c408"
+        },
+        {
+            "id": "8d222bc2-b6fb-4f11-b9ff-1abb9bc929e5",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "87fafa9a-a746-4abf-91e1-a0dde75cbcb4"
+        },
+        {
+            "id": "d8dfde14-b3e7-4e78-a316-5db7cd3e2142",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "f33d4a0e-c4a1-4f0b-9b29-d9160691e883"
+        },
+        {
+            "id": "2e065175-00c8-4c9a-8bf1-0adbab886d28",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "81f0d459-c52b-4b5d-8f32-1d0d7e166546"
+        },
+        {
+            "id": "67c70933-0dd9-4964-8ab8-b5b457f9adc3",
+            "type": "inputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "62c54f9f-15b7-452a-93fa-2f66fa9973d6"
+        },
+        {
+            "id": "9b2e8b6e-9517-4ba0-8a52-38e5b4a8c94b",
+            "type": "outputParameter",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "cd383034-fa4e-413e-8c7c-72164984283f"
+        },
+        {
+            "id": "Flow_18dd5oq",
+            "name": "No",
+            "type": "sequenceFlow",
+            "sourceRef": "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+            "targetRef": "a7ff8777-4633-4b21-9a0d-499b3e2e60ec",
+            "expression": "${!relinquishJob}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_143hwtt",
+            "name": "Flow_143hwtt",
+            "type": "sequenceFlow",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1y0vmgg",
+            "name": "Yes",
+            "type": "sequenceFlow",
+            "sourceRef": "9aff61a3-b83f-4e11-aee1-1077b4df5a2c",
+            "targetRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "expression": "${relinquishJob}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_0k3qi0j",
+            "name": "No, at least one item location remaining",
+            "type": "sequenceFlow",
+            "sourceRef": "e3fba6a2-817a-47ea-a25a-ff0c7a770253",
+            "targetRef": "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+            "expression": "${jobStatus!=\"Pick/Stow complete\"}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_16c7mq4",
+            "name": "No",
+            "type": "sequenceFlow",
+            "sourceRef": "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+            "targetRef": "36ee2e0a-1496-40db-aa13-ff139b32c0c9",
+            "expression": "${!relinquishJob}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1kflpiw",
+            "name": "Yes",
+            "type": "sequenceFlow",
+            "sourceRef": "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+            "targetRef": "1694adef-ec56-44dd-8029-18b399b89421",
+            "expression": "${relinquishJob}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_15sw950",
+            "name": "Flow_15sw950",
+            "type": "sequenceFlow",
+            "sourceRef": "36ee2e0a-1496-40db-aa13-ff139b32c0c9",
+            "targetRef": "e3fba6a2-817a-47ea-a25a-ff0c7a770253",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1qgvjmb",
+            "name": "Yes",
+            "type": "sequenceFlow",
+            "sourceRef": "e3fba6a2-817a-47ea-a25a-ff0c7a770253",
+            "targetRef": "03fa48c7-36ac-4f8e-bf95-ea067b6979b2",
+            "expression": "${jobStatus==\"Pick/Stow complete\"}",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_14ksze7",
+            "name": "Flow_14ksze7",
+            "type": "sequenceFlow",
+            "sourceRef": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "targetRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "annotation": ""
+        },
+        {
+            "id": "63b7cd05-4681-416e-a24c-24910635abe6",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "5c506919-82da-4f37-88ef-047e54333030"
+        },
+        {
+            "id": "b321236d-ae2b-4bf4-9185-560025494606",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "4545c495-3c7e-4e4d-a01c-0c27801d1fe4"
+        },
+        {
+            "id": "2d58c99c-ab7d-4f6a-9107-f02ca4e823c4",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "495796de-eae5-4b4b-9d09-00481d488e0b"
+        },
+        {
+            "id": "cae1db68-8581-4265-b81b-157e7764c562",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "19a9bb63-9a22-4216-9389-3fd77930561d"
+        },
+        {
+            "id": "7f942815-92e9-4c2b-973d-534ff59d81e2",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "fccec91e-36a6-4844-a752-ca22f417333b"
+        },
+        {
+            "id": "70555491-3a52-4bab-8036-973fe4014d7a",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "aa431c39-1d47-4a3c-8de7-2f4716b42d35"
+        },
+        {
+            "id": "7e29694f-ebdf-47d9-bbd7-0767bdac01c2",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "01803f66-21b8-4e19-9afe-075cb560787a"
+        },
+        {
+            "id": "04594d88-4558-4acb-a46b-ddbc176fc6a3",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "42483091-1c18-477d-bdfa-9fb76e0f796c"
+        },
+        {
+            "id": "ad8f82f4-d572-4557-a9f6-5c1f7e7b50d6",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "12d3db79-93a3-41ce-a381-768439b3d85e"
+        },
+        {
+            "id": "4e6823a6-4cbc-4256-8dd2-f49a0080f0f6",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "870a1f6c-585d-446e-97a3-8c3a17b500f8"
+        },
+        {
+            "id": "96a61f59-38e1-4ee6-9a07-28b349aaea37",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "bfbd9bff-4ccc-4d22-8a46-28aa9333b3da"
+        },
+        {
+            "id": "f865faab-9eb5-4e1f-a83a-0207bc8f0f32",
+            "type": "inputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "e4379b92-2559-4b31-b2c2-7d952f72d05d"
+        },
+        {
+            "id": "607b07ff-89f9-4922-8b57-41be4713ae0a",
+            "type": "outputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "88fd98cc-85b5-486f-ab90-5b01c13e7080"
+        },
+        {
+            "id": "d9ca5a6b-a993-4513-ab0b-a2a05b3a3995",
+            "type": "outputParameter",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "5d909c57-b032-404f-b81e-16afd0f03554"
+        },
+        {
+            "id": "Flow_1elmwwo",
+            "name": "Flow_1elmwwo",
+            "type": "sequenceFlow",
+            "sourceRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "targetRef": "64977030-ab0d-4e95-8312-1c2f2f3fad07",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_0dw87p1",
+            "name": "Flow_0dw87p1",
+            "type": "sequenceFlow",
+            "sourceRef": "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+            "targetRef": "df2eaa47-fa24-4f83-ab42-6d53d9f3c9b8",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1squ57r",
+            "name": "Flow_1squ57r",
+            "type": "sequenceFlow",
+            "sourceRef": "03fa48c7-36ac-4f8e-bf95-ea067b6979b2",
+            "targetRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "annotation": ""
+        },
+        {
+            "id": "900b097b-c032-4f05-b68f-65472e68a9c4",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "e8a21a53-a067-4acf-8daa-1b530c19ff27"
+        },
+        {
+            "id": "ed048045-c4bb-41b1-864b-31979f15c869",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "7df21b4f-8096-4aea-bb4b-3d4c300a8bc9"
+        },
+        {
+            "id": "54b85955-3d26-418c-9928-8a7db5058de3",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "5ae3b4cd-7b81-4dde-89a1-7fb195578e60"
+        },
+        {
+            "id": "bf2e652e-2174-4348-9b19-17a912b5f25f",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "0e47d19e-2e73-4027-a0c6-ae3f44eef034"
+        },
+        {
+            "id": "6d783b4e-46ff-4abd-9c8c-38ae5a2f3304",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "17ea51a5-2230-49b1-b505-8dd61da381d9"
+        },
+        {
+            "id": "f7900a5a-08f9-4555-aaf7-2e4bab0b768f",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "ef1fd7a5-1f6d-47cc-aa12-5559ee29b15f"
+        },
+        {
+            "id": "8ae134b7-95dd-4caa-9222-01861ddd880f",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "a31f77d1-f82d-4e71-b435-775191d32184"
+        },
+        {
+            "id": "ffd79c9b-8347-41db-9e11-e04f6640b023",
+            "type": "inputParameter",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "5cbfbf7a-b637-4266-b585-c72b4d9c62c2"
+        },
+        {
+            "id": "4f0a5cfc-ef68-4193-8223-05dbfd7c9dcd",
+            "type": "inputParameter",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "b02f11ff-4d92-4270-87fe-e7979adf6b34"
+        },
+        {
+            "id": "6f9a1f34-8a7d-4fbc-abf0-30604b000faf",
+            "type": "inputParameter",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "588431cf-73fe-489c-b669-dfff13a3fc07"
+        },
+        {
+            "id": "b0f5ca77-8f1d-4689-ae54-3af015ade0a6",
+            "type": "inputParameter",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "63869483-344a-4bd8-9645-689d9d400e32"
+        },
+        {
+            "id": "812d4845-f92f-4866-91f4-7e39ea12bc2b",
+            "type": "inputParameter",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "b2e859ff-ff7b-4a02-a69a-bb6a3b03a2ba"
+        },
+        {
+            "id": "84f983f2-df29-4229-9ba2-18e95e019df0",
+            "type": "outputParameter",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "c0a607d5-227c-4bde-b96e-c2f630069823"
+        },
+        {
+            "id": "Flow_1nmo7cl",
+            "name": "Flow_1nmo7cl",
+            "type": "sequenceFlow",
+            "sourceRef": "a7ff8777-4633-4b21-9a0d-499b3e2e60ec",
+            "targetRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_0m55p27",
+            "name": "Flow_0m55p27",
+            "type": "sequenceFlow",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1oo4bjv",
+            "name": "Flow_1oo4bjv",
+            "type": "sequenceFlow",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "733ea4f3-1014-4bcf-96c2-53c750a3fc00",
+            "annotation": ""
+        },
+        {
+            "id": "9a4cc9ee-5632-450a-8b74-876508e442a5",
+            "type": "inputParameter",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "4cb2b6e6-9c1b-4d36-a94a-9b843ce7293d"
+        },
+        {
+            "id": "cd6311fa-1a0c-4267-8d91-8550b29e1a00",
+            "type": "inputParameter",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "98dd54d5-d8a6-4797-b3a1-ca0c5b6bda12"
+        },
+        {
+            "id": "447c372d-7cb9-4095-9d7a-9069c34be19f",
+            "type": "inputParameter",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "9e3ee6ae-90ec-4992-a9d2-5427eab1447e"
+        },
+        {
+            "id": "3fa1ffdd-7e79-4132-8e0f-246d6cd879b7",
+            "type": "inputParameter",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "05b23136-ca2a-4e9b-92c6-84401e0104aa"
+        },
+        {
+            "id": "6a10faa2-c18c-4a81-82de-be03245b85e9",
+            "type": "outputParameter",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "ebc12c1f-ca04-4ec8-8744-bcbcf40c1aa1"
+        },
+        {
+            "id": "f54a6a97-0d4a-4fe3-8c35-6c468b72bcfe",
+            "type": "inputParameter",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "c0c9af68-445d-4300-8c9c-50726930983f"
+        },
+        {
+            "id": "10f436d6-a422-4856-80e5-ea2fbd569a71",
+            "type": "inputParameter",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "7e6d99ee-c492-4003-bd06-c5ca362c0357"
+        },
+        {
+            "id": "c7ff40f3-3e18-4749-84c7-7ad685a4001d",
+            "type": "inputParameter",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "2c9c4e44-2934-4a37-a562-803fcc9926a5"
+        },
+        {
+            "id": "d02a0e00-b794-40b2-b0c0-b595a8493f4b",
+            "type": "inputParameter",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "2586906b-eee6-4cd6-87df-55a18bdf85a8"
+        },
+        {
+            "id": "a8e08d45-66c0-4451-9801-5e0efd11cc22",
+            "type": "outputParameter",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "f77f9a61-57a7-4814-aed1-2fd00651eed5"
+        },
+        {
+            "id": "Flow_1d9zqff",
+            "name": "Flow_1d9zqff",
+            "type": "sequenceFlow",
+            "sourceRef": "ad8b781c-e1d9-43be-a6a2-e931c374dd58",
+            "targetRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_0elep39",
+            "name": "Flow_0elep39",
+            "type": "sequenceFlow",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1gj9vfj",
+            "name": "Flow_1gj9vfj",
+            "type": "sequenceFlow",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "b03801d2-d57d-458b-ad7b-e4f3b4cb0b0c",
+            "annotation": ""
+        },
+        {
+            "id": "e7e7a20b-94f1-49e1-865d-807a06ec2391",
+            "type": "inputParameter",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "c56e0d6c-8679-47af-b9d6-9c806683b27e"
+        },
+        {
+            "id": "a27c0334-add9-45f2-aab2-be044aee3f33",
+            "type": "inputParameter",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "c6887007-77a1-460c-b1b9-44469d73f34a"
+        },
+        {
+            "id": "268ca3c7-e860-4476-9c86-989996de333e",
+            "type": "inputParameter",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "36c01648-62a4-48ae-8c46-e93476c98a42"
+        },
+        {
+            "id": "3e917ed1-d51c-45c1-897f-46fbcac17cc9",
+            "type": "inputParameter",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "52b9093d-c3a5-4eae-a8c4-bbdcd59fa4ad"
+        },
+        {
+            "id": "ab4c54d9-c815-4f95-80b4-8461e4e92b19",
+            "type": "outputParameter",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "feb5e6e2-0ead-4a2a-8309-7e0e76c7d4a9"
+        },
+        {
+            "id": "14a0a363-f3a6-4833-a3ce-14c23ccf396b",
+            "type": "processFlow",
+            "sourceRef": "ed6c601a-4d01-44cc-8607-40c00212104e",
+            "targetRef": "75941ce2-4398-47a0-847e-80f3995156bd"
+        },
+        {
+            "id": "f65bf1b0-4fbf-45ed-9f3c-fdff6a913496",
+            "type": "inputParameter",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "6242002a-7e97-4d50-be69-48e0c5c18c9d"
+        },
+        {
+            "id": "2c7dc2ec-00dc-4bf2-9fd4-8aa04c69a724",
+            "type": "inputParameter",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "c9d4875c-77bf-411a-b987-49d803ca960a"
+        },
+        {
+            "id": "1f23e3d5-7034-45a7-9d53-5d421c997c01",
+            "type": "inputParameter",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "00a83270-b2af-44f0-ab9d-419f7c5a92fd"
+        },
+        {
+            "id": "a88a90a4-9db3-49e8-a47a-a82a82ebe326",
+            "type": "inputParameter",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "0484dfb0-99b5-4e44-bdfb-86246d64a391"
+        },
+        {
+            "id": "4fedee83-5422-46aa-9a5a-7e2532477aaf",
+            "type": "outputParameter",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "8cda905f-9e1e-43cf-a777-1ac07dea24e1"
+        },
+        {
+            "id": "Flow_1xlnmgz",
+            "name": "Flow_1xlnmgz",
+            "type": "sequenceFlow",
+            "sourceRef": "75941ce2-4398-47a0-847e-80f3995156bd",
+            "targetRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_1k3wx25",
+            "name": "Flow_1k3wx25",
+            "type": "sequenceFlow",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_04ru2w9",
+            "name": "Flow_04ru2w9",
+            "type": "sequenceFlow",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "ee22c10b-5e4b-4f4a-8443-b21a803dbbdb",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_0vw8mlm",
+            "name": "Flow_0vw8mlm",
+            "type": "sequenceFlow",
+            "sourceRef": "0174599a-790e-48d7-8e80-7e6b8d2d0fae",
+            "targetRef": "ed6c601a-4d01-44cc-8607-40c00212104e",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_07jv1vh",
+            "name": "Flow_07jv1vh",
+            "type": "sequenceFlow",
+            "sourceRef": "ed6c601a-4d01-44cc-8607-40c00212104e",
+            "targetRef": "ad8b781c-e1d9-43be-a6a2-e931c374dd58",
+            "annotation": ""
+        },
+        {
+            "id": "Flow_14rcter",
+            "name": "Flow_14rcter",
+            "type": "sequenceFlow",
+            "sourceRef": "b03801d2-d57d-458b-ad7b-e4f3b4cb0b0c",
+            "targetRef": "2c9d7b0e-57ab-4962-87e8-6b746d04d1a4",
+            "annotation": ""
+        },
+        {
+            "id": "a243b619-7db1-4cea-a54e-06f7553a6af9",
+            "type": "eventFlow",
+            "sourceRef": "1694adef-ec56-44dd-8029-18b399b89421",
+            "targetRef": "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a"
+        },
+        {
+            "id": "e8ea5f02-15a9-47e2-989e-4fb443deec6e",
+            "name": "Relinquish job",
+            "type": "dataSource",
+            "sourceRef": "cd383034-fa4e-413e-8c7c-72164984283f",
+            "targetRef": "36fa5458-cbb3-4407-a639-46426394664c"
+        },
+        {
+            "id": "21722bc7-3569-444e-b925-33c8e6249e5f",
+            "name": "Relinquish job",
+            "type": "dataSource",
+            "sourceRef": "88fd98cc-85b5-486f-ab90-5b01c13e7080",
+            "targetRef": "3e912d15-6265-45e9-a5de-02bca9abdba4"
+        },
+        {
+            "id": "b0c06023-177c-4272-b35a-6e0a7d4eaf51",
+            "name": "Enter the actual quantity of item# {{materialNumber}} picked at the location above:",
+            "type": "dataSource",
+            "sourceRef": "5d909c57-b032-404f-b81e-16afd0f03554",
+            "targetRef": "e20abdbf-50a5-4fb4-b7b0-ecc92c7f6aa2"
+        },
+        {
+            "id": "d1439d15-628c-49fc-b253-b715c25e6cf6",
+            "type": "faultFlow",
+            "sourceRef": "958c4096-8b81-49ec-bad8-6d74e353157e",
+            "targetRef": "8b9078ba-6d4b-481f-9fbe-c3727f50b356"
+        },
+        {
+            "id": "a0a8fe2b-fbdd-4654-adbd-45217da4efd6",
+            "type": "faultFlow",
+            "sourceRef": "ef4ffe53-bafd-4041-91cf-34f1bb135ca4",
+            "targetRef": "c4b21329-98fa-458b-8747-116259e39eea"
+        },
+        {
+            "id": "72945a11-ef09-4d3c-bbee-1fc3b01eb8c1",
+            "type": "faultFlow",
+            "sourceRef": "2fdb603a-6448-4ba9-8443-bfab469665d0",
+            "targetRef": "2199d282-1c27-4e53-81c6-e32d12fc4679"
+        },
+        {
+            "id": "2f0c2be4-e7d4-4098-8f8b-faca7826b90c",
+            "type": "faultFlow",
+            "sourceRef": "8695b0ed-33bd-457f-8aaa-778ffab58067",
+            "targetRef": "33611073-e9c5-42c4-b039-f8148057fa94"
+        },
+        {
+            "id": "e97abdea-1d31-49fc-86fd-820aa41fcb05",
+            "type": "faultFlow",
+            "sourceRef": "6a894536-fb73-4789-ae90-85dbee7bcc6f",
+            "targetRef": "f310ace0-841b-457a-b79a-6940cba3737f"
+        },
+        {
+            "id": "3456bcb8-5c89-4ef8-a23f-8a007b568d09",
+            "type": "faultFlow",
+            "sourceRef": "b53f6420-c41f-446b-9fc9-c5e9dc7d1ee6",
+            "targetRef": "1bc8847e-73c9-410a-b07f-79bff86bbfde"
+        },
+        {
+            "id": "ed46588b-2c20-4d23-8a08-35e035efbfbf",
+            "type": "faultFlow",
+            "sourceRef": "9d48a60a-e63b-424e-a683-5284f9d434a3",
+            "targetRef": "833de6ca-b79d-4f1d-ba3b-4d63dc594b8b"
+        },
+        {
+            "id": "861c7372-9400-4d78-bb8d-9bb854cfbbf3",
+            "type": "faultFlow",
+            "sourceRef": "459ac8d4-1243-47b4-ae56-5c5c9456f516",
+            "targetRef": "dafa53c9-2703-46b1-975e-cb0dcd184caa"
+        },
+        {
+            "id": "a2ab98f4-242a-471c-aa0f-7e6503bb9ef4",
+            "type": "faultFlow",
+            "sourceRef": "4264af7a-9a5e-48f7-affb-59ca4afec334",
+            "targetRef": "5810bb32-312d-4714-bb86-384d4447dfb7"
+        },
+        {
+            "id": "510c4bba-bd6e-444e-9799-ae6f78e5a98c",
+            "type": "faultFlow",
+            "sourceRef": "e189ea13-a169-4767-b3dd-26cac874dfe7",
+            "targetRef": "671be51e-2825-4ac6-97fe-daaf1535022d"
+        },
+        {
+            "id": "2c95b304-8c29-4024-8493-a646f126f27b",
+            "type": "faultFlow",
+            "sourceRef": "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+            "targetRef": "d6fcafba-44e4-47b1-b638-7c9b09ab25b1"
+        },
+        {
+            "id": "5d035782-65e8-4e6a-8cc3-2043f59c826f",
+            "type": "faultFlow",
+            "sourceRef": "1b6f2b88-81cb-449e-acf6-9d9a6e168e6a",
+            "targetRef": "657ab6ef-8091-41cd-992c-771cf87dc308"
+        }
+    ]
+}

@@ -17,13 +17,15 @@ import numpy as np
 
 def performance_test(driver,nodeNum):
 
-    CreateBLModel( nodeNum,subprocesses=False)
-    
-    
+    CreateBLModel( nodeNum,subprocesses=False, s=nodeNum)
+
+
     # Wait until an element is present (e.g., an element with id 'content')
     try:
-        upload_file = "/Users/charlesment/Version_2/Interactive-Visualisation-of-Attack-Traces-on-Attributed-Graphs/bp-attacks/src/wf111.json"
+        upload_file = "/Users/charlesment/Dissertation-Main-Branch/Interactive-Visualisation-of-Attack-Traces-on-Attributed-Graphs/bp-attacks/src/wf111.json"
+
         file_input = driver.find_element(By.CSS_SELECTOR, "input[type='file']")
+
         file_input.send_keys(upload_file)  
 
         text = driver.get_log('browser')
@@ -37,12 +39,12 @@ def performance_test(driver,nodeNum):
             if not match1:
                 match1 = re.search(r"nodeNum\" \s*([\d.]+)\'", str(text))
             
-            time.sleep(0.1)
+            time.sleep(0.3)
         
-    
+        
         timeTaken = None
         nodesNum = None
-
+        
         if match and match1:
             timeTaken = match.group(1)
             nodesNum = match1.group(1)
@@ -64,7 +66,7 @@ def plot_test_data(tests):
     x = tests[:, 0]
     y = tests[:, 1]
 
-    ax.scatter(x, y)
+    ax.scatter(x, y, c='purple',edgecolors='black')
 
    
 
@@ -79,14 +81,17 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(options=options)
     # Open the webpage
     driver.get(url)
-    iterations = 5
+
+    iterations = 1
     initNum = 2000
-    tests = np.ndarray((int(initNum/10)*5, 2))
+    tests = np.ndarray((int(initNum/10)*iterations, 2))
     for j in range(iterations):
         for i in range(10, initNum, 10):
             timeTaken, nodesNum = performance_test(driver, i)
             print(f"Time taken for {nodesNum} nodes: {timeTaken}")
             tests[int(i/10)-1] = [float(nodesNum), float(timeTaken)]
+    
+
     f = open("bp-attacks/src/test.txt", "w")
     f.write(str(tests))
     f.close()

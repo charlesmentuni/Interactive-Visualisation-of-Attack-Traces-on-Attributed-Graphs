@@ -1,33 +1,24 @@
 import {Point, Path, onMouseDown, Tool, Size, TextItem, PointText, Group, Raster, Layer} from 'paper';
 import paper from 'paper';
-import ReadBP from './CodeBlock.js';
+import ReadBP from './sidebars/CodeBlock.js';
 //import json from './wf102.json';
 import { useEffect, useState, useRef, useContext, createContext } from 'react';
 import { Collapse, Card, CardHeader, IconButton, CardContent, Button, ButtonGroup , Box, Typography } from '@mui/material';
 import {KeyboardArrowDown, KeyboardArrowUp, PlayArrow, SkipNext, SkipPrevious, ChevronRightRounded, ChevronLeftRounded} from '@mui/icons-material';
 
-import GraphContext from './GraphCreation.js';
+import GraphContext from './initialisation/GraphCreation.js';
 
-
-import gateway from "./symbols/gateway.png";
-import inputOutput from "./symbols/inputOutput.png";
-import inputOutputFault from "./symbols/inputOutputFault.png";
-import gatewayFault from "./symbols/gatewayFault.png";
-import eventFault from "./symbols/eventFault.png";
-import eventSymbol from "./symbols/event.png";
 import openIcon from "./symbols/openIcon.png";
 import closeIcon from "./symbols/closeIcon.png";
 import labelPointer from "./symbols/labelPointer.png"
 import faultIcon from "./symbols/faultStar.png";
 
-import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent} from './SVGAssets.js';
-import { event_types, gateway_types, io_binding_edge_types } from './blmodel.js';
+import { gatewaySVG,  inputOutputBindingSVG,  userTaskSVG, arrowHeadSVG, startEvent, endEvent, intermediateCatchEvent, catchEvent, throwEvent, scriptTaskSVG, serviceTaskSVG, sendTaskSVG, labelHeadSVG, eventBasedGateway, inclusiveGateway, parallelGateway, messageStartEvent, messageEndEvent, timerStartEvent, timerEndEvent, businessRulesTask, receiveTask, complexGateway, manualTask, callTask, intermediateThrowEvent, miniMap, miniMapSVG} from './symbols/SVGAssets.js';
+import { io_binding_edge_types } from './blmodel.js';
 
-import CodeBlock from './CodeBlock.js';
-import RightSideBar from './RightSideBar.js';
-import LeftSideBar from './LeftSideBar.js';
-import FaultControls from './FaultControls.js';
-import NodeLabel from './NodeLabel.js';
+import RightSideBar from './sidebars/RightSideBar.js';
+import LeftSideBar from './sidebars/LeftSideBar.js';
+import FaultControls from './fault_components/FaultControls.js';
 
 export const FaultContext = createContext();
 
@@ -66,6 +57,7 @@ export default function Sketch() {
     }      
 
     useEffect(() => {
+        // This snippet of code was taken from https://codepen.io/hichem147/pen/dExxNK, as it quickly implements zooming for the project
         const handleMouseWheel = (event) => {
             var newZoom = paper.view.zoom; 
             var oldZoom = paper.view.zoom;
@@ -77,12 +69,18 @@ export default function Sketch() {
 
                 paper.project.layers[  5  ].children[0].bounds.height *= 1/0.95;
                 paper.project.layers[  5  ].children[0].bounds.width *= 1/0.95;
+
+                paper.project.layers[  5  ].children[1].bounds.height *= 1/1.05;
+                paper.project.layers[  5  ].children[1].bounds.width *= 1/1.05;
                 placeSmallBox();
                 
             } else {
                 newZoom = paper.view.zoom * 1.05;
                 paper.project.layers[  5  ].children[0].bounds.height *= 1/1.05;
                 paper.project.layers[  5  ].children[0].bounds.width *= 1/1.05;
+
+                paper.project.layers[  5  ].children[1].bounds.height *= 1/1.05;
+                paper.project.layers[  5  ].children[1].bounds.width *= 1/1.05;
                 
             }
 
@@ -92,7 +90,6 @@ export default function Sketch() {
             
             var mousePosition = new paper.Point(event.offsetX, event.offsetY);
             
-            //viewToProject: gives the coordinates in the Project space from the Screen Coordinates
             var viewPosition = paper.view.viewToProject(mousePosition);
             
             var mpos = viewPosition;
@@ -175,6 +172,7 @@ export default function Sketch() {
             }
             paper.view.scrollBy(delta)
             paper.project.layers[  6  ].children[0].position = paper.view.center;
+            
             placeBigBox();
             placeSmallBox();                    
         }
@@ -185,26 +183,42 @@ export default function Sketch() {
         //ZOOMING IN/OUT
         tool.onKeyDown = function(event){
             if (event.key === 'up'){
+                // When the user presses the up arrow, the view should update to zoom in
+                // Elements that should be fixed in size regardless of the zoom should be updated
                 paper.view.zoom *= 1.2;
-                paper.project.layers[  6  ].children[0].bounds.height *= 1/1.2;
+                
+                // Layer 6 is the layer for the IO bindings overlay box, so the view can't zoom outside it
+                paper.project.layers[6].children[0].bounds.height *= 1/1.2;
                 paper.project.layers[  6  ].children[0].bounds.width *= 1/1.2;
                 paper.project.layers[  6  ].children[0].position = paper.view.center;
 
+                // Layer 5 is for the navigation box
                 paper.project.layers[  5  ].children[0].bounds.height *= 1/1.2;
                 paper.project.layers[  5  ].children[0].bounds.width *= 1/1.2;
+
+                paper.project.layers[  5  ].children[1].bounds.height *= 1/1.2;
+                paper.project.layers[  5  ].children[1].bounds.width *= 1/1.2;
 
                 placeBigBox();
                 placeSmallBox();
             }
 
             if (event.key === 'down'){
+                // When the user presses the up arrow, the view should update to zoom out
+                // Elements that should be fixed in size regardless of the zoom should be updated
                 paper.view.zoom *= 0.8;
+
+                // Layer 6 is the layer for the IO bindings overlay box, so the view can't zoom outside it
                 paper.project.layers[  6  ].children[0].bounds.height *= 1/0.8;
                 paper.project.layers[  6  ].children[0].bounds.width *= 1/0.8;
                 paper.project.layers[  6  ].children[0].position = paper.view.center;
 
+                // Layer 5 is for the navigation box
                 paper.project.layers[  5  ].children[0].bounds.height *= 1/0.8;
                 paper.project.layers[  5  ].children[0].bounds.width *= 1/0.8;
+
+                paper.project.layers[  5  ].children[1].bounds.height *= 1/0.8;
+                paper.project.layers[  5  ].children[1].bounds.width *= 1/0.8;
 
                 placeBigBox();
                 placeSmallBox();
@@ -221,19 +235,26 @@ export default function Sketch() {
    }, [graph_layout]);
 
    const animateZoomToNode = (event) =>{
+        // This function pans the viewport over to the selected node
         if (!zoomed_node_current.current){return;}
         if (time_passed_zoom.current === 0){initial_pos.current = paper.view.center; }
+
+
         var zoomDuration = 1;
         time_passed_zoom.current += event.delta;
-    
-        if (time_passed_zoom.current > zoomDuration){time_passed_zoom.current = 0; paper.view.center = zoomed_node_current.current.group.position; zoomed_node_current.current =null; return;}
+
+        // Once finished, resets the all the variables
+        if (time_passed_zoom.current > zoomDuration){time_passed_zoom.current = 0; paper.view.center = zoomed_node_current.current.group.position; zoomed_node_current.current = null; return;}
         var percent_done = time_passed_zoom.current/zoomDuration;
 
+        //  Calculates where it should be based on where it started and how long it has been
         var newCenter = new Point();
         newCenter.x =  initial_pos.current.x + (zoomed_node_current.current.group.position.x-initial_pos.current.x)*Math.sin(percent_done*(Math.PI/2));
         newCenter.y = initial_pos.current.y + (zoomed_node_current.current.group.position.y-initial_pos.current.y)*Math.sin(percent_done*(Math.PI/2));
         paper.view.setCenter(newCenter);
 
+
+        // Ensures the navigation box is handled properly when view is moved
         placeBigBox();
         placeSmallBox();
 
@@ -241,24 +262,34 @@ export default function Sketch() {
    }
 
    const drawNavigationBox = () => {
+
         paper.project.layers[  5  ].activate();
+
+
         const width = 100;
         const height = 100;
+
+        // If a new diagram has loaded, it will be differnet from the previous one, so this accounts for that
         var new_zoom = new_view ? new_view.zoom : 1;
-        console.log(new_zoom);
+
+        // Initialises the navigation box
         var bigBox = new Path.Rectangle(paper.view.center, new Size(width / new_zoom, height / new_zoom));
         bigBox.strokeColor = 'black';
         bigBox.strokeWidth = 2 / new_zoom;
         bigBox.fillColor = 'white';
-        //var raster = bigBox.rasterize();
-        //bigBox.remove();
+
+        // Initialises a simplified version of a diagram for a map
+        var miniMap = paper.project.importSVG(miniMapSVG);
+        miniMap.bounds.leftCenter = bigBox.bounds.leftCenter;
 
         var smallBox = new Path.Rectangle(paper.view.center, new Size(10/new_zoom, 10/new_zoom));
         smallBox.strokeWidth =0;
+        smallBox.opacity = 0.64;
         smallBox.fillColor = 'black';
 
-
-
+        // Places all the components in the correct place, 
+        // placeBigBox needs to be run twice for the simplified map to load properly
+        placeBigBox();
         placeBigBox();
         placeSmallBox();                              
 
@@ -267,36 +298,45 @@ export default function Sketch() {
    }
 
    const placeBigBox = () =>{
-        let new_pos = paper.view.center.subtract(paper.view.bounds.topLeft)
-        //paper.project.layers[  5  ].children[0].position = paper.view.bounds.topLeft.add(new Point(new_pos.multiply(0.2).x, new_pos.multiply(0.2).y));      
-       /*  if (new_view){
-            paper.project.layers[  5  ].children[0].bounds.topLeft = new_view.bounds.topLeft.add(100 / new_view.zoom, 20 / new_view.zoom);
-            return;
-        }    */              
+        // This function places the navigation box and mini map in the correct place after the view has changed
+                   
         paper.project.layers[  5  ].children[0].bounds.topLeft = paper.view.bounds.topLeft.add(100 / paper.view.zoom, 20 / paper.view.zoom); 
         paper.project.layers[  5  ].children[0].strokeWidth = 2 / paper.view.zoom;
+
+        paper.project.layers[  5  ].children[1].bounds.topLeft.y = paper.project.layers[  5  ].children[0].bounds.center.y;
+        paper.project.layers[  5  ].children[1].bounds.leftCenter.x = paper.project.layers[  5  ].children[0].bounds.leftCenter.x+(5/paper.view.zoom);
+
+        paper.project.layers[  5  ].children[1].bounds.width = (paper.project.layers[  5  ].children[0].bounds.width)-(10/paper.view.zoom);
+        paper.project.layers[  5  ].children[1].bounds.height = paper.project.layers[  5  ].children[0].bounds.height/7;
+        
                       
 
    }
 
    const placeSmallBox = () => {
+        // Places the small box that shows where the current view is in the diagram
+        // so will be placed relative to the big box
+
         var distanceToView = paper.view.center.subtract(paper.project.layers[0].bounds.topLeft);
         var dimensions = Math.max(paper.project.layers[0].bounds.height, paper.project.layers[0].bounds.width);
         var bigBoxSize = paper.project.layers[  5  ].children[0].bounds.width;
 
         // Get size of small box relative to big navigation box
         var viewToBounds = paper.view.bounds.width/dimensions;
-        paper.project.layers[  5  ].children[1].bounds.width = viewToBounds*paper.project.layers[  5  ].children[0].bounds.width;
-        paper.project.layers[  5  ].children[1].bounds.height = viewToBounds*paper.project.layers[  5  ].children[0].bounds.height;
+        paper.project.layers[  5  ].children[2].bounds.width = viewToBounds*paper.project.layers[  5  ].children[0].bounds.width;
+        paper.project.layers[  5  ].children[2].bounds.height = viewToBounds*paper.project.layers[  5  ].children[0].bounds.height;
+
         // Checks if the small box is too big for the big box to fit, so that it is not oversized. 
-        if (paper.project.layers[  5  ].children[1].bounds.height > bigBoxSize*0.8){paper.project.layers[  5  ].children[1].bounds.height=bigBoxSize*0.8; paper.project.layers[  5  ].children[1].bounds.width=bigBoxSize*0.8;}
+        if (paper.project.layers[  5  ].children[2].bounds.height > bigBoxSize*0.8){paper.project.layers[  5  ].children[2].bounds.height=bigBoxSize*0.8; paper.project.layers[  5  ].children[2].bounds.width=bigBoxSize*0.8;}
+
 
 
         var newPos = paper.project.layers[  5  ].children[0].bounds.leftCenter.add(distanceToView.divide(dimensions).multiply(bigBoxSize));
-        paper.project.layers[  5  ].children[1].position = newPos;
+        paper.project.layers[  5  ].children[2].position = newPos;
 
+        // Performs checks to ensure the small box is not out of bounds and if it will reduce the width.
         var bigBox =  paper.project.layers[  5  ].children[0];
-        var smallBox = paper.project.layers[  5  ].children[1];
+        var smallBox = paper.project.layers[  5  ].children[2];
         if (bigBox.bounds.leftCenter.x > smallBox.bounds.leftCenter.x){
 
             if (!((bigBox.bounds.leftCenter.x-smallBox.bounds.leftCenter.x) >= smallBox.bounds.width)){
@@ -352,17 +392,23 @@ export default function Sketch() {
             }
         };
 
+        // This function shifts all the nodes around the sub process node they are back to the original position
         shiftNodes(subProcessNode, -1);
+
+        // Original subprocess rectangle is restored
         var temp_pos = subProcessNode.group.position.y
         subProcessNode.group.children[0].bounds.width = 150;
         subProcessNode.group.children[0].bounds.height = 100;
         subProcessNode.group.children[0].fillColor = "#b2bec3";
         subProcessNode.group.position.y = temp_pos;
 
+        // Edges are redrawn after the nodes are shifted back
         paper.project.layers[ 1 ].removeChildren();
         paper.project.layers[ 1 ].activate();
         setEdge_dict(createEdges(node_dict));
 
+
+        // Sub process node is redrawn with formatted text
         const numChars = 20;
         var label = subProcessNode.name;
         if (label.length > numChars){
@@ -375,7 +421,7 @@ export default function Sketch() {
         subProcessNode.group.children[1].content = label;
         
         
-
+        // Removes all the child nodes and edges of the sub process node
         Object.keys(subProcessNode.children).forEach((key)=>{
             subProcessNode.children[key].group.visible = false;
         })
@@ -410,6 +456,7 @@ export default function Sketch() {
         var minYNode = null;
         var minXNode =null;
 
+        // Finds the minimum and maximum positions of the nodes in a sub process
         Object.keys(node.children).forEach((key)=>{
             let node1 = node.children[key]
             if (!maxXNode || node1.group.bounds.rightCenter.x >= maxXNode.group.bounds.rightCenter.x){maxXNode = node1;}
@@ -421,13 +468,16 @@ export default function Sketch() {
         
         var temp_pos = node.group.position;
 
-        var padding = {x:50, y:20};
+        // The subprocess node is expanded to fit all the nodes
+        var padding = {x : 50, y : 20};
+
         node.group.children[0].bounds.width = maxXNode.group.children[0].bounds.rightCenter.x - minXNode.group.children[0].bounds.leftCenter.x + padding.x;
         node.group.children[0].bounds.height = maxYNode.group.bounds.bottomCenter.y - minYNode.group.bounds.topCenter.y + padding.y;
 
         node.group.position.y = temp_pos.y
 
 
+        // Positions all the nodes to the correct place in the sub process node
         var minX = minXNode.group.bounds.leftCenter.x;
         var minY = minYNode.group.bounds.topCenter.y;
         Object.keys(node.children).forEach((key)=>{
@@ -440,17 +490,19 @@ export default function Sketch() {
         node.group.children[0].fillColor = "#dfe6e9";
         shiftNodes(node);
 
+
         node.group.children[4].onMouseUp = function(event){
             if (mouseDrag.current) {return;}
             closeSubProcesses(node); 
         };
 
+        // Small boxes are affected by changes to the graph size.
         placeSmallBox();
     }
 
     const boundsCheck = (subProcessNode, node, direction) => {
-        console.log(node);
-        console.log(subProcessNode);
+
+        // This function check whether the node is inside the bounds of an opened sub process so that it can be shifted out the way
         if (subProcessNode.group.children[0].contains(node.group.bounds.leftCenter) || Math.round(node.group.bounds.leftCenter.x) > Math.round(subProcessNode.group.bounds.rightCenter.x)){
             node.group.position.x += direction*subProcessNode.group.children[0].bounds.width;
         }
@@ -467,7 +519,7 @@ export default function Sketch() {
         
         Object.keys(node_dict).forEach((key)=>{
             var node = node_dict[key];
-
+            // Moves every node out of the way of the expanded sub process so it is not overlapping
             if (subProcessNode.id === node.id){return;}
             if(node.opened){
                 Object.keys(node.children).forEach((key)=>{
@@ -479,6 +531,7 @@ export default function Sketch() {
             boundsCheck(subProcessNode, node, direction);
             
         });
+
         setShiftFaults(subProcessNode);
        
         paper.project.layers[ 0 ].activate();
@@ -509,7 +562,7 @@ export default function Sketch() {
         rectOg.fillColor = '#b2bec3';
         rectOg.visible =false;
         
-
+        // Sets up the attributes for the default node
         var rect = rectOg.clone();
         rect.visible =true;
         
@@ -551,6 +604,7 @@ export default function Sketch() {
             let x = Math.round((node.position().x+padding.x)/tolerance)*tolerance;
             let y = Math.round((node.position().y+padding.y)/tolerance)*tolerance;
 
+            // formatting the text underneath the node
             var numChars = 15;
             if (temp_node_dict[node.id()].type === "subProcess" || temp_node_dict[node.id()].type === "adHocSubProcess"){numChars=20;}
             if (label){
@@ -565,6 +619,7 @@ export default function Sketch() {
                 type.children[1].content = label;
             }
 
+            // get the svg from the node type, otherwise subprocess
             var isSVG = false;
             if (temp_node_dict[node.id()].type === 'startEvent'){
                 type = paper.project.importSVG(startEvent);
@@ -709,6 +764,7 @@ export default function Sketch() {
 
 
             if (isSVG){
+                // Sets it up for non subprocesses
                 var openIOBindings = new Raster('openIcon');
                 openIOBindings.scale(0.3);
                 openIOBindings.bounds.bottomRight = new Point(type.bounds.bottomRight.x, type.bounds.bottomRight.y);
@@ -779,8 +835,10 @@ export default function Sketch() {
     }
 
     const drawGraph = () => {
-
+        // This function draws the graph and sets the node dictornary
         setNode_dict(displayGraphLayout(graph_layout, node_dict));
+
+        // If a new diagram has been loaded, set the view to where it was
         if (new_view){
             paper.view.setCenter(new_view.center);
             paper.view.zoom = new_view.zoom;
@@ -803,14 +861,14 @@ export default function Sketch() {
     }
 
     const createEdge = (source, target, expression) => {
-
+            // This functions creates an edge between a node
             var arrowHead  = paper.project.importSVG(arrowHeadSVG);
             arrowHead.scale(0.1);
              
-            var sourcePoint = Math.round(source.group.position);
-            var targetPoint = Math.round(target.group.position);
+            var sourcePoint = source.group.position;
+            var targetPoint = target.group.position;
             var arrowHeadDirection = 0;
-            
+
             var edgeLabelText = new PointText();
             edgeLabelText.content = expression ? expression : "";
             //edgeLabelText.fontFamily = "Roboto Mono";
@@ -823,8 +881,7 @@ export default function Sketch() {
             const sourcePosition = {x : Math.round(source.group.position.x), y: Math.round(source.group.position.y)};
             const targetPosition = {x : Math.round(target.group.position.x), y: Math.round(target.group.position.y)};
 
-
-
+            // This checks where the nodes are relative to each other to determine how the edges are visualised.
             if (sourcePosition.x > targetPosition.x){
                 
                 sourcePoint = source.group.bounds.leftCenter;
@@ -852,7 +909,6 @@ export default function Sketch() {
 
                 arrowHeadDirection = 180;
 
-
             }
             
             if (sourcePosition.y > targetPosition.y){
@@ -861,8 +917,6 @@ export default function Sketch() {
                 arrowHead.bounds.topCenter = targetPoint;
                 edgeLabel.bounds.topCenter = new Point(targetPoint.x, arrowHead.bounds.bottomCenter.y+5);
                 arrowHeadDirection = 0;
-
-
             }
 
             arrowHead.rotate(arrowHeadDirection);
@@ -872,10 +926,12 @@ export default function Sketch() {
 
             new_edge.add(sourcePoint);
 
+
             targetPoint.x = Math.round(targetPoint.x);
             targetPoint.y = Math.round(targetPoint.y);
             sourcePoint.x = Math.round(sourcePoint.x);
             sourcePoint.y = Math.round(sourcePoint.y);
+
             // This checks whether to add an elbow corner or if it's just a straight line
             if (sourcePoint.x !== targetPoint.x && sourcePoint.y !== targetPoint.y){
                 var point = new Point(target.group.position.x, source.group.position.y );
@@ -885,8 +941,6 @@ export default function Sketch() {
         
             new_edge.add(targetPoint);
             
-            
-
             new_edge.strokeColor = '#0984e3';
             
             new_edge.strokeWidth = 4;
@@ -942,7 +996,6 @@ export default function Sketch() {
             type.onMouseUp = function(event){
                 if (!mouseDrag.current){
                     setNodeCard(node);
-                    console.log(node.group.position);
                 }
             };
 
@@ -954,7 +1007,7 @@ export default function Sketch() {
             }
            
 
-            // Hover over and display the full name
+            // Hover over and display the full name inside a label
             type.onMouseEnter = function(event){
                 
                 paper.project.layers[  4  ].removeChildren();
@@ -1015,8 +1068,8 @@ export default function Sketch() {
                 }
             };
 
-            paper.project.layers[  7  ].removeChildren();
-            paper.project.layers[  6  ].children[0].visible = false;
+            paper.project.layers[7].removeChildren();
+            paper.project.layers[6].children[0].visible = false;
         };
 
         
@@ -1025,9 +1078,12 @@ export default function Sketch() {
         Object.keys(node.inputOutputBinding).forEach((io, index) => {
             var ioImage = paper.project.importSVG(inputOutputBindingSVG);
             ioImage.scale(1.5);
+            // Places the input output binding in a circle around the node
             var angle = index/Object.keys(node.inputOutputBinding).length*Math.PI*2;
+
             ioImage.position = new Point(node.group.position.x+Math.sin(angle)*spacing, node.group.position.y+Math.cos(angle)*spacing);
 
+            // allows for interaction io bindings
             var mouseDrag = false;
             ioImage.onMouseDown = function(event){mouseDrag = false;};
             ioImage.onMouseDrag = function(event){mouseDrag = true;};
@@ -1039,6 +1095,7 @@ export default function Sketch() {
             ioImage.onMouseEnter = function(event){document.getElementById('paper-canvas').style.cursor = 'pointer'};
             ioImage.onMouseLeave = function(event){document.getElementById('paper-canvas').style.cursor = 'default'};
 
+            // creates the edge between the node and the input output binding
             var edge = new Path();
             edge.add(node.group.position);
             edge.add(ioImage.position);
@@ -1048,6 +1105,8 @@ export default function Sketch() {
             var midpoint = edge.getPointAt(edge.length/2);
             var arrowHead = paper.project.importSVG(arrowHeadSVG);
             var direction = (node.inputOutputBinding[io].InputOutput === "inputParameter") ? 0 : 180;
+
+            // arrows point away or toward the io binding depending on if its an input or output
             arrowHead.fillColor = (node.inputOutputBinding[io].InputOutput === "inputParameter") ? '#4cd137' : '#EA2027';
             arrowHead.scale(0.2);
             arrowHead.rotate(direction-angle*(180/Math.PI));
@@ -1082,11 +1141,6 @@ export default function Sketch() {
         
 
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-        <img id='event-img' src={eventSymbol} style={{display:"none"}} />
-        <img id='gateway-img' src={gateway} style={{display:"none"}} />
-        <img id='gatewayFault' src={gatewayFault} style={{display:"none"}} />
-        <img id='inputOutput' src={inputOutputFault} style={{display:"none"}} />
-        <img id='inputOutputFault' src={inputOutputFault} style={{display:"none"}} />
         <img id='openIcon' src={openIcon}  style={{display:"none"}} />
         <img id='closeIcon' src={closeIcon} style={{display:"none"}} />
         <img id='labelHead' src={labelPointer} style={{display:"none"}} />

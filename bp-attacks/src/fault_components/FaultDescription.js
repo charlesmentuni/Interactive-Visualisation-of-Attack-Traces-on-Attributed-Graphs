@@ -1,6 +1,6 @@
 import { Card, CardContent, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
 import { useContext } from "react";
-import { FaultContext } from "./Sketch";
+import { FaultContext } from "../Sketch";
 
 
 export default function FaultDescription({fault}) {
@@ -53,19 +53,7 @@ export default function FaultDescription({fault}) {
                 <br/>
                 {fault_dict[fault].fault_examples && (<Typography>{"Example: " + fault_dict[fault].fault_examples}</Typography>)}
 
-                {/* {Object.keys(fault_dict[fault]).map((key) => (
-                    <Typography
-                    key={key}
-                    variant="p"
-                    sx={{
-                        fontFamily: "monospace",
-                        paddingLeft: "2ch",
-                        marginBottom: "0.5rem", 
-                    }}
-                    >
-                    {key}: {fault_dict[fault][key].toString()}
-                    </Typography>
-                ))}*/}</>
+               </>
                 ) : (
                 <Typography variant="h3" sx={{ textAlign: "center" }}>
                     No fault selected

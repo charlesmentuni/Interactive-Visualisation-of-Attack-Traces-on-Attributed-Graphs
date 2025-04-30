@@ -2,7 +2,7 @@ import {useContext, useEffect, useRef, useState} from 'react';
 import {Box, Button, Card, CardContent, Collapse, TextField, Typography} from '@mui/material';
 import {ChevronLeftRounded, ChevronRightRounded, Download, FastForward, FastRewind, ImportExport, NextPlan, PlayArrow, Refresh, Search, SkipNext, SwapHoriz, SwapHorizRounded, UploadFileRounded} from '@mui/icons-material';
 import paper from 'paper';
-import GraphContext from './GraphCreation';
+import GraphContext from '../initialisation/GraphCreation';
 import Fuse from 'fuse.js';
 
 
@@ -17,6 +17,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
 
     
     const downloadAsSVG = () =>{
+        // Exports the current graph as SVG 
         var fileName = "Resulting_Graph.svg";
         
         
@@ -30,6 +31,8 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
     }
 
     const searchNode = (query) =>{
+        // perfroms a fuzzy search on the node_dict and subProcessNodes
+        // if the node is not found, return
         var foundNode = null;
         const options = {includeScore: true,
         keys: [{name: 'name', weight: 1}, {name: 'type', weight:0.5}, {name: 'documentation', weight:0.4}]}
@@ -38,7 +41,6 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
         var result = fuse.search(query, {limit:1});
 
 
-        console.log(subProcessNodes);
         Object.values(subProcessNodes.current).forEach((subProcessNode) => {
             var temp_fuse = new Fuse(Object.values(subProcessNode.children), options);
             var temp_result = temp_fuse.search(query, {limit:1}); 
@@ -52,7 +54,6 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
         });
 
         if (result[0]){
-            console.log(result[0])
             if (result[0].parent && !result[0].parent.opened){
                 displaySubProcess(result[0].parent);
             }
@@ -61,7 +62,6 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
        
         nodeZoom.current =  foundNode;
         if(!paper.view.onFrame){paper.view.onFrame = (event) => {animateZoomToNode(event)}}
-        //paper.view.play();
 
     }
 
@@ -85,7 +85,6 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
                 let jsonData = JSON.parse(reader.result);
                 let OGjsonData = JSON.parse(reader.result);
 
-                console.log(jsonFile);
                 setPrevGraph({"json": jsonFile, "view" : paper.view, "subProcessNodes": subProcessNodes.current});
                 setJson(jsonData);
                 setJsonFile(OGjsonData);
@@ -103,7 +102,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
         
     }
     const switchGraphs = () => {
-
+        // When button is clicked, switch between the two graphs
         setJson(prevGraph.json);
         setJsonFile(prevGraph.json);
         setPrevGraph({"json": jsonFile, "view" : paper.view});
@@ -113,14 +112,7 @@ export default function LeftSideBar({nodeZoom, displaySubProcess, animateZoomToN
             project.remove();
         });
     }
-   /*  useEffect(() => {
-        if (prevGraph && isGraphSwitched.current){
-            console.log('isGraphSwitched center', isGraphSwitched.current.center);
-            paper.view.center = isGraphSwitched.current.center;
-            paper.view.zoom = isGraphSwitched.current.zoom;
-            isGraphSwitched.current = null;
-        }
-    }, [json]); */
+  
 
     return (
         <>

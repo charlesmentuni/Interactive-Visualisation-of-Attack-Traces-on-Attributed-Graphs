@@ -2,9 +2,9 @@ import logo from './logo.svg';
 import './App.css';
 import Sketch from './Sketch';
 import paper from 'paper';
-import ShowCodeBlock from './CodeBlock';
-import { GraphCreation } from './GraphCreation';
-import {UploadFaultFile} from './UploadFaultFile';
+import ShowCodeBlock from './sidebars/CodeBlock';
+import { GraphCreation } from './initialisation/GraphCreation';
+import {UploadFaultFile} from './initialisation/UploadFaultFile';
 
 
 

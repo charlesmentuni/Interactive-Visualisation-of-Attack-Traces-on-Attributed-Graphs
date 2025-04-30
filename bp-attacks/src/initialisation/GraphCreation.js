@@ -1,7 +1,7 @@
 import {createContext, useContext, useState, useEffect, useRef} from 'react';
-import Sketch from './Sketch';
+import Sketch from '../Sketch';
 //import json from './wf102.json';
-import { data_source_types, io_binding_edge_types } from './blmodel';
+import { data_source_types, io_binding_edge_types } from '../blmodel';
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
 import elk from "cytoscape-elk";
@@ -60,20 +60,19 @@ export function GraphCreation() {
                 return;
             }
 
+            // Removes the process node as it is not needed, since it will be the parent of everything else
             if (node.type === "process"){
                 processName.current = node.id;
                 return;
             }
 
-            // Removes the process node as it is not needed, since it will be the parent of everything else
+            // If a node is a child of a subprocess, then its processRef will point to the subprocess
             if (node.processRef && node.processRef !== processName.current) {
                 temp_subProcessChildren[node.uuid] = node;
                 return;
             }
 
-            
-            
-
+            // Extracts the data from the dictionary
             temp_node_dict[node.uuid] = {};
 
             Object.keys(node).forEach((key) => {
@@ -85,6 +84,7 @@ export function GraphCreation() {
     
             
         });
+
         setIo_dict(temp_io_dict);
         setNode_dict(temp_node_dict);
         subProcessNodes.current = temp_subProcessNodes;
@@ -103,14 +103,19 @@ export function GraphCreation() {
                 associated_fault_nodes.current[edge.sourceRef] = edge.targetRef;
             }
 
+            // Checks if the subprocess sources are in the node dictionary or subprocess children dictionary
+            // As otherwise will throw an error
             if (!temp_node_dict[edge.sourceRef]){
                 if (!subProcessChildren.current[edge.sourceRef]){return;}
+
+
+                // 
                 if (io_dict[edge.targetRef]){
+
                     if (!subProcessChildren.current[edge.sourceRef].inputOutputBinding){
                         subProcessChildren.current[edge.sourceRef].inputOutputBinding = {};
                     }
-                    
-                    
+                    // adds in the input output binding to the sub process child node that it is connected to
                     subProcessChildren.current[edge.sourceRef].inputOutputBinding[edge.targetRef] = {...io_dict[edge.targetRef], "InputOutput": edge.type};
                 }
                 return;
@@ -121,6 +126,7 @@ export function GraphCreation() {
                 if (!temp_node_dict[edge.sourceRef].inputOutputBinding){
                     temp_node_dict[edge.sourceRef].inputOutputBinding = {};
                 }
+                // adds in the input output binding to the node that it is connected to 
                 temp_node_dict[edge.sourceRef].inputOutputBinding[edge.targetRef] =  {...io_dict[edge.targetRef], "InputOutput": edge.type};
             }
              
@@ -147,7 +153,7 @@ export function GraphCreation() {
         const cy = cytoscape(convertToGraph(dict));
 
     
-
+        // Sets up the layout for the main graph
         const layout = cy.layout({
             name: "elk", 
             elk : {
@@ -202,6 +208,7 @@ export function GraphCreation() {
     }
 
     const getSubProcessNodes = () => {
+        // Gets all the subprocess node childrenfrom the json file
         var temp_node_dict = node_dict;
         Object.keys(subProcessNodes.current).forEach((key) => {
             Object.keys(subProcessChildren.current).forEach((key1) => {
@@ -217,6 +224,7 @@ export function GraphCreation() {
     }
 
     const getSubProcessEdges = () => {
+        // Creates all the sub processes edges withing the subprocess
         jsonFile.edges.forEach((edge) => {
             
             // The subprocess node should contain its children not connect to them 
@@ -242,6 +250,7 @@ export function GraphCreation() {
     const subProcessLayout = () => {
         var temp_node_dict = node_dict;
         performance.mark('subProcessLayout')
+        // formats the subprocess nodes into a graph that can be used by cytoscape
         Object.keys(subProcessNodes.current).forEach((key) => {
             var graph = {elements: []};
 

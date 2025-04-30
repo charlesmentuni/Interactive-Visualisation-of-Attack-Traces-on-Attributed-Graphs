@@ -1,13 +1,13 @@
 import { Button, ButtonGroup, Card, CardContent, Select , Box, MenuItem, InputLabel, FormControl} from '@mui/material';
 import { PlayArrow, SkipNext, SkipPrevious, PauseSharp, RestartAlt, Refresh, FastRewind, FastForward, FollowTheSigns } from '@mui/icons-material';
 import {useContext, useEffect, useState, useRef} from 'react';
-import {FaultContext} from './Sketch'
+import {FaultContext} from '../Sketch'
 import FaultDescription from './FaultDescription';
 import paper from 'paper';
-import { gateway_types, event_types } from './blmodel';
+import { gateway_types, event_types } from '../blmodel';
 import {Group} from 'paper';
 import { Color, Point } from 'paper/dist/paper-core';
-import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from './SVGAssets';
+import { catchEventFaultSVG, scriptTaskFaultSVG, serviceTaskFaultSVG, userTaskFaultSVG, intermediateCatchEventFault, intermediateThrowEventFault, exclusiveGatewayFault } from '../symbols/SVGAssets';
 
 
 export default function FaultControls({subProcessOpened, setSubProcessOpened, fault, setFault}) {
@@ -77,6 +77,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
         subProcessParent.current =null;
         setDisabledSpeed(false);
         
+        // Opens up the subprocess if the the fault is inside
         var temp_node_dict = {...node_dict};
         Object.keys(subProcessNodes.current).forEach((key)=>{
             if (subProcessNodes.current[key].id === fault_dict[fault].processRef){
@@ -165,6 +166,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
     }
 
     const prevFault = function() {
+        // goes back a fault
         paper.project = paper.projects[0];
 
         var faultPath = faultPathRef.current;
@@ -181,7 +183,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
         const edgeLayer = paper.project.layers[  2  ];
 
     
-        // This assumes that is starts with a node
+        // The node and edges alternate being removed in the execution path
         if (stage % 2 === 1){
             edgeLayer.lastChild.remove();
         }
@@ -193,6 +195,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
     } 
 
     const nextFault = function() {
+        // Skips to the next fault without running the animation
         if (stageRef.current === faultPathRef.current.length){
             followFault.current = false;
             return;
@@ -217,11 +220,11 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
         var stage = stageRef.current;
 
         if (!faultPath[stage]){return;}
-        const nodeLayer = paper.project.layers[  3  ];
-        const edgeLayer = paper.project.layers[  2  ];
+        const nodeLayer = paper.project.layers[3];
+        const edgeLayer = paper.project.layers[2];
         if (faultPath.length === nodeLayer.children.length + edgeLayer.children.length){return;}
 
-        // THIS WORKS BUT IS A LITTLE BAD
+        // Checks if it is a node
         if (faultPath[stage].group){
             if(faultPath[stage].opened){
                 closeSubProcesses(faultPath[stage]);
@@ -233,11 +236,12 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
             var i = 0;
             
             fp.children[3].visible =false;
-            
+
             fp.children[i].fillColor = '#d63031'; 
 
             fp.children[i].opacity = 0;
 
+            // Categorises the node and its represented fault graphic
             if (faultPath[stage].type === 'scriptTask'){
                 var importedSVG = paper.project.importSVG(scriptTaskFaultSVG);
                 importedSVG.scale(0.5);
@@ -315,10 +319,11 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
         
         if (!faultPathRef.current[stageRef.current]){return;}
 
-
+        // When speed up is pressed it goes to the next index
         let speeds = [1, 2, 3, 5];
         if (playbackSpeed.current>3){playbackSpeed.current = 3; setDisabledSpeed(true);}
-        console.log(playbackSpeed.current);
+
+        // When skip is pressed, it goes to 100% done
         var percent_done = skip.current ? 1 : elapsedTime.current/(1/speeds[playbackSpeed.current]);
         if (percent_done >= 1){
             percent_done = 1;
@@ -339,7 +344,7 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
 
         if (faultPathRef.current[stageRef.current].edge){
             
-
+            // Run the fault over an edge
             let edgeLayer = paper.project.layers[  2  ];
             let faultEdge = edgeLayer.lastChild.children[0];
             let edge = faultPathRef.current[stageRef.current].edge;
@@ -351,10 +356,12 @@ export default function FaultControls({subProcessOpened, setSubProcessOpened, fa
                 faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done;
             }
             if (faultEdge.segments.length === 3){
+                // does it have an elbowed edge
                 var yDistance = Math.abs(edge.segments[2].point.y - faultEdge.segments[0].point.y);
                 var xDistance = Math.abs(edge.segments[1].point.x - faultEdge.segments[0].point.x);
                 var split = xDistance/(xDistance + yDistance);
 
+                // Calculates the new edge length
                 if (percent_done < split){
                     faultEdge.segments[1].point.x = faultEdge.segments[0].point.x + (edge.segments[1].point.x-faultEdge.segments[0].point.x) * percent_done * (1/split);
                 }
